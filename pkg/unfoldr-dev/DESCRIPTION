@@ -9,7 +9,7 @@ Authors@R: c(person("Markus Baaske", role = c("aut", "cre"),
 			)
 Author: Markus Baaske [aut, cre], Felix Ballani [ctb]
 Maintainer: Markus Baaske <markus.baaske@uni-jena.de>
-Description: Stereological unfolding the joint size-shape-orientation distribution of spheroidal shaped particles
+Description: Stereological unfolding the joint size-shape-orientation distribution of spheroidal shaped particles.
 Depends: R (>= 3.1.0)
 Suggests: rgl
 License: GPL-2
