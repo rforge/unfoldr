@@ -21,9 +21,12 @@ distribution is implemented.
 \enumerate{
     \item Bene\eqn{\check{\textrm{s}}},
 		  V. and Rataj, J. Stochastic Geometry: Selected Topics Kluwer Academic Publishers, Boston, 2004
-	   	\item Ohser, J. and Schladitz, K. 3D images of materials structures Wiley-VCH, 2009
-	    \item Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
-     \item C. Lantu\eqn{\acute{\textrm{e}}}joul. Geostatistical simulation. Models and algorithms.
-					Springer, Berlin, 2002. Zbl 0990.86007 
+	   \item Ohser, J. and Schladitz, K. 3D images of materials structures Wiley-VCH, 2009
+	   \item Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
+    \item C. Lantu\eqn{\acute{\textrm{e}}}joul. Geostatistical simulation. Models and algorithms.
+					Springer, Berlin, 2002. Zbl 0990.86007
+	   \item Müller, A., Weidner, A., and Biermann, H. (2015). Influence of reinforcement
+           geometry on the very high-cycle fatigue behavior of aluminum-matrix-composites.
+			   Materials Science Forum, 825/826:150-157 
  }
 }
