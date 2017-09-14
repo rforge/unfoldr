@@ -21,4 +21,3 @@ Determine intersections of spheroids with bounding (simulation) box
 For a given list of spheroids, spheres or cylinders calculate if these objects intersect
 the simulation box or not.
 }
-

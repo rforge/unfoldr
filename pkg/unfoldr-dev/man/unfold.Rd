@@ -47,4 +47,3 @@ The return value of the function is an object of class \code{unfold} whose argum
 \seealso{
 \code{\link{setbreaks}}, \code{\link{binning3d}}
 }
-

@@ -30,4 +30,3 @@ Draw particle system as defined by \code{S}.
 \details{
 The function requires the package \code{rgl} to be installed.
 }
-

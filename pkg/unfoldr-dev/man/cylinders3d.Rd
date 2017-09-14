@@ -26,4 +26,3 @@ Draw 3d spherocylinders
 \details{
 The function requires the package \code{rgl} to be installed.
 }
-

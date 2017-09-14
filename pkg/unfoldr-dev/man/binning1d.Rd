@@ -31,4 +31,3 @@ If x[j] > bin[N] or x[j] < bin[1] then x[j] is not counted at all.
 	bin <- seq(0,1,by=0.1)
 	binning1d(x,bin)
 }
-

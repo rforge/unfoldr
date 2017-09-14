@@ -19,4 +19,3 @@ Drawing section profiles in 3D plane
 \details{
 The function requires the package \code{rgl} to be installed.
 }
-

@@ -49,4 +49,3 @@ par(op)
 \references{
 Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
 }
-

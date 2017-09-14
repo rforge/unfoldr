@@ -55,4 +55,3 @@ currently available are the beta, gamma and uniform distribution.
             Springer, Berlin, 2002. Zbl 0990.86007}
 	 }
 }
-

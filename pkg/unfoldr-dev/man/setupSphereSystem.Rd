@@ -23,4 +23,3 @@ after R workspace reloading. Calling this function is needed only in case one de
 sections of the sphere system again which has been previously stored as an R (list) object and afterwards
 reloaded.
 }
-

@@ -25,4 +25,3 @@ Given a sphere system obtained from \code{\link{simSphereSystem}}
 the function returns the section radii from intersecting all spheres
 stored in \code{S}.
 }
-

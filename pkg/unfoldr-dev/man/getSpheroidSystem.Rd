@@ -19,4 +19,3 @@ Get the internally stored spheroid system
 The spheroid system is stored as a C structure.
 This function copies and converts the spheroids to the R level.
 }
-

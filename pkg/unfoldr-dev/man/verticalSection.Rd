@@ -27,4 +27,3 @@ The function performs a vertical intersection defined by the normal vector
 \code{n=c(0,1,0)} which depends on the main orientation axis of the
 coordinate system and has to be parallel to this.
 }
-

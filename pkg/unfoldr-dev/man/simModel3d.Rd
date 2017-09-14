@@ -113,4 +113,3 @@ S <- simSpheroidSystem(theta,lam,size="rbinorm",orientation="rbetaiso",box=box,p
 }
 
 }
-

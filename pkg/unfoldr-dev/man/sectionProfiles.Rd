@@ -7,7 +7,7 @@
 sectionProfiles(size, angle, type = c("prolate", "oblate"))
 }
 \arguments{
-\item{size}{matrix of major and minor axes sizes}
+\item{size}{matrix of axes lengths}
 
 \item{angle}{orientation angle}
 
@@ -21,11 +21,11 @@ Storing structure for section profiles
 }
 \details{
 The function aggregates the necessary data for the trivariate unfolding procedure either for \code{type}
-\code{prolate} or \code{oblate} spheroids. Argument \code{size} is a numeric matrix containing the
-axes lengths as columns.  The \code{angle} is the orientation angle between the major axis and the vertical
-axis direction in the section plane. If the angles range within \eqn{[0,2\pi]} these are transformed
-to \eqn{[0,\pi/2]}. The function returns a list which consists of either longer or shorter axis \code{A}
-of section profiles corresponding to the type of spheroids which are intended to be reconstructed,
-the aspect ratio as the shape parameter \code{S} with values in \eqn{(0,1]}, and the orientation angle \code{alpha}.
+\code{prolate} or \code{oblate} spheroids. Argument \code{size} is a numeric matrix which contains the
+axes lengths (first column corresponds to major semi-axis, second one to minor semi-axis). The \code{angle}
+is the orientation angle between the major axis and the vertical axis direction in the section plane.
+If the angles range within \eqn{[0,2\pi]} these are transformed to \eqn{[0,\pi/2]}. The function returns a
+list which consists of either longer or shorter axis \code{A} of section profiles corresponding to the type
+of spheroids which are intended to be reconstructed, the aspect ratio as the shape parameter \code{S} with
+values in \eqn{(0,1]}, and the orientation angle \code{alpha}.
 }
-
