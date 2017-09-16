@@ -63,7 +63,7 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 	stopifnot(is.matrix(size))
 	if(anyNA(size) || any(size<0))
 		stop("'size' must have non-negative values.")
-	if(min(angle)<0 || max(angle)>pi/2)
+	if(anyNA(angle) || !is.numeric(angle) || any(angle<0))
 		stop(paste("'angle' must have values between zero and ",quote(pi/2),sep=""))
 	if(max(angle)>pi/2)
 	 angle <- sapply(angle,.getAngle)	
