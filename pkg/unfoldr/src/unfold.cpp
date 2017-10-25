@@ -643,10 +643,15 @@ SEXP Binning1d(SEXP Rx, SEXP Rbin) {
 
 /* R Interface functions  */
 #define CALLDEF(name, n)  { #name, (DL_FUNC) &name, n}
+
+R_NativePrimitiveArgType myC_t[] = { INTSXP, INTSXP, REALSXP, REALSXP, REALSXP };
+R_NativePrimitiveArgType myC_t2[] = { INTSXP, REALSXP, REALSXP };
+
+
 static R_CMethodDef CEntries[]  = {
-      CALLDEF(em_saltykov,5),
-      CALLDEF(em_saltykov_p,3),
-      {NULL, NULL, 0}
+	{"em_saltykov", (DL_FUNC) &em_saltykov, 5, myC_t},
+	{"em_saltykov_p", (DL_FUNC) &em_saltykov_p, 3, myC_t2},
+    {NULL, NULL, 0, NULL}
 };
 
 static R_CallMethodDef CallEntries[] = {
@@ -676,6 +681,8 @@ void R_init_unfoldr(DllInfo *info) {
   R_useDynamicSymbols(info, FALSE);
 }
 
+/*
 void R_unload_unfold(DllInfo *info){
-  /* Release resources. */
+  // Release resources
 }
+*/
