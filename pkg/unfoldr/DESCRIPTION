@@ -12,7 +12,7 @@ Maintainer: Markus Baaske <markus.baaske@uni-jena.de>
 Description: Stereological unfolding the joint size-shape-orientation distribution of spheroidal shaped particles.
 Depends: R (>= 3.3.3)
 Suggests: rgl
-License: GPL (>= 2)
+License: GPL (>= 3)
 Repository/R-Forge/Project: unfoldr
 Repository: CRAN
 LazyData: no
