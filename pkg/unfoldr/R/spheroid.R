@@ -364,6 +364,20 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	)
 }
 
+#' Spheroid intersection
+#' 
+#' Simulate a spheroid system and intersect
+#' 
+#' The function first simulates a spheroid system according to the parameter \code{theta}
+#' 
+#' @param theta simulation parameters
+#' @param cond  conditioning object for simulation and intersection
+#' 
+#' @return list of intersection profiles
+simSpheroidIntersection <- function(theta, cond) {
+	.Call(C_SimulateSpheroidsAndIntersect,
+			c("lam"=cond$lam,theta), cond, cond$nsect)
+}
 
 #' Plot particle system
 #'
