@@ -359,8 +359,8 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	structure(
 	    list("A"=A,
 			 "S"=sapply(ss,"[[",3),
-		 "alpha"=sapply(ss,"[[",4),
-	  class=class(S))
+		 "alpha"=sapply(ss,"[[",4)),
+	  class=class(S)
 	)
 }
 
