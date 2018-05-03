@@ -18,5 +18,6 @@ list of intersection profiles
 Simulate a spheroid system and intersect
 }
 \details{
-The function first simulates a spheroid system according to the parameter \code{theta}
+The function first simulates a spheroid system according to the parameter \code{theta} and only
+returns the resulting section profiles.
 }
