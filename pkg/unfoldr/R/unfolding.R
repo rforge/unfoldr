@@ -200,10 +200,11 @@ setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp"))
 #' @param S list of spheroids
 #' @return  list
 parameters3d <- function(S) {
-	idx <- if(class(S)=="prolate") c(1,2) else c(2,1)
+	idx <- if(class(S)=="prolate") c(1,3) else c(3,1)  			# changed index from 2 to 3 for major semi-axis
 	list("a"=unlist(lapply(S,function(x) x$ab[1])),
 		 "Theta"=unlist(lapply(S,function(x) .getAngle(x$angles[1]))),
 		 "s"=unlist(lapply(S,function(x) x$ab[idx[1]]/x$ab[idx[2]])))
+		 
 }
 
 #' Estimated spatial histogram data
