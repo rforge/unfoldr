@@ -872,9 +872,11 @@ void STGM::CSpheroidSystem::simBivariate2(R_Calldata d) {
           s=1.0/(1.0+exp(-y));
           b=exp(x);
           a=b*s;
-          c=0.75*a;								/* TODO: should be random! */
           if(m_stype==CSpheroid::OBLATE)
             std::swap(a,b);
+
+          /* fixed random beta 2nd. shorter axis */
+          c=a*rbeta(5.0,1.0);								/* TODO: check! */
 
           /* sample orientation */
           if(kappa<1e-8)
