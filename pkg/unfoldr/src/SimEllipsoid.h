@@ -35,25 +35,25 @@ namespace STGM {
 
 
 /**
- *  Ellipsoid system
+ *  Ellipsoid or Spheroid system
  */
-class CEllipsoidSystem
+class CSpheroidSystem
 {
  public:
   CSpheroid::spheroid_type m_stype;
 
-  CEllipsoidSystem(CBox3 &box, double lam, CVector3d &mu, CSpheroid::spheroid_type stype, int perfect = 1)
+  CSpheroidSystem(CBox3 &box, double lam, CVector3d &mu, CSpheroid::spheroid_type stype, int perfect = 1)
     :  m_stype(stype), m_box(box), m_lam(lam), m_maxR(0), m_mu(mu),  num(0), m_perfect(perfect)
   {
   };
 
-  ~CEllipsoidSystem() {};
+  ~CSpheroidSystem() {};
 
-
-  void simEllipsoidSys(R_Calldata d);
-  void simConstEllipsoidSys(R_Calldata d);
+  void simSpheroidSys(R_Calldata d);
+  void simConstSpheroidSys(R_Calldata d);
   void simSysJoint(R_Calldata d);
   void simBivariate(R_Calldata d);
+  void simBivariate2(R_Calldata d);  									/* non equal shorter semiaxes */
 
   STGM::Spheroids &refObjects()  { return m_spheroids; }
   const STGM::Spheroids &refObjects() const { return m_spheroids; }

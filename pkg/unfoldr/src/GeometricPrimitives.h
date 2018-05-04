@@ -898,13 +898,14 @@ namespace STGM {
       typedef enum { PROLATE = 0, OBLATE = 1 } spheroid_type;
       typedef enum { UNIFORM_D = 0, BETAISOTROP_D = 1, MISES_D = 2} direction_type;
 
-     CSpheroid(CVector3d center, double a, double b, CVector3d u,
+     CSpheroid(CVector3d center, double a, double c, double b, CVector3d u,
                  double alpha, double theta, double phi, double r, int id,
                  const char *label="N", int interior=1)
      :  m_label(label),
         m_center(center),
         m_u(u),
-        m_a(a), m_b(b),
+        m_a(a), m_c(c), 		// a,c: are 1st and 2nd shorter semi-axes
+		m_b(b),         		// b:   longer semi-axis
         m_alpha(alpha),
         m_theta(theta),
         m_phi(phi),
@@ -973,7 +974,9 @@ namespace STGM {
        const CVector3d &center() const { return m_center; }
 
        double a() const { return m_a; }
+       double c() const { return m_c;  }
        double b() const { return m_b;  }
+
        double alpha() const { return m_alpha;  }
 
        const CVector3d& u() const { return m_u; }
@@ -997,7 +1000,7 @@ namespace STGM {
 
     private:
       CVector3d m_center, m_u;
-      double m_a, m_b;
+      double m_a, m_b, m_c;
       double m_alpha,m_theta, m_phi, m_r;
       int m_id, m_crack,m_interior;
       CMatrix3d m_R, m_A, m_invA;
