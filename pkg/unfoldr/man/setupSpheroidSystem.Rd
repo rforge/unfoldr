@@ -7,7 +7,7 @@
 setupSpheroidSystem(S, mu = c(0, 1, 0), pl = 0)
 }
 \arguments{
-\item{S}{sphere system}
+\item{S}{spheroid system}
 
 \item{mu}{main orientation vector}
 
@@ -20,8 +20,8 @@ setupSpheroidSystem(S, mu = c(0, 1, 0), pl = 0)
 Reinitialize spheroid system after R workspace reloading
 }
 \details{
-The internally stored sphere system has to be reinitialized
-after R workspace reloading. Calling this function is needed only in case one desires to get profile
-sections of the spheroid system again which has been previously stored as an R (list) object and afterwards
+The internal data structure has to be reinitialized if a spheroid system was reloaded to the R workspace.
+Calling this function is needed only in case one desires to get profile sections of the spheroid
+system again which has been previously stored as an R (list) object and afterwards
 reloaded.
 }
