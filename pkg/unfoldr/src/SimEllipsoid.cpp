@@ -750,73 +750,73 @@ void STGM::CSpheroidSystem::simSysJoint(R_Calldata d) {
  *
  * @param d data of R call (no R call used here)
  */
-void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
-      GetRNGstate();
-
-      double mx=asReal(getListElement(VECTOR_ELT( d->args, 0),"mx"));
-      double my=asReal(getListElement(VECTOR_ELT( d->args, 0),"my"));
-      double sdx=asReal(getListElement(VECTOR_ELT( d->args, 0),"sdx"));
-      double sdy=asReal(getListElement(VECTOR_ELT( d->args, 0),"sdy"));
-      double rho=asReal(getListElement(VECTOR_ELT( d->args, 0),"rho"));
-      double kappa = asReal(getListElement(VECTOR_ELT(d->args,2),"kappa"));
-
-      /* get Poisson parameter */
-      double p[4], sdx2 = SQR(sdx), mu=0;
-      // set spheroid label
-      const char *label = translateChar(asChar(d->label));
-      // cumulative probabilities
-      cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
-
-      if(PL>100) {
-         Rprintf("Spheroids (perfect) simulation, bivariate lognormal length/shape: \n");
-         Rprintf("\t size distribution: %s with %f %f %f %f %f\n", GET_NAME(d,0), mx,my,sdx,sdy,rho);
-         Rprintf("\t directional distribution: %s  with %f \n", GET_NAME(d,2), kappa);
-         Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
-         Rprintf("\t set label: %s to character: \n",label);
-      }
-      int nTry=0;
-      while(num==0 && nTry<MAX_ITER) {
-         num = rpois(mu*m_lam);
-         ++nTry;
-      }
-      m_spheroids.reserve(num);
-
-      CVector3d u;
-      int k=0, perfect =  d->isPerfect;
-      double x=0,y=0,a=0,b=0,
-    		 s=1.0,phi=0,theta=0,r=0;
-
-      for (size_t niter=0; niter<num; niter++) {
-          /* sample major semi-axis a, shorter semi-axis is: c=a*s */
-          rbinorm(mx,sdx,my,sdy,rho,x,y);
-          s=1.0/(1.0+exp(-y));
-          b=exp(x);
-          a=b*s;
-          if(m_stype==CSpheroid::OBLATE)
-            std::swap(a,b);
-
-          /* sample orientation */
-          if(kappa<1e-8)
-            u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
-          else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
-
-          if(perfect) {
-        	/* sample positions conditionally of radii distribution */
-        	sample_k(p,&k);
-        	r=rlnorm(mx+k*sdx2,sdx);
-        	if(m_maxR<r) m_maxR=r;
-        	if(!R_FINITE(r))
-        	 warning(_("simEllipsoidSysBivariat(): Some NA/NaN, +/-Inf produced"));
-          }
-
-          STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
-                                 runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
-                                 runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
-
-          m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,s,theta,phi,r,niter+1,label) );
-       }
-       PutRNGstate();
-}
+//void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
+//      GetRNGstate();
+//
+//      double mx=asReal(getListElement(VECTOR_ELT( d->args, 0),"mx"));
+//      double my=asReal(getListElement(VECTOR_ELT( d->args, 0),"my"));
+//      double sdx=asReal(getListElement(VECTOR_ELT( d->args, 0),"sdx"));
+//      double sdy=asReal(getListElement(VECTOR_ELT( d->args, 0),"sdy"));
+//      double rho=asReal(getListElement(VECTOR_ELT( d->args, 0),"rho"));
+//      double kappa = asReal(getListElement(VECTOR_ELT(d->args,2),"kappa"));
+//
+//      /* get Poisson parameter */
+//      double p[4], sdx2 = SQR(sdx), mu=0;
+//      // set spheroid label
+//      const char *label = translateChar(asChar(d->label));
+//      // cumulative probabilities
+//      cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
+//
+//      if(PL>100) {
+//         Rprintf("Spheroids (perfect) simulation, bivariate lognormal length/shape: \n");
+//         Rprintf("\t size distribution: %s with %f %f %f %f %f\n", GET_NAME(d,0), mx,my,sdx,sdy,rho);
+//         Rprintf("\t directional distribution: %s  with %f \n", GET_NAME(d,2), kappa);
+//         Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
+//         Rprintf("\t set label: %s to character: \n",label);
+//      }
+//      int nTry=0;
+//      while(num==0 && nTry<MAX_ITER) {
+//         num = rpois(mu*m_lam);
+//         ++nTry;
+//      }
+//      m_spheroids.reserve(num);
+//
+//      CVector3d u;
+//      int k=0, perfect =  d->isPerfect;
+//      double x=0,y=0,a=0,b=0,
+//    		 s=1.0,phi=0,theta=0,r=0;
+//
+//      for (size_t niter=0; niter<num; niter++) {
+//          /* sample major semi-axis a, shorter semi-axis is: c=a*s */
+//          rbinorm(mx,sdx,my,sdy,rho,x,y);
+//          s=1.0/(1.0+exp(-y));
+//          b=exp(x);
+//          a=b*s;
+//          if(m_stype==CSpheroid::OBLATE)
+//            std::swap(a,b);
+//
+//          /* sample orientation */
+//          if(kappa<1e-8)
+//            u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+//          else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
+//
+//          if(perfect) {
+//        	/* sample positions conditionally of radii distribution */
+//        	sample_k(p,&k);
+//        	r=rlnorm(mx+k*sdx2,sdx);
+//        	if(m_maxR<r) m_maxR=r;
+//        	if(!R_FINITE(r))
+//        	 warning(_("simEllipsoidSysBivariat(): Some NA/NaN, +/-Inf produced"));
+//          }
+//
+//          STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
+//                                 runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
+//                                 runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
+//
+//          m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,s,theta,phi,r,niter+1,label) );
+//       }
+//       PutRNGstate();
+//}
 
 /**
  * @brief Bivariate ellipsoid-size-shape distribution,
@@ -826,7 +826,7 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
  *
  * @param d data of R call (no R call used here)
  */
-void STGM::CSpheroidSystem::simBivariate2(R_Calldata d) {
+void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
       GetRNGstate();
 
       double mx=asReal(getListElement(VECTOR_ELT( d->args, 0),"mx"));
