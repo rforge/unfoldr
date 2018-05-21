@@ -250,8 +250,6 @@ SEXP SimulateSpheroidsAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n) {
       const char *ftype_size = GET_NAME(call_data,0);
       if(!std::strcmp(ftype_size, "rbinorm") ) {
           sp->simBivariate(call_data);
-      } else if(!std::strcmp(ftype_size, "rbinorm_unequal") ) {
-          sp->simBivariate2(call_data);
       } else if(!std::strcmp(ftype_size, "const")) {
           sp->simConstSpheroidSys(call_data);
       } else {
