@@ -111,8 +111,7 @@ R_Calldata getRCallParam(SEXP R_param, SEXP R_cond) {
     const char *ftype_size = GET_NAME(d,0);
     if ( !std::strcmp( ftype_size, "rlnorm") ||
          !std::strcmp( ftype_size, "rbinorm") ||
-		 !std::strcmp( ftype_size, "rbinorm_unequal") ||
-         !std::strcmp( ftype_size, "rbeta" ) ||
+		 !std::strcmp( ftype_size, "rbeta" ) ||
          !std::strcmp( ftype_size, "rgamma") ||
          !std::strcmp( ftype_size, "runif" ) ||
          !std::strcmp( ftype_size, "const" ))

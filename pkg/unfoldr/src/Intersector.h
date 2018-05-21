@@ -202,6 +202,7 @@ namespace STGM
       virtual
       ~Intersector() {};
 
+      CCylinder & getCylinder () { return m_cylinder; };
       const CCylinder & getCylinder () const { return m_cylinder; };
 
       CCircle3 & getCircle1 () { return m_circle1; };

@@ -178,8 +178,6 @@ SEXP EllipsoidSystem(SEXP R_param, SEXP R_cond) {
       const char *ftype_size = GET_NAME(call_data,0);
       if(!std::strcmp(ftype_size, "rbinorm") ) {
           sp->simBivariate(call_data);
-      } else if(!std::strcmp(ftype_size, "rbinorm_unequal")) {
-          sp->simBivariate2(call_data);
       } else if(!std::strcmp(ftype_size, "const")) {
           sp->simConstSpheroidSys(call_data);
       } else {
@@ -845,12 +843,23 @@ void STGM::CSpheroidSystem::simBivariate2(R_Calldata d) {
       // cumulative probabilities
       cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
 
+      // shape distribution
+      double s1=1.0, s2 = 1.0;					/* taken as constant factor and thus equal lengths a==c */
+      const char *fname_shape = GET_NAME(d,1);
+      rdist2_t rshape = &rconst;
+      if ( !std::strcmp(fname_shape, "rbeta" )) {
+           rshape = &rbeta;
+           s1 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),0));
+           s2 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),1));
+      }
+
       if(PL>100) {
          Rprintf("Spheroids (perfect) simulation, bivariate lognormal length/shape: \n");
          Rprintf("\t size distribution: %s with %f %f %f %f %f\n", GET_NAME(d,0), mx,my,sdx,sdy,rho);
          Rprintf("\t directional distribution: %s  with %f \n", GET_NAME(d,2), kappa);
          Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
          Rprintf("\t set label: %s to character: \n",label);
+         Rprintf("\t Shape parameters for shorter semi-axes: s1 = %f, s2 = %f \n", s1, s2);
       }
       int nTry=0;
       while(num==0 && nTry<MAX_ITER) {
@@ -875,8 +884,8 @@ void STGM::CSpheroidSystem::simBivariate2(R_Calldata d) {
           if(m_stype==CSpheroid::OBLATE)
             std::swap(a,b);
 
-          /* fixed random beta 2nd. shorter axis */
-          c=a*rbeta(5.0,1.0);								/* TODO: check! */
+          /* either constant factor or random beta 2nd. shorter axis */
+          c=a*rshape(s1,s2);
 
           /* sample orientation */
           if(kappa<1e-8)
