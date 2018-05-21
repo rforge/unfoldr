@@ -842,7 +842,7 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
       cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
 
       // shape distribution
-      double s1=1.0, s2 = 1.0;					/* taken as constant factor and thus equal lengths a==c */
+      double s1=1.0, s2=1.0;					/* taken as constant factor and thus equal lengths a==c */
       const char *fname_shape = GET_NAME(d,1);
       rdist2_t rshape = &rconst;
       if ( !std::strcmp(fname_shape, "rbeta" )) {
@@ -858,7 +858,9 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
          Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
          Rprintf("\t set label: %s to character: \n",label);
          Rprintf("\t Shape parameters for shorter semi-axes: s1 = %f, s2 = %f \n", s1, s2);
+         Rprintf("\n\n");
       }
+
       int nTry=0;
       while(num==0 && nTry<MAX_ITER) {
          num = rpois(mu*m_lam);
