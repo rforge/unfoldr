@@ -604,11 +604,11 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
 
           // convert angle
           double phi = objects[i].getCylinder().phi();
-		  //if(phi > M_PI_2) {
+          //if(phi > M_PI_2) {
 		  // if(phi <= M_PI) phi = M_PI-phi;
 		  // else if(phi < 1.5*M_PI) phi = std::fmod(phi,M_PI);
 		  // else phi = 2.0*M_PI-phi;
-		  //}
+          //}
 
           REAL(R_mPoint0)[0]=objects[i].getCircle1().center()[0];
           REAL(R_mPoint0)[1]=objects[i].getCircle1().center()[1];
