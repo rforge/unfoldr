@@ -53,7 +53,6 @@ class CSpheroidSystem
   void simConstSpheroidSys(R_Calldata d);
   void simSysJoint(R_Calldata d);
   void simBivariate(R_Calldata d);
-  void simBivariate2(R_Calldata d);  									/* non equal shorter semiaxes */
 
   STGM::Spheroids &refObjects()  { return m_spheroids; }
   const STGM::Spheroids &refObjects() const { return m_spheroids; }

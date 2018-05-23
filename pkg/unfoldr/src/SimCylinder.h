@@ -38,7 +38,7 @@ class CCylinderSystem {
   CCylinderSystem(CBox3 &box, double lam, CVector3d &mu, CCylinder::cylinder_type type, int perfect = 1 )
       : m_box(box), m_lam(lam), m_maxR(0), m_mu(mu), num(0), m_type(type), m_perfect(perfect)
   {
-    box.ConstructBoundingPlanes();
+    //box.ConstructBoundingPlanes();
   }
 
   void simSysJoint(R_Calldata d);
