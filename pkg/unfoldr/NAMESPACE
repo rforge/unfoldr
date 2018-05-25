@@ -2,7 +2,7 @@
 useDynLib(unfoldr, .registration = TRUE, .fixes = "C_")
 
 ## Exports
-export(simSphereSystem,simCylinderSystem,cylinderIntersection,getSphereSystem,setupSphereSystem)
+export(simSphereSystem,simCylinderSystem,getSphereSystem,setupSphereSystem)
 export(planarSection,binning1d,coefficientMatrixSpheres,em.saltykov,binning1d)
 
 export(simSpheroidSystem,getSpheroidSystem,setupSpheroidSystem,simSpheroidIntersection)
