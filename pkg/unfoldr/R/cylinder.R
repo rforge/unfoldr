@@ -220,27 +220,44 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 				expand=1.0,xlen=0,xunit=0,ylen=0,yunit=0,zlen=0,zunit=0)
 	}
 }
-#
-##' Cylinder vertical intersection
-##' 
-##' Intersect a clyinder system by a vertical section plane 
-##' 
-##' The function performs a vertical intersection defined by the normal vector
-##' \code{n=c(0,1,0)} which depends on the main orientation axis of the
-##' coordinate system and has to be parallel to this.
-##'
-##' @param S		 list of cylinders, see \code{\link{simCylinderSystem}}
-##' @param d 	 distance of intersecting plane to the origin
-##' @param n 	 normal vector of intersting plane
-##' @param intern \code{intern=FALSE} (default) return all section profiles otherwise
-##' 				only those which have their centers inside the intersection window
-##' 
-##' @return list of size, shape and angle of section profiles
-#cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE) {
-#	stopifnot(is.logical(intern))
-#	if(sum(n) > 1)
-#		stop("Normal vector is like c(0,1,0). ")
-#	if(!(class(S) %in% c("cylinder")))
-#		stop("Class must be `cylinder`.")
-#	.Call(C_IntersectCylinderSystem, attr(S,"eptr"), n, d, intern, 100)	
-#}
+
+#' Cylinder vertical intersection
+#' 
+#' Intersect a clyinder system by a vertical section plane 
+#' 
+#' The function performs a vertical intersection defined by the normal vector
+#' \code{n=c(0,1,0)} which depends on the main orientation axis of the
+#' coordinate system and has to be parallel to this.
+#'
+#' @param S		 list of cylinders, see \code{\link{simCylinderSystem}}
+#' @param d 	 distance of intersecting plane to the origin
+#' @param n 	 normal vector of intersting plane
+#' @param intern \code{intern=FALSE} (default) return all section profiles otherwise
+#' 				only those which have their centers inside the intersection window
+#' 
+#' @return list of size, shape and angle of section profiles
+cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE) {
+	stopifnot(is.logical(intern))
+	if(sum(n) > 1)
+		stop("Normal vector is like c(0,1,0). ")
+	if(!(class(S) %in% c("cylinder")))
+		stop("Class must be `cylinder`.")
+	.Call(C_IntersectCylinderSystem, attr(S,"eptr"), n, d, intern, 100)	
+}
+
+
+#' Cylinder intersection
+#' 
+#' Simulate a cylinder system and intersect
+#' 
+#' The function first simulates a cylinder system according to the parameter \code{theta} and only
+#' returns the resulting section profiles.
+#' 
+#' @param theta simulation parameters
+#' @param cond  conditioning object for simulation and intersection
+#' 
+#' @return list of intersection profiles
+simCylinderIntersection <- function(theta, cond) {
+	.Call(C_SimulateCylindersAndIntersect,
+			c("lam"=cond$lam,theta), cond, cond$nsect)
+}
