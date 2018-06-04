@@ -2,10 +2,12 @@
 useDynLib(unfoldr, .registration = TRUE, .fixes = "C_")
 
 ## Exports
-export(simSphereSystem,simCylinderSystem,getSphereSystem,setupSphereSystem)
+export(simSphereSystem,getSphereSystem,setupSphereSystem)
 export(planarSection,binning1d,coefficientMatrixSpheres,em.saltykov,binning1d)
 
-export(simSpheroidSystem,getSpheroidSystem,setupSpheroidSystem,simSpheroidIntersection,simCylinderIntersection)
+export(simCylinderSystem,simCylinderIntersection)
+export(simSpheroidSystem,getSpheroidSystem,setupSpheroidSystem,simSpheroidIntersection)
+
 export(verticalSection,coefficientMatrixSpheroids,binning3d)
 export(em.spheroids,setbreaks,trivarHist,parameters3d,parameterEstimates)
 export(getMaxRadius, sectionProfiles, simModel3d)
