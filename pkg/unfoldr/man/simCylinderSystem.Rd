@@ -5,8 +5,9 @@
 \title{Simulation of cylinder system}
 \usage{
 simCylinderSystem(theta, lam, size = "const", shape = "const",
-  orientation = "rbetaiso", rjoint = NULL, box = list(c(0, 1)),
-  mu = c(0, 1, 0), perfect = TRUE, pl = 0, label = "N")
+  orientation = "rbetaiso", type = c("sphero", "elong"), rjoint = NULL,
+  box = list(c(0, 1)), mu = c(0, 1, 0), perfect = TRUE, pl = 0,
+  label = "N")
 }
 \arguments{
 \item{theta}{simulation parameters}
@@ -53,9 +54,10 @@ which correspond to the lower and upper points in each direction. If the argumen
 only one element, i.e. \code{list(c(0,1)}, the same extent is used for the other dimensions.
 If \code{rjoint="rmulti"} names a joint random generating function then argument \code{size} is ignored
 (see example file "sim.R").
-For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivarite
-size-shape distribution which leads to a lognormal distributed cylinder axis (named \code{u}) half length h
-(without caps) and a scaled radius \code{r}. If \eqn{[X,Y]} follow a bivariate normal distribution with 
+For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivariate normal
+size-shape distribution which leads to a lognormally distributed half height (length) \code{h/2} of the
+cylinder. The main orientation axis of the cylinder is called \code{u} where its length equals \code{h}
+without the end caps and a scaled radius \code{r}. The total length then equals \code{h+2r}. If \eqn{[X,Y]} follow a bivariate normal distribution with 
 correlation parameter \eqn{\rho} then \eqn{h=2.0*exp(x)} defines the sample cylinder axis length together
 with the scaled radius \eqn{r=0.5*h*s} and shape parameter set to \eqn{s=1/(1+exp(-y))}. The parameter 
 \eqn{\rho} defines the degree of correlation between the cylinder axis length and cylinder radius which 
