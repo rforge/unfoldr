@@ -23,6 +23,8 @@ use your own joint distribution, see details.}
 
 \item{orientation}{name of random generating function for orientation distribution}
 
+\item{type}{type of cylinder (ignored and not yet used)}
+
 \item{rjoint}{name of joint random generating function}
 
 \item{box}{simulation box}

@@ -49,6 +49,7 @@
 #' 					    or \code{shape="rbeta"} as beta distributed shape factor. For a radius distribution
 #'	 					use your own joint distribution, see details.
 #' @param orientation   name of random generating function for orientation distribution
+#' @param type			type of cylinder (ignored and not yet used)
 #' @param rjoint 		name of joint random generating function
 #' @param box 			simulation box
 #' @param mu  			main orientation axis, \code{mu=c(0,1,0)} (default)
