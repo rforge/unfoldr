@@ -1,8 +1,16 @@
 ###############################################################################
-# Author: M. Baaske
+# Author:  M. Baaske
+# Date:	   2018/06/15	
+# File:    unfolding.R: 
+# 
+# Comment: functions to estimate the joint size-sjape-orientation distribution
+#		   of prolate or oblate spheroids (ellipsoids of revolution),
+#		   visualization of the trivariate 'unfolded' histogram of size, shape
+#		   and orientation,
+# 		   implements the EM algorithm for binned data
+# 
 ###############################################################################
 
-#cot <- function(x) tan(pi/2 - x)
 
 #' Trivariate stereological unfolding
 #'

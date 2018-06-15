@@ -1,5 +1,10 @@
 ###############################################################################
-# Author: M. Baaske
+# Author:  M. Baaske
+# Date:	   2018/06/15	
+# File:    sphere.R: 
+# 
+# Comment: simulation and intersection of sphere systems, implements EM algorithm
+# 
 ###############################################################################
 
 

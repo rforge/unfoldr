@@ -1,5 +1,10 @@
 ###############################################################################
-# Author: M. Baaske
+# Author:  M. Baaske
+# Date:	   2018/06/15	
+# File:    spheroid.R: 
+# 
+# Comment: simulation, intersections and visualization of spheroid systems
+# 
 ###############################################################################
 
 # angle in the section plane relative to z axis in 3D

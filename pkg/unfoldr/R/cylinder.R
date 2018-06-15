@@ -1,10 +1,10 @@
 ###############################################################################
 # Author:  M. Baaske
-# Date:	   09.05.2016
-# File:    cylinder.R:
-#
-# Comment:
-#
+# Date:	   2018/06/15	
+# File:    cylinder.R: 
+# 
+# Comment: Simulation of sphero cylinders, intersection and visualization
+# 
 ###############################################################################
 
 #' Simulation of cylinder system
