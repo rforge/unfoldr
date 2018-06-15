@@ -41,8 +41,8 @@ NULL
 
 #' Intersection ellipses parameters
 #' 
-#' The data set consists of section profile parameters (assumed to come from prolate spheroids) of ellipses
-#' fitted to measured particles of an aluminium matrix composite [5] from metallographic analysis. The data
+#' The data set consists of section profile parameters (assumed to come from prolate spheroids) of fitted ellipses
+#' based on measured section particles of an aluminium matrix composite [5] from metallographic analysis. The data
 #' set can be used to reconstruct the trivariate spatial (prolate) spheroid distribution. 
 #' 
 #' @docType data

@@ -34,7 +34,7 @@
 #' is tailored to the above described model. For a general approach please see the given reference below.
 #' Other (univariate) cylinder axis lengths types include the beta, gamma, lognormal and uniform distribution
 #' where the shape factor to get the radius either follows a beta distribution or is set to a constant.
-#' Despite the case of constant size simulations all other simulations are done as perfect simulations.
+#' Only simulations done by \code{rbinorm} can use the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
 #' The current implementation does not include routines for unfolding the joint 3d size-shape-orientation
 #' distribution of cylinders so far. However, this feature this might be provided in a later version.
 #'

@@ -125,14 +125,12 @@ void STGM::CBoolSphereSystem::simSpheres(F f, const char *label) {
 
 void STGM::CBoolSphereSystem::simSpheresPerfect(double mx, double sdx, const char *label, int perfect) {
   int nTry=0, k=0;
-
-  double p[4],
-         sdx2=SQR(sdx),
-         mu=0,r=0;;
+  double p[4],sdx2=SQR(sdx), mu=0,r=0;;
 
   if(perfect) {
    cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
-  }
+  } else mu = m_box.volume();
+
   /* get Poisson parameter */
   while(num==0 && nTry<MAX_ITER) {
         num = rpois(mu*m_lam);
@@ -143,14 +141,14 @@ void STGM::CBoolSphereSystem::simSpheresPerfect(double mx, double sdx, const cha
   if(PL>100) {
      if(perfect)
       Rprintf("Spheres (perfect) simulation, bivariate lognormal length/shape: \n");
-     Rprintf("\t size distribution: %f %f %f \n",  mx,sdx,mu);
-     Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
+      Rprintf("\t size distribution: %f %f %f \n",  mx,sdx,mu);
+      Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
   }
 
   /* loop over all */
   if(perfect) {
 	  for (size_t niter=0;niter<num; niter++) {
-	        sample_k(p,&k);
+	        sample_k(p,k);
 	        r = rlnorm(mx+k*sdx2,sdx);
 	        STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
 	                               runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),

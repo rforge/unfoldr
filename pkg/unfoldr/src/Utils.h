@@ -36,11 +36,14 @@ typedef double (*rdist2_t)(double, double);
 /* a const dummy function */
 inline double rconst(double x, double dummy=0) { return x; }
 
-/* bivariate */
+/* bivariate normal random x,y*/
 void rbinorm(double mx, double sdx, double my, double sdy,double rho, double &x, double &y);
 
+/* exact bivariate normal random x,y : also samples integer k*/
+void rbinorm_exact(double *p, double mx, double sdx, double my, double sdy,double rho, double &x, double &y);
+
 /* sample */
-void sample_k(double *p, int *k);
+void sample_k(double *p, int &k);
 
 /* cumulative probabilities */
 void cum_prob_k(double mx, double sdx2, double lx, double ly, double lz, double *p, double *mu);

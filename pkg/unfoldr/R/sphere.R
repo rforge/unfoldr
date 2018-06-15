@@ -67,7 +67,8 @@ setupSphereSystem <- function(S,pl=0) {
 #' type string naming the (user defined) radii random generating function.
 #' Setting \code{size} equal to 'rlnorm' generates log normally distributed radii for a stationary Poisson
 #' ball system according to a general approach of perfect simulation (see reference below). Other distributions
-#' currently available are the beta, gamma and uniform distribution.
+#' currently available are the beta, gamma and uniform distribution. Only simulations done by \code{rlnorm} can use
+#' the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
 #'
 #' @param theta  simulation parameters
 #' @param lam    mean number of spheres per unit volume
@@ -75,7 +76,7 @@ setupSphereSystem <- function(S,pl=0) {
 #' @param box 	  simualtion box
 #' @param perfect logical: \code{perfect=TRUE} (default) simulate perfect
 #' @param pl 	  print level
-#' @param label   some character as a label, 'N' (default)
+#' @param label   some character as a label, `\code{N}` (default)
 #'
 #' @return list of class \code{spheres} if \code{pl}>100 or empty list
 #'

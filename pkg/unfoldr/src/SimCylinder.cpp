@@ -335,13 +335,18 @@ void STGM::CCylinderSystem::simBivariate(R_Calldata d) {
   double rho=asReal(getListElement(VECTOR_ELT( d->args, 0),"rho"));
   double kappa = asReal(getListElement(VECTOR_ELT(d->args,2),"kappa"));
 
+  /* exact bivariate normal? */
+  int perfect =  d->isPerfect;
   /* get Poisson parameter */
   double p[4], sdx2 = SQR(sdx), mu=0;
   // set spheroid label
   const char *label = translateChar(asChar(d->label));
-  // cumulative probabilities
-  cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
-
+  if(perfect) {
+	  // cumulative probabilities
+	  cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
+  } else {
+	  mu = m_box.volume();
+  }
   if(PL>100) {
      Rprintf("Cylinders (perfect) simulation, bivariate lognormal length/shape: \n");
      Rprintf("\t size distribution: %s with %f %f %f %f %f\n", GET_NAME(d,0), mx,my,sdx,sdy,rho);
@@ -359,19 +364,23 @@ void STGM::CCylinderSystem::simBivariate(R_Calldata d) {
   m_cylinders.reserve(num);
 
   CVector3d u;
-  double x=0,y=0,h=0,radius=0,s=1,phi=0,theta=0;
-
-  double r=0;
-  int k=0, perfect=d->isPerfect;
+  double r=0,x=0,y=0,h=0,radius=0,s=1,phi=0,theta=0;
 
   for (size_t niter=0; niter<num; niter++)
   {
       /* sample height and radius */
-      rbinorm(mx,sdx,my,sdy,rho,x,y);
-      s=1.0/(1.0+exp(-y));
-      h=exp(x);
+	  if(perfect)
+	    rbinorm(mx,sdx,my,sdy,rho,x,y);
+	  else
+	    rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
+	  s=1.0/(1.0+exp(-y));
+      h=std::exp(x);	  		/* overall length sampled including caps*/
       radius=0.5*h*s;
-      h-=2.0*radius;
+      h-=2.0*radius;  			/* then h is only height (excluding caps) */
+
+      if(m_maxR<r) m_maxR=r;	/* store maximum radius */
+      if(!R_FINITE(r))
+        warning(_("simCylinderSysBivariat(): Some NA/NaN, +/-Inf produced"));
 
       /* sample orientation */
       if(kappa<1e-8)
@@ -379,14 +388,6 @@ void STGM::CCylinderSystem::simBivariate(R_Calldata d) {
       else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
 
       /* sample positions conditionally of radii distribution */
-      if(perfect) {
-    	  sample_k(p,&k);
-    	  r=rlnorm(mx+k*sdx2,sdx);
-    	  if(m_maxR<r)
-    		  m_maxR=r;
-    	  if(!R_FINITE(r))
-    	    warning(_("simCylinderSysBivariat(): Some NA/NaN, +/-Inf produced"));
-      }
       STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
                              runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
                              runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
@@ -403,21 +404,13 @@ void STGM::CCylinderSystem::simCylinderSys(R_Calldata d) {
      // set cylinder label
      const char *label = translateChar(asChar(d->label));
 
-     // get intensity
-     double p[4], mu=0;
-
      rdist2_t rdist;
      double p1 = asReal(VECTOR_ELT(VECTOR_ELT( d->args, 0),0));
      double p2 = asReal(VECTOR_ELT(VECTOR_ELT( d->args, 0),1));
 
-     /** @todo: here sd for rlnorm only,
-      *  calculate for rbeta, rgamma, runif */
-     double sd2 = SQR(p2);
-     cum_prob_k(p1,sd2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
-
      int nTry=0;
      while(num==0 && nTry<MAX_ITER) {
-        num = rpois(mu*m_lam);
+        num = rpois(m_box.volume()*m_lam);
         ++nTry;
      }
      m_cylinders.reserve(num);
@@ -498,15 +491,6 @@ void STGM::CCylinderSystem::simCylinderSys(R_Calldata d) {
         }
 
          /* sample positions conditionally of radii distribution */
-         if(perfect) {
-        	 sample_k(p,&k);
-        	 r=rdist(p1+k*sd2,sd2);
-        	 if(m_maxR<r)
-        		 m_maxR=r;
-        	 if(!R_FINITE(r))
-        	   warning(_("simCylinderSys: Some NA/NaN, +/-Inf produced"));
-         }
-
          STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
                                 runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
                                 runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));

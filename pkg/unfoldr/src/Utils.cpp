@@ -158,10 +158,9 @@ R_Calldata getRCallParam(SEXP R_param, SEXP R_cond) {
  * @brief Simple bivariate normal random variable
  */
 void rbinorm(double mx, double sdx, double my, double sdy,double rho, double &x, double &y) {
-  double q1=rnorm(0,1),
-         q2=rnorm(0,1);
-  x=sqrt(1-R_pow(rho,2.0))*sdx*q1 + rho*sdx*q2 + mx;
-  y=sdy*q2 + my;
+  double q1=rnorm(0,1), q2=rnorm(0,1);
+  x=std::sqrt(1-R_pow(rho,2.0))*sdx*q1 + rho*sdx*q2 + mx;
+  y=my+sdy*q2;
 }
 
 
@@ -173,14 +172,24 @@ void rbinorm(double mx, double sdx, double my, double sdy,double rho, double &x,
  * @param p         given cumulative probabilities
  * @param k [out]   sampled (int) value
  */
-void sample_k(double *p, int *k) {
+void sample_k(double *p, int &k) {
   int j;
   double rU = unif_rand();
   for (j=0;j<3;j++) {
       if (rU <= p[j])
         break;
   }
-  *k=j;
+  k=j;
+}
+
+void rbinorm_exact(double *p, double mx, double sdx, double my, double sdy,
+					 double rho, double &x, double &y) {
+  int k=0;
+  double q1=rnorm(0,1),
+		 q2=rnorm(0,1);
+  sample_k(p,k);
+  x=std::sqrt(1-R_pow(rho,2.0))*sdx*q1 + rho*sdx*q2 + (mx+k*sdx*sdx);
+  y=my+sdy*q2;
 }
 
 /**
