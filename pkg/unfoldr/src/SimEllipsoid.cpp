@@ -930,9 +930,6 @@ void STGM::CSpheroidSystem::simSpheroidSys(R_Calldata d) {
      double p1 = asReal(VECTOR_ELT(VECTOR_ELT( d->args, 0),0));
      double p2 = asReal(VECTOR_ELT(VECTOR_ELT( d->args, 0),1));
 
-     /** @todo: here sd for rlnorm only,
-      *  calculate for rbeta, rgamma, runif */
-     double sd2 = SQR(p2);
      int nTry=0;
      while(num==0 && nTry<MAX_ITER) {
         num = rpois(m_box.volume()*m_lam);
@@ -988,7 +985,7 @@ void STGM::CSpheroidSystem::simSpheroidSys(R_Calldata d) {
 
      /* loop over all */
      CVector3d u;
-     double a=0, b=0, theta=0, phi=0, r=0;
+     double a=0, b=0, theta=0, phi=0;
      for (size_t niter=0; niter<num; niter++)
      {
     	 b = rdist(p1,p2);      /* major semi-axis */
@@ -1017,11 +1014,11 @@ void STGM::CSpheroidSystem::simSpheroidSys(R_Calldata d) {
         }
 
 
-         STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
-                                runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
-                                runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
+         STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+                                runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+                                runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
 
-         m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,s,theta,phi,r,niter+1,label) );
+         m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,s,theta,phi,0,niter+1,label) );
      }
      PutRNGstate();
 }

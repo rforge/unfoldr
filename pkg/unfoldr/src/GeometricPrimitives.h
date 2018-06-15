@@ -904,9 +904,8 @@ namespace STGM {
      :  m_label(label),
         m_center(center),
         m_u(u),
-        m_a(a), m_c(c), 		// a,c: are 1st and 2nd shorter semi-axes
-		m_b(b),         		// b:   longer semi-axis
-        m_alpha(alpha),
+        m_a(a), m_b(b), m_c(c), 		// a,c: are 1st and 2nd shorter semi-axes, b:   longer semi-axis
+	    m_alpha(alpha),
         m_theta(theta),
         m_phi(phi),
         m_r(r),

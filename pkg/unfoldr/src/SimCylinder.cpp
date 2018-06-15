@@ -463,13 +463,13 @@ void STGM::CCylinderSystem::simCylinderSys(R_Calldata d) {
 
      /* loop over all */
      CVector3d u;
-     int k = 0,perfect = d->isPerfect;
-     double h=0,                // cylinder hight
-            theta=0, phi=0,     // random direction angles
-            r=0;                // perfect simulation radius
+     double h=0, radius=0,               // cylinder hight
+            theta=0, phi=0;     // random direction angles
      for (size_t niter=0; niter<num; niter++)  {
-         h = 2.0*rdist(p1,p2);
+         h = rdist(p1,p2);
          s = rshape(s1,s2);
+         radius = 0.5*h*s;
+         h-=2.0*radius;
 
          /* direction */
          switch(dtype) {
@@ -491,11 +491,11 @@ void STGM::CCylinderSystem::simCylinderSys(R_Calldata d) {
         }
 
          /* sample positions conditionally of radii distribution */
-         STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
-                                runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
-                                runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
+         STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+                                runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+                                runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
 
-         m_cylinders.push_back( STGM::CCylinder(center,u,h,0.5*h*s,theta,phi,r,niter+1,label) );
+         m_cylinders.push_back( STGM::CCylinder(center,u,h,0.5*h*s,theta,phi,0,niter+1,label) );
 
      }
      PutRNGstate();
