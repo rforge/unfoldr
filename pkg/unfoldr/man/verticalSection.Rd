@@ -13,8 +13,9 @@ verticalSection(S, d, n = c(0, 1, 0), intern = FALSE)
 
 \item{n}{normal vector of intersting plane}
 
-\item{intern}{\code{intern=FALSE} (default) return all section profiles otherwise
-only those which have their centers inside the intersection window}
+\item{intern}{logical, \code{FALSE} (default), return all section profiles otherwise
+only those which have their centers inside the intersection window (if the 
+intersected spheroid system had been simulated using exact simulation)}
 }
 \value{
 list of size, shape and angle of section profiles

@@ -20,7 +20,7 @@ simSphereSystem(theta, lam, rdist, box = list(c(0, 1)), perfect = TRUE,
 
 \item{pl}{print level}
 
-\item{label}{some character as a label, 'N' (default)}
+\item{label}{some character as a label, `\code{N}` (default)}
 }
 \value{
 list of class \code{spheres} if \code{pl}>100 or empty list
@@ -43,7 +43,8 @@ Currently, only \code{pl=0} for no output and \code{pl}>100 is implemented. Argu
 type string naming the (user defined) radii random generating function.
 Setting \code{size} equal to 'rlnorm' generates log normally distributed radii for a stationary Poisson
 ball system according to a general approach of perfect simulation (see reference below). Other distributions
-currently available are the beta, gamma and uniform distribution.
+currently available are the beta, gamma and uniform distribution. Only simulations done by \code{rlnorm} can use
+the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
 }
 \examples{
  theta <- list("meanlog"=-2.5,"sdlog"=0.2)

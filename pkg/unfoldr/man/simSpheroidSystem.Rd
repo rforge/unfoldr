@@ -54,17 +54,17 @@ which correspond to the lower and upper points in each direction. If the argumen
 only one element, i.e. \code{list(c(0,1)}, the same extent is used for the other dimensions.
 If \code{rjoint} names a joint random generating function then argument \code{size} is ignored.
 
-For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivarite
+For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivariate
 size-shape distribution which leads to a log normal distributed semi-major axis \code{a} and a scaled
 semi-minor axis length \code{c}. If \eqn{[X,Y]} follow a bivariate normal distribution with correlation parameter
 \eqn{\rho} then \eqn{a=exp(x)} defines the sample semi-major axis length together with the scaled semi-minor
 axis length \eqn{c=a*s} and shape parameter set to \eqn{s=1/(1+exp(-y))}. Thus the parameter \eqn{\rho} defines the
 dependence of the semi-major and semi-minor axis lengths and must be provided as part of the list of simulation
-parameters giben by the argument \code{theta}. The method of exact simulation is tailored to the above described model. For a general
+parameters given by \code{theta}. The method of exact simulation is tailored to the above parametric model. For a general
 approach please see the given reference below. Other (univariate)  semi-major axis lengths types include the beta,
-gamma, lognormal and uniform distribution where the shape factor which determines the semi-minor axis length either
-follows a beta distribution or is set to a constant. Despite the case of constant size simulations all other
-simulations are done as perfect simulations.
+gamma, lognormal and uniform distribution where the shape factor, which determines the semi-minor axis length, either
+follows a beta distribution or is set to a constant. Only simulations done by \code{rbinorm} can use the exact simulation type
+if \code{perfect=TRUE} otherwise it is ignored.
 
 The argument \code{pl} denotes the print level of output information during simulation.
 Currently, only \code{pl}=0 for no output and \code{pl}>100 for some additional info is implemented.
