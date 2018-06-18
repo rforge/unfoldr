@@ -1,7 +1,7 @@
 ###############################################################################
 # Author:  M. Baaske
 # Date:	   2018/06/15	
-# File:    qle-package.R: 
+# File:    unfoldr-package.R: 
 # 
 # Comment: General description of the package
 # 
