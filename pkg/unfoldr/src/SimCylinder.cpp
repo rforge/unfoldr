@@ -371,7 +371,7 @@ void STGM::CCylinderSystem::simBivariate(R_Calldata d) {
       	  for (size_t niter=0; niter<num; niter++)
       	  {
       		  rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
-			  s=1.0/(1.0+exp(-y));
+      		  s=1.0/(1.0+std::exp(-y));
 			  h=std::exp(x);	  		/* overall length sampled including caps*/
 			  radius=0.5*h*s;
 			  h-=2.0*radius;  			/* then h is only height (excluding caps) */
@@ -398,7 +398,7 @@ void STGM::CCylinderSystem::simBivariate(R_Calldata d) {
      	  for (size_t niter=0; niter<num; niter++)
      	  {
      		  rbinorm(mx,sdx,my,sdy,rho,x,y);
-     		  s=1.0/(1.0+exp(-y));
+     		  s=1.0/(1.0+std::exp(-y));
 			  h=std::exp(x);	  		/* overall length sampled including caps*/
 			  radius=0.5*h*s;
 			  h-=2.0*radius;  			/* then h is only height (excluding caps) */

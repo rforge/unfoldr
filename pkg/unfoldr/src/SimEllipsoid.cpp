@@ -810,7 +810,7 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
     	  for (size_t niter=0; niter<num; niter++)
     	  {
     		  rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
-    		  s=1.0/(1.0+exp(-y));
+    		  s=1.0/(1.0+std::exp(-y));
     		  b=r=std::exp(x); /* b = r for exact simulation*/
     		  a=b*s;
     		  /* store maximum radius */
@@ -838,6 +838,7 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
     	  for (size_t niter=0; niter<num; niter++)
     	  {
     		  rbinorm(mx,sdx,my,sdy,rho,x,y);
+    		  s=1.0/(1.0+std::exp(-y));
     		  b=std::exp(x); 						/* b = r for exact simulation*/
     		  a=b*s;
     		  if(m_stype==CSpheroid::OBLATE)
