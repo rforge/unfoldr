@@ -802,40 +802,63 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
 
       CVector3d u;
       double x=0,y=0,r=0,
-    		 a=0,c=0,b=0,    					/* two shorter semiaxes a,c and major semiaxis b */
+    		 a=0,c=0,b=0,    						/* two shorter semiaxes a,c and major semiaxis b */
     		 s=1.0,phi=0,theta=0;
 
-      for (size_t niter=0; niter<num; niter++)
-      {
-          /* sample major semi-axis a, shorter semi-axis is: c=a*s */
-    	  if(perfect)
-    	   rbinorm(mx,sdx,my,sdy,rho,x,y);
-    	  else
-    	   rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
-    	  s=1.0/(1.0+exp(-y));
-    	  b=r=std::exp(x); /* b = r for exact simulation*/
-          a=b*s;
-          if(m_maxR < r) m_maxR=r;
-          if(!R_FINITE(r))
-            warning(_("simEllipsoidSysBivariat(): Some NA/NaN, +/-Inf produced"));
+      if(perfect) {
 
-          if(m_stype==CSpheroid::OBLATE)
-            std::swap(a,b);
-          /* either constant factor or random beta 2nd. shorter axis */
-          c=a*rshape(s1,s2);
-          /* sample orientation */
-          if(kappa<1e-8)
-            u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
-          else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
+    	  for (size_t niter=0; niter<num; niter++)
+    	  {
+    		  rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
+    		  s=1.0/(1.0+exp(-y));
+    		  b=r=std::exp(x); /* b = r for exact simulation*/
+    		  a=b*s;
+    		  /* store maximum radius */
+    		  if(m_maxR < r) m_maxR=r;
+    		  if(!R_FINITE(r))
+    		    warning(_("simEllipsoidSysBivariat(): Some NA/NaN, +/-Inf produced"));
 
-          STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
-                                 runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
-                                 runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
+    		  /* either constant factor or random beta 2nd. shorter axis */
+			  c=a*rshape(s1,s2);
+			  /* sample orientation */
+			  if(kappa<1e-8)
+			    u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+			  else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
 
-          /* b = r */
-          m_spheroids.push_back( STGM::CSpheroid(center,a,c,b,u,s,theta,phi,r,niter+1,label) );
-       }
-       PutRNGstate();
+			  STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
+			                         runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
+			                         runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
+
+			  /* b = r */
+			  m_spheroids.push_back( STGM::CSpheroid(center,a,c,b,u,s,theta,phi,r,niter+1,label) );
+    	  }
+
+      } else {
+
+    	  for (size_t niter=0; niter<num; niter++)
+    	  {
+    		  rbinorm(mx,sdx,my,sdy,rho,x,y);
+    		  b=std::exp(x); 						/* b = r for exact simulation*/
+    		  a=b*s;
+    		  if(m_stype==CSpheroid::OBLATE)
+				  std::swap(a,b);
+			  /* either constant factor or random beta 2nd. shorter axis */
+			  c=a*rshape(s1,s2);
+			  /* sample orientation */
+			  if(kappa<1e-8)
+			   u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+			  else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
+
+			  STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+								   	 runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+									 runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
+			  m_spheroids.push_back( STGM::CSpheroid(center,a,c,b,u,s,theta,phi,r,niter+1,label) );
+
+    	  }
+      }
+
+      PutRNGstate();
 }
 
 

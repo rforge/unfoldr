@@ -366,36 +366,57 @@ void STGM::CCylinderSystem::simBivariate(R_Calldata d) {
   CVector3d u;
   double r=0,x=0,y=0,h=0,radius=0,s=1,phi=0,theta=0;
 
-  for (size_t niter=0; niter<num; niter++)
-  {
-      /* sample height and radius */
-	  if(perfect)
-	    rbinorm(mx,sdx,my,sdy,rho,x,y);
-	  else
-	    rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
-	  s=1.0/(1.0+exp(-y));
-      h=std::exp(x);	  		/* overall length sampled including caps*/
-      radius=0.5*h*s;
-      h-=2.0*radius;  			/* then h is only height (excluding caps) */
+  if(perfect) {
 
-      if(m_maxR<r) m_maxR=r;	/* store maximum radius */
-      if(!R_FINITE(r))
-        warning(_("simCylinderSysBivariat(): Some NA/NaN, +/-Inf produced"));
+      	  for (size_t niter=0; niter<num; niter++)
+      	  {
+      		  rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
+			  s=1.0/(1.0+exp(-y));
+			  h=std::exp(x);	  		/* overall length sampled including caps*/
+			  radius=0.5*h*s;
+			  h-=2.0*radius;  			/* then h is only height (excluding caps) */
 
-      /* sample orientation */
-      if(kappa<1e-8)
-        u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
-      else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
+			  if(m_maxR<r) m_maxR=r;	/* store maximum radius */
+			  if(!R_FINITE(r))
+				warning(_("simCylinderSysBivariat(): Some NA/NaN, +/-Inf produced"));
 
-      /* sample positions conditionally of radii distribution */
-      STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
-                             runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
-                             runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
+			  /* sample orientation */
+			  if(kappa<1e-8)
+				u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+			  else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
 
-      m_cylinders.push_back(STGM::CCylinder(center,u,h,radius,theta,phi,r,niter+1,label) );
-   }
-   PutRNGstate();
+			  /* sample positions conditionally of radii distribution */
+			  STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
+									 runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
+									 runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
 
+			  m_cylinders.push_back(STGM::CCylinder(center,u,h,radius,theta,phi,r,niter+1,label) );
+      	  }
+
+  } else {
+
+     	  for (size_t niter=0; niter<num; niter++)
+     	  {
+     		  rbinorm(mx,sdx,my,sdy,rho,x,y);
+     		  s=1.0/(1.0+exp(-y));
+			  h=std::exp(x);	  		/* overall length sampled including caps*/
+			  radius=0.5*h*s;
+			  h-=2.0*radius;  			/* then h is only height (excluding caps) */
+
+			  /* sample orientation */
+			  if(kappa<1e-8)
+				u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+			  else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
+
+			  /* sample positions conditionally of radii distribution */
+			  STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+									 runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+									 runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
+			  m_cylinders.push_back(STGM::CCylinder(center,u,h,radius,theta,phi,r,niter+1,label) );
+     	  }
+  }
+  PutRNGstate();
 }
 
 void STGM::CCylinderSystem::simCylinderSys(R_Calldata d) {
@@ -865,4 +886,3 @@ SEXP CDigitizeCylinderIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta)
   UNPROTECT(1);
   return R_W;
 }
-
