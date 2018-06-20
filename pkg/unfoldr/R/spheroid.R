@@ -95,22 +95,25 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' system again which has been previously stored as an R (list) object and afterwards
 #' reloaded.
 #'
-#' @param S      spheroid system
-#' @param pl	 print level
-#' @param mu	 main orientation vector
-#' @return		 \code{NULL}
+#' @param S      	spheroid system
+#' @param box 		simulation box
+#' @param mu  		main orientation axis, \code{mu=c(0,0,1)} (default)
+#' @param perfect 	logical: \code{perfect=TRUE} (default) simulate perfect
+#' @param pl  		integer, \code{pl=0} (default), print level
+#' @param label 	character, \code{"N"} (default), set a label to the generated spheroids
+#' 
+#' @return			pointer to C storage structure which holds the spheroid system \code{S}
+#' 
 #' @author M. Baaske
 #' @rdname setupSpheroidSystem
 #' @export
-setupSpheroidSystem <- function(S,mu=c(0,1,0),pl=0) {
+setupSpheroidSystem <- function(S, box=list(c(0,1)), mu=c(0,0,1), perfect=TRUE, pl=0, label="N")
+{
 	if(!(class(attr(S,"eptr"))=="externalptr"))
 		warning(paste(substitute(S)," has no external pointer attribute, thus we set one.",sep=""))
 	stype <- attr(S,"class")
-	it <- pmatch(stype,c("prolate","oblate"))
-	if(length(it)==0 || is.na(it))
-		stop("Spheroid type 'stype' is either 'prolate' or 'oblate'.")
-
-	box <- attr(S,"box")
+	if(is.null(stype) || !inherits(S,"prolate") || !inherits(S,"oblate"))
+	 stop("Class of first argument must be either 'prolate' or 'oblate'.")	
 	if(!is.list(box) || length(box)==0)
 		stop("Expected simulation 'box' as list argument.")
 	if(length(box)==1)
@@ -118,11 +121,10 @@ setupSpheroidSystem <- function(S,mu=c(0,1,0),pl=0) {
 	else if(length(box)!=3)
 		stop("Simulation box has wrong dimensions.")
 	names(box) <- c("xrange","yrange","zrange")
-
-	invisible(structure(
-	  .Call(C_SetupSpheroidSystem,as.character(substitute(S)),.GlobalEnv,list("lam"=0),
-		 	list("stype"=stype,"box"=box,"mu"=mu,"pl"=pl)),
-			box = box))
+	
+	.Call(C_SetupSpheroidSystem,as.character(substitute(S)),.GlobalEnv, list("lam"=0),
+		 	list("stype"=stype,"box"=box,"mu"=mu,"pl"=pl,
+				 "perfect"=as.integer(perfect),"label"=label))
 }
 
 #' Get spheroid system

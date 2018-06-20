@@ -4,17 +4,24 @@
 \alias{setupSpheroidSystem}
 \title{Setup spheroid system}
 \usage{
-setupSpheroidSystem(S, mu = c(0, 1, 0), pl = 0)
+setupSpheroidSystem(S, box = list(c(0, 1)), mu = c(0, 0, 1),
+  perfect = TRUE, pl = 0, label = "N")
 }
 \arguments{
 \item{S}{spheroid system}
 
-\item{mu}{main orientation vector}
+\item{box}{simulation box}
 
-\item{pl}{print level}
+\item{mu}{main orientation axis, \code{mu=c(0,0,1)} (default)}
+
+\item{perfect}{logical: \code{perfect=TRUE} (default) simulate perfect}
+
+\item{pl}{integer, \code{pl=0} (default), print level}
+
+\item{label}{character, \code{"N"} (default), set a label to the generated spheroids}
 }
 \value{
-\code{NULL}
+pointer to C storage structure which holds the spheroid system \code{S}
 }
 \description{
 Reinitialize spheroid system after R workspace reloading
