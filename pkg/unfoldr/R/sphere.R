@@ -38,18 +38,21 @@ getSphereSystem <- function(S) {
 #' sections of the sphere system again which has been previously stored as an R (list) object and afterwards
 #' reloaded.
 #'
-#' @param S      sphere system
-#' @param pl	 print level
+#' @param S       sphere system
+#' @param box 	  simualtion box
+#' @param perfect logical, \code{TRUE} (default), simulate perfect
+#' @param pl 	  print level
+#' @param label   some character as a label, `\code{N}` (default)
+#' 
 #' @return		 \code{NULL}
 #' 
 #' @author M. Baaske
 #' @rdname setupSphereSystem
 #' @export
-setupSphereSystem <- function(S,pl=0) {
+setupSphereSystem <- function(S, box=list(c(0,1)), perfect=TRUE, pl=0, label="N") {
 	if(!(class(attr(S,"eptr"))=="externalptr"))
 		warning("'S' has no external pointer attribute, thus we set one.")
 
-	box <- attr(S,"box")
 	if(length(box)==0 || !is.list(box))
 		stop("Expected argument 'box' as list type.")
 	if(length(box)==1)
@@ -57,8 +60,9 @@ setupSphereSystem <- function(S,pl=0) {
 	else if(length(box)!=3)
 		stop("Simulation box has wrong dimensions.")
 	names(box) <- c("xrange","yrange","zrange")
-	structure(.Call(C_SetupSphereSystem,as.character(substitute(S)),.GlobalEnv,
-					list("lam"=0),list("box"=box, "pl"=pl)), box = box)
+	
+	.Call(C_SetupSphereSystem,as.character(substitute(S)),.GlobalEnv,
+					list("lam"=0),list("box"=box, "perfect"=perfect, "pl"=pl))
 }
 
 #' Simulation of sphere system

@@ -4,12 +4,19 @@
 \alias{setupSphereSystem}
 \title{Setup sphere system}
 \usage{
-setupSphereSystem(S, pl = 0)
+setupSphereSystem(S, box = list(c(0, 1)), perfect = TRUE, pl = 0,
+  label = "N")
 }
 \arguments{
 \item{S}{sphere system}
 
+\item{box}{simualtion box}
+
+\item{perfect}{logical, \code{TRUE} (default), simulate perfect}
+
 \item{pl}{print level}
+
+\item{label}{some character as a label, `\code{N}` (default)}
 }
 \value{
 \code{NULL}
