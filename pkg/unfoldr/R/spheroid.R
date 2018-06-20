@@ -112,7 +112,7 @@ setupSpheroidSystem <- function(S, box=list(c(0,1)), mu=c(0,0,1), perfect=TRUE, 
 	if(!(class(attr(S,"eptr"))=="externalptr"))
 		warning(paste(substitute(S)," has no external pointer attribute, thus we set one.",sep=""))
 	stype <- attr(S,"class")
-	if(is.null(stype) || !inherits(S,"prolate") || !inherits(S,"oblate"))
+	if(is.null(stype) || !(stype %in% c("prolate","oblate")))
 	 stop("Class of first argument must be either 'prolate' or 'oblate'.")	
 	if(!is.list(box) || length(box)==0)
 		stop("Expected simulation 'box' as list argument.")
