@@ -239,7 +239,7 @@ SEXP SetupSphereSystem(SEXP R_vname, SEXP R_env, SEXP R_param, SEXP R_cond)
 
   setAttrib(R_var, install("eptr"), R_ptr);
   UNPROTECT(2);
-  return R_NilValue;
+  return R_ptr;
 }
 
 SEXP SphereSystem(SEXP R_param, SEXP R_cond)
