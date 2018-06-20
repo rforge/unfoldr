@@ -18,6 +18,9 @@
 #' @param S result of \code{\link{simSphereSystem}}
 #'
 #' @return list of spheres of class \code{spheres}
+#' @author M. Baaske
+#' @rdname getSphereSystem
+#' @export
 getSphereSystem <- function(S) {
   if(length(S)==0 && class(attr(S,"eptr"))=="externalptr") {
 	if(attr(S,"class")!="spheres")
@@ -38,6 +41,10 @@ getSphereSystem <- function(S) {
 #' @param S      sphere system
 #' @param pl	 print level
 #' @return		 \code{NULL}
+#' 
+#' @author M. Baaske
+#' @rdname setupSphereSystem
+#' @export
 setupSphereSystem <- function(S,pl=0) {
 	if(!(class(attr(S,"eptr"))=="externalptr"))
 		warning("'S' has no external pointer attribute, thus we set one.")
@@ -93,6 +100,10 @@ setupSphereSystem <- function(S,pl=0) {
 #' @examples
 #'  theta <- list("meanlog"=-2.5,"sdlog"=0.2)
 #'  S <- simSphereSystem(theta,lam=1000,rdist="rlnorm",pl=101)
+#' 
+#' @author M. Baaske
+#' @rdname simSphereSystem
+#' @export
 simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0, label="N") {
 	theta <- list("lam"=lam,"radii"=theta)
 	if(!is.numeric(lam) || !(lam>0) )
@@ -140,10 +151,14 @@ simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0,
 #'
 #' @param S 		list of spheres, see \code{\link{simSphereSystem}}
 #' @param d 		distance of the intersecting xy-plane to the origin
-#' @param intern 	\code{intern=FALSE} (default) return all sections otherwise
-#' 					only those which have their centers inside the intersection window
+#' @param intern 	logical, \code{FALSE} (default), return all planar sections otherwise
+#' 					only those which have their centers inside the intersecting window
 #'
-#' @return  vector of circle radii
+#' @return  vector of circle diameters
+#' 
+#' @author M. Baaske
+#' @rdname planarSection
+#' @export
 planarSection <- function(S,d,intern=FALSE) {
 	stopifnot(is.logical(intern))
 	if(!is.list(S))
@@ -172,6 +187,10 @@ planarSection <- function(S,d,intern=FALSE) {
 #' 	x <- runif(100,0,1)
 #' 	bin <- seq(0,1,by=0.1)
 #' 	binning1d(x,bin)
+#' 
+#' @author M. Baaske
+#' @rdname binning1d
+#' @export
 binning1d <- function(x,bin, na.rm = FALSE) {
 	if (anyNA(x)) {
 		if(na.rm) x <- x[which (!is.na(x))]
@@ -198,6 +217,10 @@ binning1d <- function(x,bin, na.rm = FALSE) {
 #'
 #' @references
 #'  Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
+#' 
+#' @author M. Baaske
+#' @rdname coefficientMatrixSpheres
+#' @export
 coefficientMatrixSpheres <- function(bin) {
 	## count of bin classes
 	n <- length(bin)-1
@@ -232,6 +255,10 @@ coefficientMatrixSpheres <- function(bin) {
 #'
 #' @references
 #' Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
+#' 
+#' @author M. Baaske
+#' @rdname em.saltykov
+#' @export 
 em.saltykov <- function(y,bin,maxIt=32) {
 	if (length(y)==0) stop("input array 'y' has length zero")
 	if (anyNA(y) || anyNA(bin) )

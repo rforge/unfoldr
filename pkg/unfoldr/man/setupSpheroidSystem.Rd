@@ -25,3 +25,6 @@ Calling this function is needed only in case one desires to get profile sections
 system again which has been previously stored as an R (list) object and afterwards
 reloaded.
 }
+\author{
+M. Baaske
+}

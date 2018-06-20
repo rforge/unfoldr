@@ -49,10 +49,14 @@ the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
 \examples{
  theta <- list("meanlog"=-2.5,"sdlog"=0.2)
  S <- simSphereSystem(theta,lam=1000,rdist="rlnorm",pl=101)
+
 }
 \references{
 \itemize{
    \item{} {C. Lantu\eqn{\acute{\textrm{e}}}joul. Geostatistical simulation. Models and algorithms.
             Springer, Berlin, 2002. Zbl 0990.86007}
 	 }
+}
+\author{
+M. Baaske
 }

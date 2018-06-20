@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{simSpheroidIntersection}
 \alias{simSpheroidIntersection}
-\title{Spheroid intersection}
+\title{Simulate spheroid intersection}
 \usage{
 simSpheroidIntersection(theta, cond)
 }
@@ -20,4 +20,7 @@ Simulate a spheroid system and intersect
 \details{
 The function first simulates a spheroid system according to the parameter \code{theta} and only
 returns the resulting section profiles.
+}
+\author{
+M. Baaske
 }

@@ -18,13 +18,16 @@ only those which have their centers inside the intersection window (if the
 intersected spheroid system had been simulated using exact simulation)}
 }
 \value{
-list of size, shape and angle of section profiles
+list sizes \code{A}, shapes \code{S} and angles \code{alpha} of section profiles
 }
 \description{
-Vertical section of spheroid system
+Vertical section of a spheroid system
 }
 \details{
-The function performs a vertical intersection defined by the normal vector
-\code{n=c(0,1,0)} which depends on the main orientation axis of the
-coordinate system and has to be parallel to this.
+The function intersects a spheroid system by an intersecting plane defined by a normal 
+vector \code{n=c(0,1,0)} (default), which depends on the main orientation axis of the
+coordinate system.
+}
+\author{
+M. Baaske
 }

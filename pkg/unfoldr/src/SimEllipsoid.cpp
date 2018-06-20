@@ -400,9 +400,11 @@ SEXP convert_R_Ellipses_trunc(STGM::Intersectors<STGM::CSpheroid>::Type &objects
 
   double phi = 0;
   SEXP R_tmp=R_NilValue;
+  const char *nms[] = {"A", "C", "S", "phi", ""};
+
   for(size_t k=0; k<objects.size(); ++k)   {
       STGM::CEllipse2 &ellipse = objects[k].getEllipse();
-      PROTECT(R_tmp = allocVector(VECSXP,4));
+      PROTECT(R_tmp = mkNamed(VECSXP, nms));
       SET_VECTOR_ELT(R_tmp,0,ScalarReal(ellipse.a()));                  // major semi-axis (for both prolate/oblate)
       SET_VECTOR_ELT(R_tmp,1,ScalarReal(ellipse.b()));                  // minor semi-axis (for both prolate/oblate)
       SET_VECTOR_ELT(R_tmp,2,ScalarReal(ellipse.b()/ellipse.a()));      // shape
@@ -432,20 +434,19 @@ SEXP convert_R_Ellipses_trunc(STGM::Intersectors<STGM::CSpheroid>::Type &objects
  * @return R ellipses
  */
 SEXP convert_R_Ellipses_all(STGM::Intersectors<STGM::CSpheroid>::Type &objects) {
-  int nProtected=0, ncomps=6, dim=2;
+  SEXP R_resultlist = R_NilValue;
+  PROTECT(R_resultlist = allocVector(VECSXP, objects.size()) );
 
-  SEXP R_resultlist;
-  PROTECT(R_resultlist = allocVector(VECSXP, objects.size()) ); ++nProtected;
-
-  SEXP names,R_tmp,R_center,R_ab,R_A;
+  SEXP R_tmp, R_center, R_ab, R_A;
+  const char *nms[] = {"id", "center", "A", "ab", "phi", "S", ""};
 
   for(size_t k=0; k<objects.size(); ++k)
   {
       STGM::CEllipse2 &ellipse = objects[k].getEllipse();
 
-      PROTECT(R_tmp = allocVector(VECSXP,ncomps));
-      PROTECT(R_center = allocVector(REALSXP, dim));
-      PROTECT(R_ab = allocVector(REALSXP, dim));
+      PROTECT(R_tmp = mkNamed(VECSXP,nms));
+      PROTECT(R_center = allocVector(REALSXP, 2));
+      PROTECT(R_ab = allocVector(REALSXP, 2));
       PROTECT(R_A = allocMatrix(REALSXP,2,2));
 
       REAL(R_center)[0] = ellipse.center()[0];
@@ -454,9 +455,9 @@ SEXP convert_R_Ellipses_all(STGM::Intersectors<STGM::CSpheroid>::Type &objects) 
       REAL(R_ab)[0] = ellipse.a();    // major semi-axis (for both prolate/oblate)
       REAL(R_ab)[1] = ellipse.b();	  // minor semi-axis (for both prolate/oblate)
 
-      for (int i = 0; i < dim; i++)
-        for (int j = 0; j < dim; j++)
-          REAL(R_A)[i + dim *j] = ellipse.MatrixA()[i][j];
+      for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
+          REAL(R_A)[i + 2 *j] = ellipse.MatrixA()[i][j];
 
       SET_VECTOR_ELT(R_tmp,0,ScalarInteger(ellipse.Id()));
       SET_VECTOR_ELT(R_tmp,1,R_center);
@@ -466,21 +467,11 @@ SEXP convert_R_Ellipses_all(STGM::Intersectors<STGM::CSpheroid>::Type &objects) 
       /* return angle between [0,2pi] */
       SET_VECTOR_ELT(R_tmp,4,ScalarReal(ellipse.phi()));
       SET_VECTOR_ELT(R_tmp,5,ScalarReal(ellipse.b()/ellipse.a()));
-
-      PROTECT(names = allocVector(STRSXP, ncomps));
-      SET_STRING_ELT(names, 0, mkChar("id"));
-      SET_STRING_ELT(names, 1, mkChar("center"));
-      SET_STRING_ELT(names, 2, mkChar("A"));
-      SET_STRING_ELT(names, 3, mkChar("ab"));
-      SET_STRING_ELT(names, 4, mkChar("phi"));
-      SET_STRING_ELT(names, 5, mkChar("S"));
-      setAttrib(R_tmp, R_NamesSymbol, names);
-
       SET_VECTOR_ELT(R_resultlist,k,R_tmp);
-      UNPROTECT(5);
+      UNPROTECT(4);
   }
 
-  UNPROTECT(nProtected);
+  UNPROTECT(1);
   return(R_resultlist);
 }
 

@@ -7,9 +7,9 @@
 simModel3d(param, cond)
 }
 \arguments{
-\item{param}{parameters}
+\item{param}{size-shape distribution parameter}
 
-\item{cond}{condition object}
+\item{cond}{condition object, see examples}
 }
 \value{
 spheroid system
@@ -18,10 +18,9 @@ spheroid system
 Simulate a spheroid system by perfect simulation
 }
 \details{
-Simulate a spheroid system by perfect simulation with log normal sizes and transformed
-shape parameter, see \code{\link{simSpheroidSystem}}. This function is intended to be a
-condensed version of \code{\link{simSpheroidSystem}} just for ease of use of exact
-simulation with random planar orientation of spheroids.
+Simulate a spheroid system (exact simulation) with lognormally distributed major semi-axis
+length and shape parameter determined by a bivariate size-shape (normal) distribution, see \code{\link{simSpheroidSystem}}.
+This function calls \code{\link{simSpheroidSystem}} just for ease of use of exact simulation.
 }
 \examples{
 \dontrun{
@@ -112,4 +111,7 @@ S <- simSpheroidSystem(theta,lam,size="rbinorm",orientation="rbetaiso",box=box,p
 
 }
 
+}
+\author{
+M. Baaske
 }

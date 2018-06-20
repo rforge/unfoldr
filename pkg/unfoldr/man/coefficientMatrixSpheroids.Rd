@@ -2,21 +2,23 @@
 % Please edit documentation in R/spheroid.R
 \name{coefficientMatrixSpheroids}
 \alias{coefficientMatrixSpheroids}
-\title{Calculate coefficients (spheroids)}
+\title{Calculate coefficients for unfolding}
 \usage{
 coefficientMatrixSpheroids(breaks, stype = c("prolate", "oblate"),
   check = TRUE, nCores = getOption("par.unfoldr", 1))
 }
 \arguments{
-  \item{breaks}{ list of bin vectors}
-  \item{stype}{ either \code{prolate} or \code{oblate} }
-  \item{check}{ logical, whether to run some input checks}
-  \item{nCores}{ number of cores used to calculate the coefficients}
+\item{breaks}{list of bin vectors}
+
+\item{stype}{either \code{prolate} or \code{oblate}}
+
+\item{check}{logical, whether to run some input checks}
+
+\item{nCores}{number of cores used to calculate the coefficients}
 }
 \value{
-  coefficient array
+coefficient array
 }
-
 \description{
 Calculate coefficients of discretized integral equation
 }
@@ -29,10 +31,21 @@ the parameters and therefore has been separated in its own function.
 Further, the number of classes for size, shape and orientation do not
 need to be equal, whereas the same class limits are used for binning spatial and planar values.
 This might be changed in future releases.
-Using multiple cpu cores is controlled by either setting the option 'par.unfoldr' in the global 
+Using multiple cpu cores is controlled by either setting the option \code{par.unfoldr} in the global
 R environment or passing the number of cores \code{nCores} directly.
 }
 \examples{
-\dontrun{inst/examples/coeffarray.R }
-}
+\dontrun{
 
+#options(par.unfoldr=4)
+breaks <- setbreaks(c(8,6,7),maxSize=0.37,kap=1.25)
+breaks
+
+P <- coefficientMatrixSpheroids(breaks,check=FALSE)
+c(min(P),max(P),sum(P))
+
+}
+}
+\author{
+M. Baaske
+}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{spheroids3d}
 \alias{spheroids3d}
-\title{Plot particle system}
+\title{Generate 3D plot of spheroid system}
 \usage{
 spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
   bg.col = "white", clipping = FALSE, ...)
@@ -25,8 +25,11 @@ spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
 \item{...}{further material properties passed to 3d plotting functions}
 }
 \description{
-Draw particle system as defined by \code{S}.
+Draw a spheroid system
 }
 \details{
 The function requires the package \code{rgl} to be installed.
+}
+\author{
+M. Baaske
 }

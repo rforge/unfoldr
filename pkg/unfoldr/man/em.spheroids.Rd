@@ -4,7 +4,7 @@
 \alias{em.spheroids}
 \title{Trivariate stereological unfolding}
 \usage{
-em.spheroids(P, F, maxIt, nCores = getOption("par.unfoldr", 1))
+em.spheroids(P, F, maxIt, nCores = getOption("par.unfoldr", 2L))
 }
 \arguments{
 \item{P}{coefficient array}
@@ -88,4 +88,7 @@ par(op)
 }
 \references{
 Bene\eqn{\check{\textrm{s}}}, V. and Rataj, J. Stochastic Geometry: Selected Topics Kluwer Academic Publishers, Boston, 2004
+}
+\author{
+M. Baaske
 }

@@ -19,3 +19,6 @@ Get the stored sphere system
 The sphere system is internally stored as a C data structure.
 This function copies and converts the sphere objects to the R level.
 }
+\author{
+M. Baaske
+}

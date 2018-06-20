@@ -20,3 +20,6 @@ The function simply extracts the parameters for the original 3d spheroid system
 either for oblate or prolate spheroids and returns a list which consists of sizes
 \code{a}, the orientation angles \code{Theta} and the shape parameters \code{s}.
 }
+\author{
+M. Baaske
+}

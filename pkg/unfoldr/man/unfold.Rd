@@ -4,7 +4,7 @@
 \alias{unfold}
 \title{Stereological unfolding}
 \usage{
-unfold(sp, nclass, maxIt = 64, nCores = getOption("par.unfoldr", 1), ...)
+unfold(sp, nclass, maxIt = 64, nCores = getOption("par.unfoldr", 2L), ...)
 }
 \arguments{
 \item{sp}{section profiles}
@@ -46,4 +46,7 @@ The return value of the function is an object of class \code{unfold} whose argum
 }
 \seealso{
 \code{\link{setbreaks}}, \code{\link{binning3d}}
+}
+\author{
+M. Baaske
 }

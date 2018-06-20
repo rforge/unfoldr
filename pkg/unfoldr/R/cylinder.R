@@ -66,6 +66,9 @@
 #'      \item{} {C. Lantu\eqn{\acute{\textrm{e}}}joul. Geostatistical simulation. Models and algorithms.
 #' 					Springer, Berlin, 2002. Zbl 0990.86007}
 #' 	  }
+#' @author M. Baaske
+#' @rdname simCylinderSystem
+#' @export
 simCylinderSystem <- function(theta, lam, size="const", shape="const",
 						orientation="rbetaiso", type=c("sphero","elong"), 
 						 rjoint=NULL, box=list(c(0,1)), mu=c(0,1,0), perfect=TRUE, pl=0, label="N")
@@ -153,18 +156,22 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 	sum(sapply(X, function(x) { pi*x$r^2*x$length + 4/3*pi*x$r^3 }))
 }
 
-#' Plot fibre system
+#' 3D a cylinder system
 #'
-#' Draw 3d spherocylinders
+#' Draw 3D spherocylinders
 #'
 #' The function requires the package \code{rgl} to be installed.
 #'
 #' @param S				a list of cylinders
 #' @param box			simulation box
-#' @param draw.axes		logical: if true, draw the axes
-#' @param draw.box	    logical: if true, draw the bounding box
-#' @param clipping 		logical: if true clip to the bounding box
+#' @param draw.axes		logical, if \code{TRUE}, draw the axes
+#' @param draw.box	    logical, if \code{TRUE}, draw the bounding box
+#' @param clipping 		logical, if \code{TRUE}, clip to the bounding box
 #' @param ...			further material properties passed to 3d plotting functions
+#' @return NULL
+#' @author M. Baaske
+#' @rdname cylinders3d
+#' @export
 cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,...) {
     if (!requireNamespace("rgl", quietly=TRUE))
 	 stop("Please install 'rgl' package from CRAN repositories before running this function.")
@@ -222,28 +229,32 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 	}
 }
 
-#' Cylinder vertical intersection
+#' Spherocylinder intersection
 #' 
-#' Intersect a clyinder system by a vertical section plane 
+#' Intersect a spherocylinder system 
 #' 
-#' The function performs a vertical intersection defined by the normal vector
-#' \code{n=c(0,1,0)} which depends on the main orientation axis of the
-#' coordinate system and has to be parallel to this.
+#' The function intersects a cylinder system by an intersecting plane defined by a
+#' normal vector \code{n=c(0,1,0)} (default), which depends on the main orientation
+#' axis of the coordinate system.
 #'
 #' @param S		 list of cylinders, see \code{\link{simCylinderSystem}}
 #' @param d 	 distance of intersecting plane to the origin
 #' @param n 	 normal vector of intersting plane
 #' @param intern \code{intern=FALSE} (default) return all section profiles otherwise
-#' 				only those which have their centers inside the intersection window
+#' 				 only those which have their centers inside the intersection window
+#' @param pl	 integer, \code{pl=0} (default), other options are not yet available
 #' 
 #' @return list of size, shape and angle of section profiles
-cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE) {
+#' @author M. Baaske
+#' @rdname cylinderIntersection
+#' @export
+cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE, pl=0) {
 	stopifnot(is.logical(intern))
 	if(sum(n) > 1)
 		stop("Normal vector is like c(0,1,0). ")
 	if(!(class(S) %in% c("cylinder")))
 		stop("Class must be `cylinder`.")
-	.Call(C_IntersectCylinderSystem, attr(S,"eptr"), n, d, intern, 100)	
+	.Call(C_IntersectCylinderSystem, attr(S,"eptr"), n, d, intern, pl)	
 }
 
 
@@ -258,6 +269,9 @@ cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE) {
 #' @param cond  conditioning object for simulation and intersection
 #' 
 #' @return list of intersection profiles
+#' @author M. Baaske
+#' @rdname simCylinderIntersection
+#' @export
 simCylinderIntersection <- function(theta, cond) {
 	.Call(C_SimulateCylindersAndIntersect,
 			c("lam"=cond$lam,theta), cond, cond$nsect)

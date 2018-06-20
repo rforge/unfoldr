@@ -2,9 +2,9 @@
 % Please edit documentation in R/cylinder.R
 \name{cylinderIntersection}
 \alias{cylinderIntersection}
-\title{Cylinder vertical intersection}
+\title{Spherocylinder intersection}
 \usage{
-cylinderIntersection(S, d, n = c(0, 1, 0), intern = FALSE)
+cylinderIntersection(S, d, n = c(0, 1, 0), intern = FALSE, pl = 0)
 }
 \arguments{
 \item{S}{list of cylinders, see \code{\link{simCylinderSystem}}}
@@ -15,15 +15,20 @@ cylinderIntersection(S, d, n = c(0, 1, 0), intern = FALSE)
 
 \item{intern}{\code{intern=FALSE} (default) return all section profiles otherwise
 only those which have their centers inside the intersection window}
+
+\item{pl}{integer, \code{pl=0} (default), other options are not yet available}
 }
 \value{
 list of size, shape and angle of section profiles
 }
 \description{
-Intersect a clyinder system by a vertical section plane
+Intersect a spherocylinder system
 }
 \details{
-The function performs a vertical intersection defined by the normal vector
-\code{n=c(0,1,0)} which depends on the main orientation axis of the
-coordinate system and has to be parallel to this.
+The function intersects a cylinder system by an intersecting plane defined by a
+normal vector \code{n=c(0,1,0)} (default), which depends on the main orientation
+axis of the coordinate system.
+}
+\author{
+M. Baaske
 }

@@ -169,3 +169,6 @@ S <- simSpheroidSystem(theta,lam,size="rbinorm",orientation="rbetaiso",box=box,p
 					Springer, Berlin, 2002. Zbl 0990.86007}
 	  }
 }
+\author{
+M. Baaske
+}

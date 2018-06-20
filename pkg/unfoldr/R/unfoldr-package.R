@@ -23,6 +23,8 @@
 #' 
 #' @docType package
 #' @name unfoldr-package
+#' @importFrom stats na.omit
+#' @useDynLib unfoldr, .registration = TRUE, .fixes = "C_"
 #' 
 #' @references  
 #'  \enumerate{

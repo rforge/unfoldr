@@ -18,3 +18,6 @@ Get maximum (random) radius
 \details{
 In case of exact simulation the maximum radius of all randomly generated radii is returned.
 }
+\author{
+M. Baaske
+}

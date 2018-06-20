@@ -32,3 +32,6 @@ The orientation classes are defined as \eqn{\theta_j=j\omega, \omega=\pi/(2N), j
 \eqn{[0,\pi/2]}, where \eqn{M,N} are the number of size classes and the number of orientation classes, respectively.
 Argument \code{base} must not be \code{NULL} if \code{sizeType} equals "exp".
 }
+\author{
+M. Baaske
+}

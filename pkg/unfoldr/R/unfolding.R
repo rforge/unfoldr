@@ -33,7 +33,11 @@
 #'
 #' @references
 #' 	Bene\eqn{\check{\textrm{s}}}, V. and Rataj, J. Stochastic Geometry: Selected Topics Kluwer Academic Publishers, Boston, 2004
-em.spheroids <- function(P,F,maxIt,nCores=getOption("par.unfoldr",1)) {
+#' 
+#' @author M. Baaske
+#' @rdname em.spheroids
+#' @export
+em.spheroids <- function(P,F,maxIt,nCores=getOption("par.unfoldr",2L)) {
 	.Call(C_EMS,P,F,list("maxSteps"=maxIt,"nCores"=nCores))
 }
 
@@ -69,12 +73,21 @@ em.spheroids <- function(P,F,maxIt,nCores=getOption("par.unfoldr",1)) {
 #' @return        object of class \code{unfold}
 #'
 #' @seealso \code{\link{setbreaks}}, \code{\link{binning3d}}
-unfold <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",1),...) UseMethod("unfold", sp)
-unfold.oblate <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",1),...) {
+#' 
+#' @author M. Baaske
+#' @rdname unfold
+#' @export
+unfold <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L),...) UseMethod("unfold", sp)
+
+#' @method unfold oblate 
+#' @export
+unfold.oblate <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L),...) {
 	unfold.prolate(sp,nclass,maxIt,nCores,...)
 }
 
-unfold.prolate <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",1),...) {
+#' @method unfold prolate 
+#' @export
+unfold.prolate <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L),...) {
 	if(length(nclass)!=3)
 	  stop("Lenght of 'dims' not equals 3.")
   	if(any(!(c("A","S","alpha") %in%  names(sp))))
@@ -89,7 +102,9 @@ unfold.prolate <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",1),
 			class=c("unfold",class(sp)))
 }
 
-unfold.numeric <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",1),...) {
+#' @method unfold numeric 
+#' @export
+unfold.numeric <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L),...) {
 	if(anyNA(sp))
 		stop("Vector of radii 'sp' has NAs.")
 	if(!is.numeric(nclass) || length(nclass)!=1)
@@ -128,7 +143,12 @@ unfold.numeric <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",1),
 #' @param breaks list of bin vectors
 #' @param check logical, default is \code{TRUE}
 #' @param na.rm logical, if NAs are to be removed in the data vectors, default is \code{TRUE}
+#' 
 #' @return 3d array of count data
+#' 
+#' @author M. Baaske
+#' @rdname binning3d
+#' @export
 binning3d <- function(size,angle,shape,breaks,check=TRUE,na.rm = TRUE) {
 	if(na.rm) {
 		size <- na.omit(size)
@@ -177,7 +197,12 @@ binning3d <- function(size,angle,shape,breaks,check=TRUE,na.rm = TRUE) {
 #' @param base 		constant for size class construction
 #' @param kap  	    constant for shape class construction
 #' @param sizeType 	either \code{linear} or \code{exp}, default is \code{linear}
+#' 
 #' @return 			list of class limits vectors
+#' 
+#' @author M. Baaske
+#' @rdname setbreaks
+#' @export
 setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp")) {
 	if(length(nclass)==0 || any(nclass==0))
 		stop("Number of bin classes 'nclass' must be greater than zero.")
@@ -207,6 +232,9 @@ setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp"))
 #'
 #' @param S list of spheroids
 #' @return  list
+#' @author M. Baaske
+#' @rdname parameters3d
+#' @export
 parameters3d <- function(S) {
 	idx <- if(class(S)=="prolate") c(1,3) else c(3,1)  			# changed index from 2 to 3 for major semi-axis
 	list("a"=unlist(lapply(S,function(x) x$ab[1])),
@@ -225,7 +253,12 @@ parameters3d <- function(S) {
 #'
 #' @param H trivariate histogram
 #' @param breaks breaks as obtained from \code{\link{setbreaks}}
+#' 
 #' @return list of size, angle and shape parameters, see \code{\link{parameters3d}}
+#' 
+#' @author M. Baaske
+#' @rdname parameterEstimates
+#' @export
 parameterEstimates <- function(H,breaks) {
 	list("a"=unlist(lapply(1:(length(breaks$size)-1),
 							function(i) rep(breaks$size[i],sum(H[i,,])))),
@@ -238,20 +271,23 @@ parameterEstimates <- function(H,breaks) {
 #' Trivariate histogram
 #'
 #' Plot trivariate histogram of joint size-shape-orientation distribution
-#'
-#' The function requires the package \code{rgl} to be installed.
-#' The (estimated spatial) joint size-shape-orientation distribution is plotted
-#' in a box with corresponding axes shown. The axes intersect in the first class number.
+#' 
+#' The (estimated spatial) joint size-shape-orientation distribution is plotted in a 3D
+#' histogram with corresponding axesn. The axes intersect in the first class number.
 #' The ball volumes visualize the relative frequencies of count data for each class which
-#' can be scaled by the user for non-overlapping spheres.
-#' Balls within the same size class have the same color.
+#' can be scaled by the user for non-overlapping spheres. Balls within the same size class have the same color.
 #'
-#'  @param A 		3d array of count data
-#'  @param main 	main title
-#'  @param scale 	factor to scale the spheres
-#'  @param col 		vector of color values repeatedly used
-#'  @param ... 		optional graphic arguments
-trivarHist <- function(A, main = paste("Trivariate Histogram"),scale = 0.5, col, ...) {
+#' @param A 		3d array of count data
+#' @param main 		main title of the plot
+#' @param scale 	factor to scale the spheres
+#' @param col 		vector of color values repeatedly used
+#' @param ... 		optional argumentspassed to function \code{rgl::spheres3d}
+#' @return 			NULL
+#' 
+#' @author M. Baaske
+#' @rdname trivarHist
+#' @export
+trivarHist <- function(A, main = paste("Trivariate Histogram"), scale = 0.5, col, ...) {
   if (requireNamespace("rgl", quietly=TRUE)) {
 	N <- sum(A)
 	if(missing(col))

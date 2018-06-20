@@ -11,11 +11,11 @@ planarSection(S, d, intern = FALSE)
 
 \item{d}{distance of the intersecting xy-plane to the origin}
 
-\item{intern}{\code{intern=FALSE} (default) return all sections otherwise
-only those which have their centers inside the intersection window}
+\item{intern}{logical, \code{FALSE} (default), return all planar sections otherwise
+only those which have their centers inside the intersecting window}
 }
 \value{
-vector of circle radii
+vector of circle diameters
 }
 \description{
 Intersect sphere system
@@ -24,4 +24,7 @@ Intersect sphere system
 Given a sphere system obtained from \code{\link{simSphereSystem}}
 the function returns the section radii from intersecting all spheres
 stored in \code{S}.
+}
+\author{
+M. Baaske
 }

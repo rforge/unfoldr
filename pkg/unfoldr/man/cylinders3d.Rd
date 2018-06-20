@@ -2,7 +2,7 @@
 % Please edit documentation in R/cylinder.R
 \name{cylinders3d}
 \alias{cylinders3d}
-\title{Plot fibre system}
+\title{3D a cylinder system}
 \usage{
 cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE, clipping = FALSE,
   ...)
@@ -12,17 +12,20 @@ cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE, clipping = FALSE,
 
 \item{box}{simulation box}
 
-\item{draw.axes}{logical: if true, draw the axes}
+\item{draw.axes}{logical, if \code{TRUE}, draw the axes}
 
-\item{draw.box}{logical: if true, draw the bounding box}
+\item{draw.box}{logical, if \code{TRUE}, draw the bounding box}
 
-\item{clipping}{logical: if true clip to the bounding box}
+\item{clipping}{logical, if \code{TRUE}, clip to the bounding box}
 
 \item{...}{further material properties passed to 3d plotting functions}
 }
 \description{
-Draw 3d spherocylinders
+Draw 3D spherocylinders
 }
 \details{
 The function requires the package \code{rgl} to be installed.
+}
+\author{
+M. Baaske
 }

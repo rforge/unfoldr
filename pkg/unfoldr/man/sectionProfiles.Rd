@@ -29,3 +29,6 @@ list which consists of either longer or shorter axis \code{A} of section profile
 of spheroids which are intended to be reconstructed, the aspect ratio as the shape parameter \code{S} with
 values in \eqn{(0,1]}, and the orientation angle \code{alpha}.
 }
+\author{
+M. Baaske
+}

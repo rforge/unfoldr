@@ -21,3 +21,6 @@ Simulate a cylinder system and intersect
 The function first simulates a cylinder system according to the parameter \code{theta} and only
 returns the resulting section profiles.
 }
+\author{
+M. Baaske
+}

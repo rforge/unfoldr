@@ -27,20 +27,26 @@
 #'
 #' @param S   spheroid system, simulated by perfect simulation option
 #' @return    maximum radius
+#' @author M. Baaske
+#' @rdname getMaxRadius
+#' @export
 getMaxRadius <- function(S) {
   .Call(C_GetMaxRadius,attr(S,"eptr"))
 }
 
-#' Updated spheroid intersections
+#' Spheroid intersections with box
 #'
 #' Determine intersections of spheroids with bounding (simulation) box
 #'
-#' For a given list of spheroids, spheres or cylinders calculate if these objects intersect
-#' the simulation box or not.
+#' For a given list of spheroids, spheres or cylinders the function tests whether the objects intersect
+#' the simulation bounding box.
 #'
 #' @param S 	geometric objects system
 #' @param box   the simulation box
 #' @return 		integer vector indicating intersection=\code{1} or non intersection by \code{0}
+#' @author M. Baaske
+#' @rdname updateIntersections
+#' @export
 updateIntersections <- function(S,box) {
   .Call(C_UpdateIntersections,S,box)
 }
@@ -63,6 +69,9 @@ updateIntersections <- function(S,box) {
 #' @param type    \code{prolate} or \code{oblate}, default class is \code{prolate}
 #'
 #' @return 		  section profiles object, either of class \code{prolate} or \code{oblate}
+#' @author M. Baaske
+#' @rdname sectionProfiles
+#' @export
 sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 	type <- match.arg(type)
 	stopifnot(is.matrix(size))
@@ -90,6 +99,9 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' @param pl	 print level
 #' @param mu	 main orientation vector
 #' @return		 \code{NULL}
+#' @author M. Baaske
+#' @rdname setupSpheroidSystem
+#' @export
 setupSpheroidSystem <- function(S,mu=c(0,1,0),pl=0) {
 	if(!(class(attr(S,"eptr"))=="externalptr"))
 		warning(paste(substitute(S)," has no external pointer attribute, thus we set one.",sep=""))
@@ -122,6 +134,9 @@ setupSpheroidSystem <- function(S,mu=c(0,1,0),pl=0) {
 #'
 #' @param S result of \code{\link{simSpheroidSystem}}
 #' @return list of spheroids, either of class \code{prolate} or \code{oblate}
+#' @author M. Baaske
+#' @rdname getSpheroidSystem
+#' @export
 getSpheroidSystem <- function(S) {
 	if(length(S)==0 && class(attr(S,"eptr"))=="externalptr") {
 		if(class(S) %in% c("prolate","oblate"))
@@ -187,6 +202,9 @@ getSpheroidSystem <- function(S) {
 #'      \item{} {C. Lantu\eqn{\acute{\textrm{e}}}joul. Geostatistical simulation. Models and algorithms.
 #' 					Springer, Berlin, 2002. Zbl 0990.86007}
 #' 	  }
+#' @author M. Baaske
+#' @rdname simSpheroidSystem
+#' @export
 simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientation="rbetaiso",
 								stype=c("prolate","oblate"),rjoint=NULL, box=list(c(0,1)),
 								mu=c(0,0,1), perfect=TRUE, pl=0, label="N")
@@ -277,26 +295,29 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 #'
 #' Simulate a spheroid system by perfect simulation
 #'
-#' Simulate a spheroid system by perfect simulation with log normal sizes and transformed
-#' shape parameter, see \code{\link{simSpheroidSystem}}. This function is intended to be a
-#' condensed version of \code{\link{simSpheroidSystem}} just for ease of use of exact
-#' simulation with random planar orientation of spheroids.
+#' Simulate a spheroid system (exact simulation) with lognormally distributed major semi-axis
+#' length and shape parameter determined by a bivariate size-shape (normal) distribution, see \code{\link{simSpheroidSystem}}.
+#' This function calls \code{\link{simSpheroidSystem}} just for ease of use of exact simulation.
 #'
-#' @param param  parameters
-#' @param cond   condition object
+#' @param param  size-shape distribution parameter
+#' @param cond   condition object, see examples
 #'
 #' @return 		 spheroid system
 #' @example 	 inst/examples/sim.R
+#' 
+#' @author M. Baaske
+#' @rdname simModel3d
+#' @export
 simModel3d <- function(param, cond) {
 	theta <- list("size"=as.list(param)[1:5],
 				  "orientation"=list("kappa"=param["kappa"]),
 				  "shape"=list())
 
-	simSpheroidSystem(theta,cond$lam, size="rbinorm",
-			orientation="rbetaiso",	stype=cond$stype,box=cond$box,pl=cond$pl)
+	simSpheroidSystem(theta,cond$lam,size="rbinorm",
+	 orientation="rbetaiso",stype=cond$stype,box=cond$box,perfect=TRUE, pl=cond$pl)
 }
 
-#' Calculate coefficients (spheroids)
+#' Calculate coefficients for unfolding
 #'
 #' Calculate coefficients of discretized integral equation
 #'
@@ -311,13 +332,17 @@ simModel3d <- function(param, cond) {
 #' Using multiple cpu cores is controlled by either setting the option \code{par.unfoldr} in the global
 #' R environment or passing the number of cores \code{nCores} directly.
 #'
-#'  @param   breaks  list of bin vectors
-#'  @param   stype   either \code{prolate} or \code{oblate}
-#'  @param   check   logical, whether to run some input checks
-#'  @param   nCores  number of cores used to calculate the coefficients
-#'  @return  coefficient array
+#' @param   breaks  list of bin vectors
+#' @param   stype   either \code{prolate} or \code{oblate}
+#' @param   check   logical, whether to run some input checks
+#' @param   nCores  number of cores used to calculate the coefficients
+#' @return  coefficient array
 #'
-#'  @example inst/examples/coeffarray.R
+#' @example inst/examples/coeffarray.R
+#' 
+#' @author M. Baaske
+#' @rdname coefficientMatrixSpheroids 
+#' @export
 coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 								check=TRUE,nCores=getOption("par.unfoldr",1))
 {
@@ -345,11 +370,11 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 
 #' Spheroid vertical section
 #'
-#' Vertical section of spheroid system
+#' Vertical section of a spheroid system
 #'
-#' The function performs a vertical intersection defined by the normal vector
-#' \code{n=c(0,1,0)} which depends on the main orientation axis of the
-#' coordinate system and has to be parallel to this.
+#' The function intersects a spheroid system by an intersecting plane defined by a normal 
+#' vector \code{n=c(0,1,0)} (default), which depends on the main orientation axis of the
+#' coordinate system.
 #'
 #' @param S		 list of spheroids, see \code{\link{simSpheroidSystem}}
 #' @param d 	 distance of intersecting plane to the origin
@@ -357,7 +382,11 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 #' @param intern logical, \code{FALSE} (default), return all section profiles otherwise
 #' 				 only those which have their centers inside the intersection window (if the 
 #' 				 intersected spheroid system had been simulated using exact simulation)
-#' @return list of size, shape and angle of section profiles
+#' @return 	 	 list sizes \code{A}, shapes \code{S} and angles \code{alpha} of section profiles
+#' 
+#' @author M. Baaske
+#' @rdname verticalSection 
+#' @export
 verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	stopifnot(is.logical(intern))
 	if( sum(n)>1 )
@@ -374,7 +403,39 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	)
 }
 
-#' Spheroid intersection
+#' Intersect spheroid system
+#'
+#' Intersect a spheroid system with a given plane
+#'
+#' The function intersects a given spheroid system with a plane defined by a
+#' normal vector, e.g. \code{n=c(0,1,0)}, perpendicular to one of the simulation bounding planes. 
+#' The print level \code{pl} sets the type of return value. If \code{pl=10} the functions only returns
+#' the lengths of the semiaxes, the shape factor of both and the angle in the intersection plane in \code{[0,pi/2]}.    
+#'
+#' @param S		 list of spheroids, see \code{\link{simSpheroidSystem}}
+#' @param d 	 distance of intersecting plane to the origin
+#' @param n 	 normal vector of intersting plane
+#' @param intern logical, \code{FALSE} (default), return all section profiles otherwise
+#' 				 only those which have their centers inside the intersection window (if the 
+#' 				 intersected spheroid system had been simulated using exact simulation)
+#' @param pl	 integer, \code{pl=0} (default), only return pointer to stored intersections
+#' 				
+#' @return list of size, shape and angle of section profiles
+#' 
+#' @author M. Baaske
+#' @rdname spheroidIntersection 
+#' @export
+spheroidIntersection <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
+	stopifnot(is.logical(intern))
+	if( sum(n)>1 )
+		stop("Normal vector is like c(0,1,0). ")
+	if(!(class(S) %in% c("prolate","oblate")))
+		stop("Spheroids type does not match.")
+	.Call(C_IntersectSpheroidSystem,attr(S,"eptr"),n, d, intern, pl)	
+}
+
+
+#' Simulate spheroid intersection
 #' 
 #' Simulate a spheroid system and intersect
 #' 
@@ -385,14 +446,17 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 #' @param cond  conditioning object for simulation and intersection
 #' 
 #' @return list of intersection profiles
+#' @author M. Baaske
+#' @rdname simSpheroidIntersection 
+#' @export
 simSpheroidIntersection <- function(theta, cond) {
 	.Call(C_SimulateSpheroidsAndIntersect,
 			c("lam"=cond$lam,theta), cond, cond$nsect)
 }
 
-#' Plot particle system
+#' Generate 3D plot of spheroid system
 #'
-#' Draw particle system as defined by \code{S}.
+#' Draw a spheroid system
 #'
 #' The function requires the package \code{rgl} to be installed.
 #'
@@ -404,6 +468,11 @@ simSpheroidIntersection <- function(theta, cond) {
 #' @param bg.col 		background color used to draw the box background
 #' @param clipping 		logical: if true clip to the bounding box
 #' @param ...			further material properties passed to 3d plotting functions
+#' 
+#' @return NULL
+#' @author M. Baaske
+#' @rdname spheroids3d
+#' @export
 spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE, bg.col="white", clipping=FALSE, ...)
 {
 	if (!requireNamespace("rgl", quietly=TRUE))
@@ -485,6 +554,9 @@ spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE, bg
 #' @param n 			the normal vector of the intersecting plane
 #' @param np			number of points for polygon approximation of ellipses
 #' @return NULL
+#' @author M. Baaske
+#' @rdname drawSpheroidIntersection
+#' @export
 drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 	ind <- which(n==0)
 	.pointsOnEllipse <- function(E,t) {

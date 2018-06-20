@@ -22,3 +22,6 @@ Given the estimated joint distribution in histogram form the function
 returns a list of \code{breaks} replicates which equals the number of
 estimated count data for each class.
 }
+\author{
+M. Baaske
+}
