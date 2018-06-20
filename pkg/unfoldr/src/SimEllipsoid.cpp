@@ -91,7 +91,9 @@ STGM::CSpheroidSystem * InitSpheroidSystem(SEXP R_param, SEXP R_cond) {
 
   // set print level
   PL = asInteger(getListElement( R_cond,"pl"));
+  int perfect = asInteger(getListElement( R_cond,"perfect"));
   double lam = asReal(AS_NUMERIC(getListElement( R_param, "lam")));
+
 
   /* set up spheroid system */
   STGM::CBox3 box(boxX,boxY,boxZ);
@@ -102,7 +104,7 @@ STGM::CSpheroidSystem * InitSpheroidSystem(SEXP R_param, SEXP R_cond) {
   STGM::CSpheroidSystem *sp = (STGM::CSpheroidSystem *)Calloc(1,STGM::CSpheroidSystem);
 
   try {
-      new(sp)STGM::CSpheroidSystem(box,lam,maxis,stype);
+      new(sp)STGM::CSpheroidSystem(box,lam,maxis,stype,perfect);
   } catch(...) {
       error(_("InitSpheroidSystem(): Allocation error."));
   }
@@ -125,7 +127,7 @@ SEXP SetupSpheroidSystem(SEXP R_vname, SEXP R_env, SEXP R_param, SEXP R_cond)
    sptr->refObjects() = convert_C_Spheroids(R_var);
    setAttrib(R_var, install("eptr"), R_ptr);
    UNPROTECT(2);
-   return R_NilValue;
+   return R_ptr;
 }
 
 SEXP CopySpheroidSystem(SEXP R_spheroids, SEXP R_env, SEXP R_param, SEXP R_cond)
