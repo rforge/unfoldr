@@ -5,9 +5,8 @@
 \title{Simulation of cylinder system}
 \usage{
 simCylinderSystem(theta, lam, size = "const", shape = "const",
-  orientation = "rbetaiso", type = c("sphero", "elong"), rjoint = NULL,
-  box = list(c(0, 1)), mu = c(0, 1, 0), perfect = TRUE, pl = 0,
-  label = "N")
+  orientation = "rbetaiso", rjoint = NULL, box = list(c(0, 1)),
+  mu = c(0, 1, 0), perfect = TRUE, pl = 0, label = "N")
 }
 \arguments{
 \item{theta}{simulation parameters}
@@ -22,8 +21,6 @@ a for specific size distribution}
 use your own joint distribution, see details.}
 
 \item{orientation}{name of random generating function for orientation distribution}
-
-\item{type}{type of cylinder (ignored and not yet used)}
 
 \item{rjoint}{name of joint random generating function}
 

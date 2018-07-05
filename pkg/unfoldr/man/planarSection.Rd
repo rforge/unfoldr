@@ -4,7 +4,7 @@
 \alias{planarSection}
 \title{Sphere planar section}
 \usage{
-planarSection(S, d, intern = FALSE)
+planarSection(S, d, intern = FALSE, pl = 0)
 }
 \arguments{
 \item{S}{list of spheres, see \code{\link{simSphereSystem}}}
@@ -13,6 +13,8 @@ planarSection(S, d, intern = FALSE)
 
 \item{intern}{logical, \code{FALSE} (default), return all planar sections otherwise
 only those which have their centers inside the intersecting window}
+
+\item{pl}{print level, default \code{pl=0}}
 }
 \value{
 vector of circle diameters
