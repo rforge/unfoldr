@@ -18,13 +18,13 @@ extern "C" {
 #endif
  //
  SEXP EllipsoidSystem(SEXP R_param, SEXP R_cond);
+
  SEXP SimulateSpheroidsAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n);
- SEXP IntersectSpheroidSystem(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R_pl);
+
+ SEXP IntersectSpheroidSystem(SEXP R_S, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R_env, SEXP R_pl);
+
  SEXP DigitizeEllipseIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta);
- SEXP GetEllipsoidSystem(SEXP ext);
- SEXP GetMaxRadius(SEXP ext);
- SEXP SetupSpheroidSystem(SEXP R_vname, SEXP R_env, SEXP R_param, SEXP R_cond);
- SEXP CopySpheroidSystem(SEXP R_spheroids, SEXP R_env, SEXP R_param, SEXP R_cond);
+
  SEXP UpdateIntersections(SEXP RS, SEXP R_box);
 
 #ifdef __cplusplus
@@ -49,19 +49,27 @@ class CSpheroidSystem
 
   ~CSpheroidSystem() {};
 
-  void simSpheroidSys(R_Calldata d);
-  void simConstSpheroidSys(R_Calldata d);
-  void simSysJoint(R_Calldata d);
-  void simBivariate(R_Calldata d);
+
+  void simSpheroidSystem(SEXP R_param, SEXP R_cond);
+
+  void simUnivar(SEXP R_args, rdist2_t rsize, rdist2_t rshape, STGM::CSpheroid::direction_type dtype, const char *label);
+
+  void simJoint(SEXP R_call, SEXP R_rho, const char *label);
+
+  void simBivariate(SEXP R_args, rdist2_t rshape,STGM::CSpheroid::direction_type dtype, const char *label, int perfect);
 
   STGM::Spheroids &refObjects()  { return m_spheroids; }
   const STGM::Spheroids &refObjects() const { return m_spheroids; }
 
   inline size_t size()  { return m_spheroids.size(); }
   inline double maxR()  { return m_maxR; }
+  inline double lam()   { return m_lam; }
 
   const STGM::CBox3 &box() const { return m_box; }
   STGM::CBox3 &box()  { return m_box; }
+
+  CVector3d & u() { return m_mu; }
+  const CVector3d u() const { return m_mu; }
 
   void IntersectWithPlane(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CPlane &plane, int intern);
 
@@ -70,7 +78,7 @@ class CSpheroidSystem
  private:
   CBox3 m_box;
 
-  double m_lam,m_maxR;
+  double m_lam, m_maxR;
   CVector3d m_mu;
 
   Spheroids m_spheroids;

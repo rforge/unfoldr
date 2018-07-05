@@ -11,7 +11,6 @@
 #include "directions.h"
 
 //static locals
-static SEXP spheroid_type_tag;
 static int PL = 0;
 
 using namespace std;
@@ -34,7 +33,7 @@ do {                                              \
 
 #define GET_OBJECT_CLASS(RS) translateChar(asChar(getAttrib( (RS), R_ClassSymbol)))
 
-SEXP convert_R_EllipsoidSystem( STGM::Spheroids &spheroids, STGM::CBox3 &box);
+SEXP convert_R_EllipsoidSystem( STGM::CSpheroidSystem *S);
 SEXP convert_R_Ellipses_all(STGM::Intersectors<STGM::CSpheroid>::Type &objects);
 SEXP convert_R_Ellipses_trunc(STGM::Intersectors<STGM::CSpheroid>::Type &objects);
 
@@ -50,28 +49,19 @@ void _free_spheroids(STGM::CSpheroidSystem *sp){
   Free(sp);
 }
 
-void _sptr_finalizer(SEXP ext)
+STGM::CSpheroidSystem * allocSpheroidSystem(STGM::CBox3 &box, double lam,
+		STGM::CVector3d &maxis, STGM::CSpheroid::spheroid_type stype, int perfect)
 {
-  checkPtr(ext, spheroid_type_tag);
-  STGM::CSpheroidSystem *sp = (STGM::CSpheroidSystem *)(R_ExternalPtrAddr(ext));
-  _free_spheroids(sp);
-  R_ClearExternalPtr(ext);
+	/* set up sphere system */
+	STGM::CSpheroidSystem *sp = (STGM::CSpheroidSystem*)Calloc(1,STGM::CSpheroidSystem);
+	try {
+		 new(sp)STGM::CSpheroidSystem(box,lam,maxis,stype,perfect);
+	} catch(...) {
+	 Rf_error(_("InitSpheroidSystem(): Memory allocation error for spheroid system."));
+	}
+	return sp;
 }
 
-SEXP FinalizeSpheroidSystem(SEXP ext) {
-  _sptr_finalizer(ext);
-  return R_NilValue;
-}
-
-SEXP CreateExternalPointer(STGM::CSpheroidSystem *sp) {
-  spheroid_type_tag = install("SpheroidSystem_TAG");
-  SEXP Rextp=R_NilValue;
-  PROTECT(Rextp=R_MakeExternalPtr((void*) sp, spheroid_type_tag, R_NilValue));
-  R_RegisterCFinalizerEx(Rextp, (R_CFinalizer_t) _sptr_finalizer, TRUE);
-
-  UNPROTECT(1);
-  return Rextp;
-}
 
 STGM::CSpheroidSystem * InitSpheroidSystem(SEXP R_param, SEXP R_cond) {
   /* get the box */
@@ -90,75 +80,106 @@ STGM::CSpheroidSystem * InitSpheroidSystem(SEXP R_param, SEXP R_cond) {
     stype = STGM::CSpheroid::OBLATE;
 
   // set print level
-  PL = asInteger(getListElement( R_cond,"pl"));
-  int perfect = asInteger(getListElement( R_cond,"perfect"));
-  double lam = asReal(AS_NUMERIC(getListElement( R_param, "lam")));
-
+  PL = INTEGER(AS_INTEGER(getListElement( R_cond,"pl")))[0];
+  int perfect = INTEGER_POINTER(getListElement( R_cond,"perfect"))[0];
+  double lam = NUMERIC_POINTER(getListElement( R_param, "lam"))[0];
 
   /* set up spheroid system */
   STGM::CBox3 box(boxX,boxY,boxZ);
 
   double *mu = NUMERIC_POINTER( getListElement( R_cond, "mu"));
   STGM::CVector3d maxis(mu[0],mu[1],mu[2]);
-
-  STGM::CSpheroidSystem *sp = (STGM::CSpheroidSystem *)Calloc(1,STGM::CSpheroidSystem);
-
-  try {
-      new(sp)STGM::CSpheroidSystem(box,lam,maxis,stype,perfect);
-  } catch(...) {
-      error(_("InitSpheroidSystem(): Allocation error."));
-  }
+  STGM::CSpheroidSystem *sp = allocSpheroidSystem(box,lam,maxis,stype,perfect);
 
   UNPROTECT(2);
   return sp;
 }
 
-SEXP SetupSpheroidSystem(SEXP R_vname, SEXP R_env, SEXP R_param, SEXP R_cond)
-{
-   SEXP R_var, R_ptr;
-   PROTECT(R_var = getVar(R_vname,R_env));
-   PROTECT(R_ptr = getAttrib(R_var,install("eptr")));
 
-   if(isNull(R_ptr) || isNullPtr(R_ptr,spheroid_type_tag)) {
-       R_ptr = CreateExternalPointer( InitSpheroidSystem(R_param,R_cond) );
-       if(PL>100) Rprintf("setting pointer to %p \n",R_ExternalPtrAddr(R_ptr));
-   }
-   STGM::CSpheroidSystem *sptr = static_cast<STGM::CSpheroidSystem *>(getExternalPtr(R_ptr));
-   sptr->refObjects() = convert_C_Spheroids(R_var);
-   setAttrib(R_var, install("eptr"), R_ptr);
-   UNPROTECT(2);
-   return R_ptr;
+void STGM::CSpheroidSystem::simSpheroidSystem(SEXP R_param, SEXP R_cond) {
+	SEXP R_fname, R_args, R_label;
+	PROTECT(R_fname = getListElement( R_cond, "rdist"));
+	PROTECT(R_label = getListElement( R_cond, "label"));
+
+	int isPerfect = LOGICAL(getListElement( R_cond, "perfect" ))[0];
+	const char *label = translateChar(asChar(R_label));
+
+	if(TYPEOF(R_fname) != VECSXP){
+		SEXP R_call, R_rho;
+		PROTECT(R_args = getListElement( R_param,"rmulti"));
+		PROTECT(R_rho  = getListElement( R_cond, "rho" ));
+		PROTECT(R_call = getCall(R_fname,R_args,R_rho));
+
+		// simulate
+		simJoint(R_call, R_rho, label);
+		UNPROTECT(3);
+
+	} else {
+		/*
+		 * fname, args are lists of [size, shape, orientation],
+		 *  args are parameters for each
+		 */
+		PROTECT(R_args = allocVector(VECSXP,3));
+	    SET_VECTOR_ELT(R_args,0, getListElement( R_param,"size"));
+	    SET_VECTOR_ELT(R_args,1, getListElement( R_param,"shape"));
+	    SET_VECTOR_ELT(R_args,2, getListElement( R_param,"orientation"));
+
+	    // distribution types
+	    const char *ftype_size  = GET_NAME(R_fname,0);
+	    const char *ftype_shape = GET_NAME(R_fname,1);
+	    const char *ftype_dir   = GET_NAME(R_fname,2);
+
+	    STGM::CSpheroid::direction_type dtype;
+	    if (!std::strcmp( ftype_dir, "runifdir")) {
+	    	dtype = STGM::CSpheroid::UNIFORM_D;
+	    } else if(!std::strcmp( ftype_dir, "rbetaiso" )) {
+	    	dtype = STGM::CSpheroid::BETAISOTROP_D;
+	    } else if(!std::strcmp( ftype_dir, "rvMisesFisher")) {
+	    	dtype = STGM::CSpheroid::MISES_D;
+	    } else {
+	       error(_("Direction distribution type is not supported."));
+	    }
+
+	    rdist2_t rshape;
+	    if ( !std::strcmp(ftype_shape, "rbeta" )) {
+	       rshape = &rbeta;
+	    } else if(!std::strcmp(ftype_shape,"const")) {
+	       rshape = &rconst;
+	    } else if(!std::strcmp(ftype_shape,"rgamma")) {
+	       rshape = &rgamma;
+	    } else if(!std::strcmp(ftype_shape,"runif")) {
+	       rshape = &runif;
+	    } else {
+	    	error(_("Unknown shape distribution type."));
+	    }
+
+	    rdist2_t rsize;
+	    if( !std::strcmp( ftype_size, "rbinorm")) {
+	    	simBivariate(R_args,rshape,dtype,label,isPerfect);
+	    } else {
+			if(!std::strcmp(ftype_size, "const" )) {
+				rsize = &rconst;
+			} else if (!std::strcmp(ftype_size, "rbeta" )) {
+				rsize = &rbeta;
+			} else if(!std::strcmp(ftype_size, "rlnorm")) {
+				rsize = &rlnorm;
+			} else if(!std::strcmp(ftype_size, "rgamma")) {
+				rsize = &rgamma;
+			} else if(!std::strcmp(ftype_size, "runif" )) {
+				rsize = &runif;
+			} else  {
+			   error(_("Unknown size distribution type."));
+			}
+			simUnivar(R_args,rsize,rshape,dtype,label);
+	    }
+	    UNPROTECT(1);
+
+	}
+
+	UNPROTECT(2);
+	return;
 }
 
-SEXP CopySpheroidSystem(SEXP R_spheroids, SEXP R_env, SEXP R_param, SEXP R_cond)
-{
-   SEXP Rextp=R_NilValue;
-   PROTECT(Rextp = CreateExternalPointer( InitSpheroidSystem(R_param,R_cond) ));
-   STGM::CSpheroidSystem *sptr = static_cast<STGM::CSpheroidSystem *>(getExternalPtr(Rextp));
-
-   sptr->refObjects() = convert_C_Spheroids(R_spheroids);
-   setAttrib(R_spheroids, install("eptr"), Rextp);
-
-   UNPROTECT(1);
-   return R_spheroids;
-}
-
-
-SEXP GetEllipsoidSystem(SEXP ext) {
-  checkPtr(ext, spheroid_type_tag);
-  STGM::CSpheroidSystem *sp = static_cast<STGM::CSpheroidSystem *>(getExternalPtr(ext));
-
-  SEXP R_spheroids = R_NilValue;
-  STGM::Spheroids &spheroids = sp->refObjects();
-  PROTECT(R_spheroids = convert_R_EllipsoidSystem(spheroids,sp->box()));
-  setAttrib(R_spheroids, install("eptr"), ext);
-
-  const char *stype=(sp->m_stype==0 ? "prolate" : "oblate");
-  SET_CLASS_NAME(R_spheroids,stype);
-
-  UNPROTECT(1);
-  return R_spheroids;
-}
 
 /**
  * @brief Simulation of Spheroid system
@@ -170,125 +191,141 @@ SEXP GetEllipsoidSystem(SEXP ext) {
  * @return
  */
 SEXP EllipsoidSystem(SEXP R_param, SEXP R_cond) {
-  /** Init */
+  /* init */
   STGM::CSpheroidSystem *sp = InitSpheroidSystem(R_param,R_cond);
-  R_Calldata call_data = getRCallParam(R_param,R_cond);
 
-  if(TYPEOF(call_data->fname) != VECSXP) {
-      sp->simSysJoint(call_data);
-  } else {
-      const char *ftype_size = GET_NAME(call_data,0);
-      if(!std::strcmp(ftype_size, "rbinorm") ) {
-          sp->simBivariate(call_data);
-      } else if(!std::strcmp(ftype_size, "const")) {
-          sp->simConstSpheroidSys(call_data);
-      } else {
-          sp->simSpheroidSys(call_data);
-      }
-  }
-  deleteRCall(call_data);
-
-  if(PL>100) {
-    Rprintf("Simulated %d spheroids: %p \n",sp->refObjects().size(), sp);
-  }
+  /* simulate  */
+  sp->simSpheroidSystem(R_param,R_cond);
+  if(PL>100) Rprintf("Simulated %d spheroids: %p \n",sp->refObjects().size(), sp);
 
   SEXP R_spheroids = R_NilValue;
-  if(PL>100) {
-      STGM::Spheroids &spheroids = sp->refObjects();
-      Rprintf("Convert... \n");
-      PROTECT(R_spheroids = convert_R_EllipsoidSystem(spheroids,sp->box()));
-  } else {
-      PROTECT(R_spheroids = allocVector(VECSXP,0));  /* return empty list */
-  }
-
-  SEXP Rextp=R_NilValue;
-  PROTECT(Rextp=CreateExternalPointer(sp));
-
-  setAttrib(R_spheroids, install("eptr"), Rextp);
+  PROTECT(R_spheroids = convert_R_EllipsoidSystem(sp));
   classgets(R_spheroids, getListElement( R_cond, "stype" ));
 
-  UNPROTECT(2);
+  UNPROTECT(1);
   return R_spheroids;
 }
 
-SEXP IntersectSpheroidSystem(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R_pl)
+SEXP IntersectSpheroidSystem(SEXP R_var, SEXP R_n, SEXP R_dz, SEXP R_intern, SEXP R_env, SEXP R_pl)
 {
-  checkPtr(ext, spheroid_type_tag);
+  int nprotect = 0;
+  SEXP R_S = R_NilValue;
+  PROTECT(R_S = getVar(R_var,R_env)); ++nprotect;
+
+  int intern = 0;
+  PROTECT(R_intern = AS_INTEGER(R_intern)); ++nprotect;
+  if(!isNull(R_intern))
+    intern = INTEGER(R_intern)[0];
+
+  double dz = 0.0;
+  PROTECT(R_dz = AS_NUMERIC(R_dz)); ++nprotect;
+  if(!isNull(R_dz))
+    dz = REAL(R_dz)[0];
+  else warning(_("Intersection coordinate is set to zero"));
 
   STGM::CVector3d n(REAL(R_n)[0],REAL(R_n)[1],REAL(R_n)[2]);
-  STGM::CPlane plane( n , asReal(R_z));
+  STGM::CPlane plane( n , dz);
 
-  STGM::CSpheroidSystem *sp = static_cast<STGM::CSpheroidSystem *>(getExternalPtr(ext));
+  SEXP R_box = R_NilValue;
+  PROTECT(R_box = getAttrib(R_S, install("box"))); ++nprotect;
+  if(isNull(R_box))
+    error(_("Sphere system is missing a simulation box."));
+
+  double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
+  double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
+  double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
+  STGM::CBox3 box(boxX,boxY,boxZ);
+
+  SEXP R_mu = R_NilValue;
+  PROTECT(R_mu = getAttrib(R_S,install("R_mu"))); ++nprotect;
+  if(isNull(R_mu))
+	error(_("Main orientation direction must not be 'Null'."));
+  STGM::CVector3d mu(REAL(R_mu)[0],REAL(R_mu)[1],REAL(R_mu)[2]);
+
+  const char* stype_str = GET_OBJECT_CLASS(R_S);
+  STGM::CSpheroid::spheroid_type stype = STGM::CSpheroid::PROLATE;
+   if( !std::strcmp("oblate",stype_str))
+     stype = STGM::CSpheroid::OBLATE;
+
+  SEXP R_lam = R_NilValue;
+  PROTECT(R_lam = getAttrib(R_S,install("lam"))); ++nprotect;
+  if(isNull(R_lam))
+	error(_("Intensity parameter must be given as an attribute."));
+  double lam = REAL(AS_NUMERIC(R_lam))[0];
+
+  SEXP R_perfect = R_NilValue;
+  PROTECT(R_perfect = getAttrib(R_S,install("perfect")));
+  if(isNull(R_perfect))
+	  error(_("Whether simulation was exact or not must be given as an attribute."));
+  int perfect = INTEGER(AS_INTEGER(R_perfect))[0];
+  STGM::CSpheroidSystem *sp = allocSpheroidSystem(box,lam,mu,stype,perfect);
+
+  // do conversions
+  sp->refObjects() = convert_C_Spheroids(R_S);
+
   if(PL>100) {
     Rprintf("Intersect with plane: %d , %p \n", sp->refObjects().size(), sp);
   }
-  int intern = asInteger(AS_INTEGER(R_intern));
+
+  // intersect
   STGM::Intersectors<STGM::CSpheroid>::Type objects;
   sp->IntersectWithPlane(objects,plane,intern);
 
   SEXP R_ellipses;
-  if(asInteger(R_pl)==10) {
-    PROTECT(R_ellipses = convert_R_Ellipses_trunc(objects));
+  if(INTEGER(R_pl)[0] == 10) {									/* return short list of ellipses */
+    PROTECT(R_ellipses = convert_R_Ellipses_trunc(objects)); ++nprotect;
   } else {
-    PROTECT(R_ellipses = convert_R_Ellipses_all(objects));
+    PROTECT(R_ellipses = convert_R_Ellipses_all(objects)); ++nprotect;
   }
 
-  const char *stype=(sp->m_stype==0 ? "prolate" : "oblate");
-  SET_CLASS_NAME(R_ellipses,stype);
+  SET_CLASS_NAME(R_ellipses,stype_str);
 
-  UNPROTECT(1);
+  UNPROTECT(nprotect);
   return R_ellipses;
 }
 
 
-SEXP SimulateSpheroidsAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n) {
-  /** Init */
-  STGM::CSpheroidSystem *sp = InitSpheroidSystem(R_param,R_cond);
-  R_Calldata call_data = getRCallParam(R_param,R_cond);
+SEXP SimulateSpheroidsAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n)
+{
+	  int nprotect = 0;
+	  /* init */
+	  STGM::CSpheroidSystem *sp = InitSpheroidSystem(R_param,R_cond);
 
-  if(TYPEOF(call_data->fname) != VECSXP) {
-        sp->simSysJoint(call_data);
-  } else {
-      const char *ftype_size = GET_NAME(call_data,0);
-      if(!std::strcmp(ftype_size, "rbinorm") ) {
-          sp->simBivariate(call_data);
-      } else if(!std::strcmp(ftype_size, "const")) {
-          sp->simConstSpheroidSys(call_data);
-      } else {
-          sp->simSpheroidSys(call_data);
-      }
-  }
+	  /* simulate  */
+	  sp->simSpheroidSystem(R_param,R_cond);
+	  if(PL>100) Rprintf("Simulated %d spheroids: %p \n",sp->refObjects().size(), sp);
 
-  deleteRCall(call_data);
+	  int intern = 0;
+	  SEXP R_intern = R_NilValue;
+	  PROTECT(R_intern = getListElement(R_cond,"intern")); ++nprotect;
+	  if(!isNull(R_intern))
+		intern = INTEGER(AS_INTEGER(R_intern))[0];
 
-  int intern = 0;
-  if(!isNull(getListElement(R_cond,"intern")))
-    intern = asInteger(AS_INTEGER(getListElement(R_cond,"intern")));
-  double dz = 0.0;
-  if(!isNull(getListElement(R_cond,"dz")))
-    dz = asReal(AS_NUMERIC(getListElement(R_cond,"dz")));
-  else error(_("intersection is set to zero"));
+	  double dz = 0.0;
+	  SEXP R_dz = R_NilValue;
+	  PROTECT(R_dz = AS_NUMERIC(getListElement(R_cond,"dz"))); ++nprotect;
+	  if(!isNull(R_dz))
+	     dz = REAL(R_dz)[0];
+	  else warning(_("Intersection coordinate is set to zero"));
 
-  STGM::CVector3d n(REAL(R_n)[0],REAL(R_n)[1],REAL(R_n)[2]);
-  STGM::CPlane plane(n,dz);
+	  STGM::CVector3d n(REAL(R_n)[0],REAL(R_n)[1],REAL(R_n)[2]);
+	  STGM::CPlane plane(n,dz);
 
-  STGM::Intersectors<STGM::CSpheroid>::Type objects;
-  sp->IntersectWithPlane(objects,plane,intern);
+	  STGM::Intersectors<STGM::CSpheroid>::Type objects;
+	  sp->IntersectWithPlane(objects,plane,intern);
 
-  SEXP R_ellipses;
-  if(PL==10) {
-    PROTECT(R_ellipses = convert_R_Ellipses_trunc(objects));
-  } else {
-    PROTECT(R_ellipses = convert_R_Ellipses_all(objects));
-  }
-  const char *stype=(sp->m_stype==0 ? "prolate" : "oblate");
-  SET_CLASS_NAME(R_ellipses,stype);
+	  SEXP R_ellipses;
+	  if(PL==10) {
+		PROTECT(R_ellipses = convert_R_Ellipses_trunc(objects)); ++nprotect;
+	  } else {
+		PROTECT(R_ellipses = convert_R_Ellipses_all(objects)); ++nprotect;
+	  }
+	  const char *stype_str=(sp->m_stype==0 ? "prolate" : "oblate");
+	  SET_CLASS_NAME(R_ellipses,stype_str);
+	  _free_spheroids(sp);
 
-  _free_spheroids(sp);
-
-  UNPROTECT(1);
-  return R_ellipses;
-
+	  UNPROTECT(nprotect);
+	  return R_ellipses;
 }
 
 SEXP convert_C2R_ellipses(STGM::Ellipses &ellipses) {
@@ -574,7 +611,7 @@ SEXP UpdateIntersections(SEXP Rs, SEXP R_box) {
                 INTEGER(R_ret)[k] = intersector.TestBoxIntersection(planes);
       }
     } else {
-        error("Unknown class object.");
+        error(_("Unknown class object."));
     }
 
     UNPROTECT(nProtected);
@@ -583,15 +620,11 @@ SEXP UpdateIntersections(SEXP Rs, SEXP R_box) {
   }
 
 
-SEXP GetMaxRadius(SEXP ext)
-{
-  checkPtr(ext, spheroid_type_tag);
-  STGM::CSpheroidSystem *sp = static_cast<STGM::CSpheroidSystem *>(getExternalPtr(ext));
-  return ScalarReal(sp->maxR());
-}
-
-SEXP convert_R_EllipsoidSystem( STGM::Spheroids &spheroids, STGM::CBox3 &box) {
+SEXP convert_R_EllipsoidSystem( STGM::CSpheroidSystem *S) {
   int nProtected=0, ncomps=6, dim=3;
+
+  STGM::CBox3 &box = S->box();
+  STGM::Spheroids &spheroids = S->refObjects();
 
   SEXP R_resultlist;
   PROTECT(R_resultlist = allocVector(VECSXP, spheroids.size()) ); ++nProtected;
@@ -685,7 +718,7 @@ SEXP convert_R_EllipsoidSystem( STGM::Spheroids &spheroids, STGM::CBox3 &box) {
  * @param d R calling data
  *
  * */
-void STGM::CSpheroidSystem::simSysJoint(R_Calldata d) {
+void STGM::CSpheroidSystem::simJoint(SEXP R_call, SEXP R_rho, const char *label) {
      GetRNGstate();
 
      int nTry=0;
@@ -694,43 +727,38 @@ void STGM::CSpheroidSystem::simSysJoint(R_Calldata d) {
        ++nTry;
      }
      m_spheroids.reserve(num);
-     // set spheroid label
-     const char *label = translateChar(asChar(d->label));
+
      double m1 = m_box.m_size[0] +(m_box.m_center[0]-m_box.m_extent[0]),
             m2 = m_box.m_size[1] +(m_box.m_center[1]-m_box.m_extent[1]),
             m3 = m_box.m_size[2] +(m_box.m_center[2]-m_box.m_extent[2]);
 
-     double a=0,b=0,shape=1,theta=0, phi=0,r=0;
-     double *v;
+     double *v=0, a=0, b=0, c=0, shape=1, theta=0, phi=0, r=0;
 
-     SEXP Reval=R_NilValue;
      CVector3d u;
+     SEXP Reval = R_NilValue;
 
      int err = 0;
      for (size_t niter=0; niter<num; niter++)
      {
-         //Reval=eval(d->call,d->rho);
-         //shape=a/b;
-         Reval = R_tryEval(d->call,d->rho,&err);
+         Reval = R_tryEval(R_call,R_rho,&err);
          if(!err) {
-            a=asReal(getListElement(Reval,"a"));
-            b=asReal(getListElement(Reval,"b"));
-            shape=asReal(getListElement(Reval,"shape"));
-            theta=asReal(getListElement(Reval,"theta"));
-            phi=asReal(getListElement(Reval,"phi"));
+            a=REAL(getListElement(Reval,"a"))[0];
+            b=REAL(getListElement(Reval,"b"))[0];
+            c=REAL(getListElement(Reval,"c"))[0];
+            shape=REAL(getListElement(Reval,"shape"))[0];
+            theta=REAL(getListElement(Reval,"theta"))[0];
+            phi=REAL(getListElement(Reval,"phi"))[0];
 
             v=REAL(getListElement(Reval,"u"));
-            u[0]=v[0];
-            u[1]=v[1];
-            u[2]=v[2];
+            u[0]=v[0]; u[1]=v[1]; u[2]=v[2];
 
             if(m_stype==CSpheroid::OBLATE)
               std::swap(a,b);
 
             STGM::CVector3d center(runif(0.0,1.0)*m1,runif(0.0,1.0)*m2, runif(0.0,1.0)*m3);
-            m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,shape,theta,phi,r,m_spheroids.size()+1,label) );
+            m_spheroids.push_back( STGM::CSpheroid(center,a,c,b,u,shape,theta,phi,r,m_spheroids.size()+1,label) );
          } else
-           error(_("simSysJoint(): R try error in user defined distribution function."));
+            error(_("simJoint(): R try error in user defined distribution function."));
      }
      PutRNGstate();
 }
@@ -743,22 +771,20 @@ void STGM::CSpheroidSystem::simSysJoint(R_Calldata d) {
  *
  * @param d data of R call (no R call used here)
  */
-void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
-      GetRNGstate();
+void STGM::CSpheroidSystem::simBivariate(SEXP R_args, rdist2_t rshape, STGM::CSpheroid::direction_type dtype,
+		                                    const char *label, int perfect)
+{
+	  GetRNGstate();
 
-      double mx=asReal(getListElement(VECTOR_ELT( d->args, 0),"mx"));
-      double my=asReal(getListElement(VECTOR_ELT( d->args, 0),"my"));
-      double sdx=asReal(getListElement(VECTOR_ELT( d->args, 0),"sdx"));
-      double sdy=asReal(getListElement(VECTOR_ELT( d->args, 0),"sdy"));
-      double rho=asReal(getListElement(VECTOR_ELT( d->args, 0),"rho"));
-      double kappa = asReal(getListElement(VECTOR_ELT(d->args,2),"kappa"));
+      double mx=REAL(getListElement(VECTOR_ELT( R_args, 0),"mx"))[0];
+      double my=REAL(getListElement(VECTOR_ELT( R_args, 0),"my"))[0];
+      double sdx=REAL(getListElement(VECTOR_ELT( R_args, 0),"sdx"))[0];
+      double sdy=REAL(getListElement(VECTOR_ELT( R_args, 0),"sdy"))[0];
+      double rho=REAL(getListElement(VECTOR_ELT( R_args, 0),"rho"))[0];
+      double kappa=REAL(getListElement(VECTOR_ELT(R_args,2),"kappa"))[0];
 
-      /* exact ? */
-      int perfect =  d->isPerfect;
       /* get Poisson parameter */
       double p[4], mu = 0, sdx2 = SQR(sdx);
-      // set spheroid label
-      const char *label = translateChar(asChar(d->label));
 
       if(perfect) {
         // cumulative probabilities
@@ -766,20 +792,16 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
       } else {
     	mu = m_box.volume();
       }
-      // shape distribution
-      double s1=1.0, s2=1.0;					/* taken as constant factor and thus equal lengths a==c */
-      const char *fname_shape = GET_NAME(d,1);
-      rdist2_t rshape = &rconst;
-      if ( !std::strcmp(fname_shape, "rbeta" )) {
-           rshape = &rbeta;
-           s1 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),0));
-           s2 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),1));
-      }
+
+      // shape distribution parameters for both shorter semi-axes
+      // defaults are s1=s2=1.0 in R
+      double s1 = REAL(VECTOR_ELT(VECTOR_ELT(R_args,1),0))[0];
+      double s2 = REAL(VECTOR_ELT(VECTOR_ELT(R_args,1),1))[0];
 
       if(PL>100) {
-         Rprintf("Spheroids (perfect) simulation, bivariate lognormal length/shape: \n");
-         Rprintf("\t size distribution: %s with %f %f %f %f %f\n", GET_NAME(d,0), mx,my,sdx,sdy,rho);
-         Rprintf("\t directional distribution: %s  with %f \n", GET_NAME(d,2), kappa);
+         Rprintf("Spheroids (exact) simulation: \n");
+         Rprintf("\t size distribution: 'rbinorm' with %f %f %f %f %f\n", mx,my,sdx,sdy,rho);
+         Rprintf("\t directional distribution: %d  with %f \n", dtype, kappa);
          Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
          Rprintf("\t set label: %s to character: \n",label);
          Rprintf("\t Shape parameters for shorter semi-axes: s1 = %f, s2 = %f \n", s1, s2);
@@ -804,19 +826,31 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
     	  {
     		  rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
     		  s=1.0/(1.0+std::exp(-y));
-    		  b=r=std::exp(x); /* b = r for exact simulation*/
+    		  b=r=std::exp(x); 						/* b = r for exact simulation*/
     		  a=b*s;
     		  /* store maximum radius */
     		  if(m_maxR < r) m_maxR=r;
     		  if(!R_FINITE(r))
     		    warning(_("simEllipsoidSysBivariat(): Some NA/NaN, +/-Inf produced"));
 
-    		  /* either constant factor or random beta 2nd. shorter axis */
-			  c=a*rshape(s1,s2);
-			  /* sample orientation */
-			  if(kappa<1e-8)
-			    u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
-			  else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
+    		  c=a*rshape(s1,s2);					/* either constant factor or random beta 2nd. shorter axis */
+			  switch(dtype) {					    /* sample orientation */
+				   case 0:
+					 runidir(u.ptr(),theta,phi); break;
+				   case 1:
+					 if(kappa<1e-8) {
+					   u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+					 } else {
+					   rOhserSchladitz(u.ptr(),m_mu.ptr(), kappa, theta, phi);
+					 }
+					 break;
+				   case 2:
+					 if(kappa<1e-8)
+					   runidir(u.ptr(),theta,phi);
+					 else
+					   rVonMisesFisher(u.ptr(), m_mu.ptr(), kappa, phi);
+					 break;
+			  }
 
 			  STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
 			                         runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
@@ -838,10 +872,25 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
 				  std::swap(a,b);
 			  /* either constant factor or random beta 2nd. shorter axis */
 			  c=a*rshape(s1,s2);
+
 			  /* sample orientation */
-			  if(kappa<1e-8)
-			   u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
-			  else rOhserSchladitz(u.ptr(),m_mu.ptr(),kappa,theta,phi);
+			  switch(dtype) {
+				   case 0:
+					 runidir(u.ptr(),theta,phi); break;
+				   case 1:
+					 if(kappa<1e-8) {
+					   u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+					 } else {
+					   rOhserSchladitz(u.ptr(),m_mu.ptr(), kappa, theta, phi);
+					 }
+					 break;
+				   case 2:
+					 if(kappa<1e-8)
+					   runidir(u.ptr(),theta,phi);
+					 else
+					   rVonMisesFisher(u.ptr(), m_mu.ptr(), kappa, phi);
+					 break;
+			  }
 
 			  STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
 								   	 runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
@@ -857,96 +906,16 @@ void STGM::CSpheroidSystem::simBivariate(R_Calldata d) {
 
 
 
-void STGM::CSpheroidSystem::simConstSpheroidSys(R_Calldata d){
-    // init RNG state
-    GetRNGstate();
-    // set spheroid label
-    const char *label = translateChar(asChar(d->label));
-    // intensity
-    int nTry=0;
-    while(num==0 && nTry<MAX_ITER) {
-      num = rpois(m_box.volume()*m_lam);
-      ++nTry;
-    }
-    m_spheroids.reserve(num);
-
-    // direction
-    const char *fname_dir = GET_NAME(d,2);
-    STGM::CSpheroid::direction_type dtype = STGM::CSpheroid::UNIFORM_D;
-    if(!std::strcmp( fname_dir, "rbetaiso" )) {
-       dtype=STGM::CSpheroid::BETAISOTROP_D;
-    } else if(!std::strcmp( fname_dir, "rvMisesFisher")) {
-       dtype=STGM::CSpheroid::MISES_D;
-    }
-    double kappa = asReal(VECTOR_ELT(VECTOR_ELT(d->args,2),0));
-    // simulation box
-    double m1 = m_box.m_size[0] +(m_box.m_center[0]-m_box.m_extent[0]),
-           m2 = m_box.m_size[1] +(m_box.m_center[1]-m_box.m_extent[1]),
-           m3 = m_box.m_size[2] +(m_box.m_center[2]-m_box.m_extent[2]);
-
-    // shape distribution
-    double s2 = 0, s = 1;
-    const char *fname_shape = GET_NAME(d,1);
-    double s1 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),0));
-    rdist2_t rshape = &rconst;
-    if ( !std::strcmp(fname_shape, "rbeta" )) {
-        rshape = &rbeta;
-        s2 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),1));
-    }
-
-    double theta = 0, a = 0, phi = 0, r = 0;
-    // size is always constant here, no perfect simulation
-    double b = asReal(VECTOR_ELT(VECTOR_ELT( d->args, 0),0));
-
-    /* loop over all */
-     CVector3d u;
-     for (size_t niter=0; niter<num; niter++)  {
-         /* direction */
-         switch(dtype) {
-             case 0:
-               runidir(u.ptr(),theta,phi); break;
-             case 1:
-               if(kappa<1e-8) {
-                 u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
-               } else {
-                 rOhserSchladitz(u.ptr(),m_mu.ptr(), kappa, theta, phi);
-               }
-               break;
-             case 2:
-               if(kappa<1e-8)
-                 runidir(u.ptr(),theta,phi);
-               else
-                 rVonMisesFisher(u.ptr(), m_mu.ptr(), kappa, phi);
-               break;
-        }
-        s = rshape(s1,s2);
-        a = b * s;
-        if(m_stype==CSpheroid::OBLATE)
-          std::swap(a,b);
-
-        /* sample positions conditionally of radii distribution */
-        STGM::CVector3d center(runif(0.0,1.0)*m1,runif(0.0,1.0)*m2, runif(0.0,1.0)*m3);
-        m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,s,theta,phi,r,niter+1,label) );
-     }
-     PutRNGstate();
-}
-
 /**
  * @brief Perfect simulation for (non constant) size distributions
  *        with independent shape and orientation distributions
  *
  * @param d    R call data
  */
-void STGM::CSpheroidSystem::simSpheroidSys(R_Calldata d) {
-     // init RNG state
+void STGM::CSpheroidSystem::simUnivar(SEXP R_args, rdist2_t rsize, rdist2_t rshape,
+							STGM::CSpheroid::direction_type dtype, const char *label)
+{
      GetRNGstate();
-     // set spheroid label
-     const char *label = translateChar(asChar(d->label));
-
-     rdist2_t rdist;
-     double p1 = asReal(VECTOR_ELT(VECTOR_ELT( d->args, 0),0));
-     double p2 = asReal(VECTOR_ELT(VECTOR_ELT( d->args, 0),1));
-
      int nTry=0;
      while(num==0 && nTry<MAX_ITER) {
         num = rpois(m_box.volume()*m_lam);
@@ -954,49 +923,26 @@ void STGM::CSpheroidSystem::simSpheroidSys(R_Calldata d) {
      }
      m_spheroids.reserve(num);
 
-     const char *fname = GET_NAME(d,0);
-     if ( !std::strcmp(fname, "rbeta" )) {
-          rdist=&rbeta;
-      } else if(!std::strcmp(fname, "rlnorm")) {
-          rdist=&rlnorm;
-      } else if(!std::strcmp(fname, "rgamma")) {
-          rdist=&rgamma;
-      } else if(!std::strcmp(fname, "runif" )) {
-          rdist=&runif;
-      } else {
-          error(_("unknown random size distribution"));
-      }
+     /// size
+	 double p2 = 0;
+	 double p1 = REAL(VECTOR_ELT(VECTOR_ELT( R_args, 0),0))[0];
+	 if(LENGTH(VECTOR_ELT( R_args, 0)) > 0)
+	  p2 = REAL(VECTOR_ELT(VECTOR_ELT( R_args, 0),1))[0];
 
-     // shape distribution
-     rdist2_t rshape;
-     double s2 = 0, s = 1;
-     const char *fname_shape = GET_NAME(d,1);
-     double s1 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),0));
-     if ( !std::strcmp(fname_shape, "rbeta" )) {
-         rshape = &rbeta;
-         s2 = asReal(VECTOR_ELT(VECTOR_ELT(d->args,1),1));
-      } else if(!std::strcmp(fname_shape,"const")) {
-         rshape = &rconst;
-      } else {
-         error(_("unknown random shape distribution"));
-      }
+	 // shape
+	 double s=1, s2=0;
+	 double s1 = REAL(VECTOR_ELT(VECTOR_ELT(R_args,1),0))[0];
+	 if(LENGTH(VECTOR_ELT( R_args, 1)) > 0)
+		s2 = REAL(VECTOR_ELT(VECTOR_ELT( R_args, 1),1))[0];
 
-     const char *fname_dir = GET_NAME(d,2);
-     STGM::CSpheroid::direction_type dtype = STGM::CSpheroid::UNIFORM_D;
-     if(!std::strcmp( fname_dir, "rbetaiso" )) {
-        dtype=STGM::CSpheroid::BETAISOTROP_D;
-     } else if(!std::strcmp( fname_dir, "rvMisesFisher")) {
-        dtype=STGM::CSpheroid::MISES_D;
-     } else {
-        error(_("unknown random orientation distribution"));
-     }
-     double kappa = asReal(VECTOR_ELT(VECTOR_ELT(d->args,2),0));
+     // direction
+     double kappa = REAL(VECTOR_ELT(VECTOR_ELT(R_args,2),0))[0];
 
      if(PL>100) {
          Rprintf("Run spheroids  simulation... \n");
-         Rprintf("\t size distribution: %s with %f %f \n", fname, p1,p2);
+         Rprintf("\t size distribution: %f %f \n", p1,p2);
          Rprintf("\t shape parameters: %f %f\n", s1, s2);
-         Rprintf("\t directional distribution: %s  with %f \n", fname_dir, kappa);
+         Rprintf("\t directional distribution: %d  with %f \n", dtype, kappa);
          Rprintf("\t set label: %s to character: \n",label);
      }
 
@@ -1005,8 +951,8 @@ void STGM::CSpheroidSystem::simSpheroidSys(R_Calldata d) {
      double a=0, b=0, theta=0, phi=0;
      for (size_t niter=0; niter<num; niter++)
      {
-    	 b = rdist(p1,p2);      /* major semi-axis */
-         s = rshape(s1,s2);     /* shape factorm, constant or randomly distributed*/
+    	 b = rsize(p1,p2);      /* major semi-axis */
+         s = rshape(s1,s2);     /* shape factor, constant or randomly distributed*/
          a = b * s;             /* minor semi-axis */
          if(m_stype==CSpheroid::OBLATE)
            std::swap(a,b);
@@ -1030,19 +976,21 @@ void STGM::CSpheroidSystem::simSpheroidSys(R_Calldata d) {
                break;
         }
 
+        STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+                               runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+                               runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
 
-         STGM::CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
-                                runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
-                                runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
-
-         m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,s,theta,phi,0,niter+1,label) );
+        m_spheroids.push_back( STGM::CSpheroid(center,a,a,b,u,s,theta,phi,0,niter+1,label) );
      }
+
      PutRNGstate();
 }
 
 
 SEXP DigitizeEllipseIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta)
 {
+
+  /*
    checkPtr(ext, spheroid_type_tag);
    STGM::CSpheroidSystem *sp = static_cast<STGM::CSpheroidSystem *>(getExternalPtr(ext));
    STGM::CVector3d n(REAL(R_n)[0],REAL(R_n)[1],REAL(R_n)[2]);
@@ -1063,6 +1011,9 @@ SEXP DigitizeEllipseIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta)
 
    UNPROTECT(1);
    return R_W;
+  */
+	return R_NilValue;
+
  }
 
 
@@ -1071,8 +1022,10 @@ SEXP DigitizeEllipseIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta)
  *
  * @param objects
  * @param plane
+ * @param intern
  */
-void STGM::CSpheroidSystem::IntersectWithPlane(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CPlane &plane, int intern)
+void STGM::CSpheroidSystem::IntersectWithPlane(STGM::Intersectors<STGM::CSpheroid>::Type &objects,
+											   STGM::CPlane &plane, int intern)
 {
   int i=0,j=0;
   switch(plane.idx()) {

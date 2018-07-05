@@ -17,11 +17,10 @@ extern "C" {
 #endif
 
   SEXP SphereSystem(SEXP R_param, SEXP R_cond);
+
   SEXP SimulateSpheresAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n);
-  SEXP GetSphereSystem(SEXP ext);
-  SEXP SetupSphereSystem(SEXP R_vname, SEXP R_env, SEXP R_param, SEXP R_cond);
-  SEXP IntersectSphereSystem(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_intern);
-  SEXP FinalizeSphereSystem(SEXP ext);
+
+  SEXP IntersectSphereSystem(SEXP R_var, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R_env, SEXP R_pl);
 
 #ifdef __cplusplus
 }
@@ -34,15 +33,16 @@ class CBoolSphereSystem {
 public:
 
   CBoolSphereSystem(CBox3 &box, double lam) :
-    m_box(box),m_lam(lam), num(0)
+    m_box(box), m_lam(lam), num(0)
   {}
 
   ~CBoolSphereSystem() {};
 
-  void simSphereSys(R_Calldata d);
   size_t getNumSpheres() const { return num; }
   STGM::Spheres &refObjects()  { return m_spheres; }
   const STGM::Spheres &refObjects() const { return m_spheres; }
+
+  void simSphereSys(SEXP R_param, SEXP R_cond);
 
   void IntersectWithPlane(STGM::Intersectors<STGM::CSphere>::Type &objects, STGM::CPlane &plane, int intern);
 

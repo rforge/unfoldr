@@ -9,7 +9,6 @@
 #define BITMAP_RGB "P6"
 
 #include "Utils.h"
-
 #include <R_ext/Lapack.h>
 
 /* show arguments of .External interface */
@@ -46,19 +45,6 @@ SEXP showArgs(SEXP args) {
   return(R_NilValue);
 }
 
-
-
-SEXP getSingleCall(SEXP R_fname, SEXP R_arg, SEXP R_rho) {
-    SEXP RCallBack = R_NilValue;
-    PROTECT(RCallBack = allocVector(LANGSXP,2));
-    SETCAR( RCallBack, findFun(install(CHAR(STRING_ELT(R_fname, 0))),R_rho ));
-    SETCAR(CDR(RCallBack),R_arg);
-
-    UNPROTECT(1);
-    return RCallBack;
-}
-
-
 /* get a single call to an R function */
 SEXP getCall(SEXP R_fname, SEXP R_args, SEXP R_rho) {
   SEXP RCallBack = R_NilValue;
@@ -75,85 +61,6 @@ SEXP getCall(SEXP R_fname, SEXP R_args, SEXP R_rho) {
   UNPROTECT(1);
   return RCallBack;
 }
-
-/* delete the call memebers */
-void deleteRCall(R_Calldata call) {
-  if(!call)
-    return;
-  UNPROTECT(call->nprotect);
-  Free(call);
-}
-
-R_Calldata getRCallParam(SEXP R_param, SEXP R_cond) {
-  int nprotect=0;
-  R_Calldata d = Calloc(1,R_Calldata_s);
-
-  PROTECT(d->fname = getListElement( R_cond, "rdist"));  ++nprotect;
-  PROTECT(d->label = getListElement( R_cond, "label"));  ++nprotect;
-
-  if(TYPEOF(d->fname)!=VECSXP) {
-    PROTECT(d->args  = getListElement( R_param,"rmulti")); ++nprotect;
-    PROTECT(d->rho   = getListElement( R_cond, "rho"  ));  ++nprotect;
-    PROTECT(d->call  = getCall(d->fname,d->args,d->rho));  ++nprotect;
-  } else {
-    PROTECT(d->call = allocVector(VECSXP,3)); ++nprotect;
-
-    /* fname, args are lists of [size, shape, orientation], args are parameters for each */
-    PROTECT(d->rho   = getListElement( R_cond, "rho"  ));   ++nprotect;
-    PROTECT(d->args = allocVector(VECSXP,3));               ++nprotect;
-
-    SET_VECTOR_ELT(d->args,0, getListElement( R_param,"size"));
-    SET_VECTOR_ELT(d->args,1, getListElement( R_param,"shape"));
-    SET_VECTOR_ELT(d->args,2, getListElement( R_param,"orientation"));
-
-    // size distributions
-    SET_VECTOR_ELT(d->call,0,R_NilValue);
-    const char *ftype_size = GET_NAME(d,0);
-    if ( !std::strcmp( ftype_size, "rlnorm") ||
-         !std::strcmp( ftype_size, "rbinorm") ||
-		 !std::strcmp( ftype_size, "rbeta" ) ||
-         !std::strcmp( ftype_size, "rgamma") ||
-         !std::strcmp( ftype_size, "runif" ) ||
-         !std::strcmp( ftype_size, "const" ))
-    {;
-    } else {
-      // user defined distribution as R call
-      error(_("User defined distributions are not yet supported."));
-      SET_VECTOR_ELT(d->call,0,GET_CALL(d,0));
-    }
-
-    // shape (distributions)
-    SET_VECTOR_ELT(d->call,1,R_NilValue);
-    const char *ftype_shape = GET_NAME(d,1);
-    if ( !std::strcmp( ftype_shape, "rbeta") ||
-         !std::strcmp( ftype_shape, "const" ))
-    {;
-    } else {
-        // user defined distribution as R call
-        error(_("User defined distributions are not yet supported."));
-        SET_VECTOR_ELT(d->call,1,GET_CALL(d,1));
-    }
-
-    // orientation distributions
-    SET_VECTOR_ELT(d->call,2,R_NilValue);
-    const char *ftype_dir = GET_NAME(d,2);
-    if ( !std::strcmp( ftype_dir, "runifdir") ||
-         !std::strcmp( ftype_dir, "rbetaiso" ) ||
-         !std::strcmp( ftype_dir, "rvMisesFisher"))
-    {;
-    } else {
-       // user defined distribution as R call
-       error(_("User defined distributions are not yet supported."));
-       SET_VECTOR_ELT(d->call,2,GET_CALL(d,2));
-    }
-
-  }
-  d->nprotect = nprotect;
-  d->isPerfect = asLogical(getListElement( R_cond, "perfect" ));
-
-  return d;
-}
-
 /**
  * @brief Simple bivariate normal random variable
  */
@@ -247,44 +154,10 @@ SEXP getListElement (SEXP list, const char *str)
 
 SEXP getVar(SEXP name, SEXP rho)
 {
-    SEXP ans;
-
     if(!isString(name) || length(name) != 1)
         error("name is not a single string");
     if(!isEnvironment(rho))
         error("rho should be an environment");
-    ans = findVar(install(CHAR(STRING_ELT(name, 0))), rho);
-    return ans;
+
+    return findVar(installChar(STRING_ELT(name, 0)), rho);
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-Rboolean isNullPtr(SEXP ptr, SEXP type)
-{
-  if ( TYPEOF(ptr) != EXTPTRSXP ||
-      R_ExternalPtrTag(ptr) != type || !R_ExternalPtrAddr(ptr) )
-    return TRUE;
-  return FALSE;
-}
-
-void checkPtr(SEXP ptr, SEXP type)
-{
-  if ( TYPEOF(ptr) != EXTPTRSXP ||
-      R_ExternalPtrTag(ptr) != type || !R_ExternalPtrAddr(ptr) )
-    error("Bad Pointer to simulation object");
-}
-
-void * getExternalPtr(SEXP ext)
-{
-  if(!R_ExternalPtrAddr(ext)) {
-      warning("Null pointer.\n ");
-      return NULL;
-  }
-  return R_ExternalPtrAddr(ext);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-

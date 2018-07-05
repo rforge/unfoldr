@@ -24,7 +24,7 @@
 
 #define getDims(A) INTEGER(coerceVector (getAttrib(A, R_DimSymbol ) , INTSXP) )
 #define RMATRIX(m,i,j) (REAL(m)[ INTEGER(GET_DIM(m))[0]*(j)+(i) ])
-#define REAL_ARG_LIST(A,i) asReal(VECTOR_ELT( (A), (i) ))
+#define REAL_ARG_LIST(A,i) REAL(VECTOR_ELT( (A), (i) ))[0]
 
 
 #define SET_CLASS_NAME(RObject,ClassName) {            \

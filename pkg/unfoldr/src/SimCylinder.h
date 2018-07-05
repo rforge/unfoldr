@@ -17,10 +17,12 @@
 extern "C" {
 #endif
 
-  SEXP FinalizeCylinderSystem(SEXP ext);
   SEXP CylinderSystem(SEXP R_param, SEXP R_cond);
+
   SEXP CDigitizeCylinderIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta);
-  SEXP IntersectCylinderSystem(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R_pl);
+
+  SEXP IntersectCylinderSystem(SEXP R_var, SEXP R_n, SEXP R_dz, SEXP R_intern, SEXP R_env, SEXP R_pl);
+
   SEXP SimulateCylindersAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n);
 
 #ifdef __cplusplus
@@ -33,20 +35,19 @@ namespace STGM {
 class CCylinderSystem {
  public:
 
-  CCylinder::cylinder_type m_type;
-
-  CCylinderSystem(CBox3 &box, double lam, CVector3d &mu, CCylinder::cylinder_type type, int perfect = 1 )
-      : m_type(type), m_box(box), m_lam(lam), m_maxR(0), m_mu(mu), num(0), m_perfect(perfect)
+  CCylinderSystem(CBox3 &box, double lam, CVector3d &mu, int perfect = 1 )
+      : m_box(box), m_lam(lam), m_maxR(0), m_mu(mu), num(0), m_perfect(perfect)
   {
     //box.ConstructBoundingPlanes();
   }
 
-  void simSysJoint(R_Calldata d);
-  void simCylinderSys(R_Calldata d);
-  void simConstCylinderSys(R_Calldata d);
-  void simBivariate(R_Calldata d);
+  void simCylinderSystem(SEXP R_param, SEXP R_cond);
 
-  CCylinder simCylinder();
+  void simUnivar(SEXP R_args, rdist2_t rsize, rdist2_t rshape, STGM::CCylinder::direction_type dtype, const char *label);
+
+  void simJoint(SEXP R_call, SEXP R_rho, const char *label);
+
+  void simBivariate(SEXP R_args, STGM::CCylinder::direction_type dtype, const char *label, int perfect);
 
   inline size_t size()  { return m_cylinders.size(); }
   inline double maxR()  { return m_maxR; }

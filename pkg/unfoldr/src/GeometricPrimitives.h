@@ -1015,7 +1015,7 @@ namespace STGM {
     public:
       const char *m_label;
       typedef enum { UNIFORM_D = 0, BETAISOTROP_D = 1, MISES_D = 2} direction_type;
-      typedef enum { ELONG = 0, SPHERO = 1 } cylinder_type;
+      typedef enum { ELONG = 0, SPHERO = 1, CYLINDER = 2 } cylinder_type;
 
       CCylinder(CVector3d &center, CVector3d &u, double h, double r,
                  double theta, double phi, double radius, int id, const char *label="N", int interior=1 ) :

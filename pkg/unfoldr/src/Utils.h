@@ -13,17 +13,13 @@
 
 /* functions with R types */
 
-void *getExternalPtr(SEXP ext);
-void checkPtr(SEXP ptr,SEXP type);
-Rboolean isNullPtr(SEXP ptr, SEXP type);
-
 SEXP getVar(SEXP name, SEXP rho);
 SEXP getListElement (SEXP list, const char *str);
 
 /* internally used */
 
-#define GET_CALL(d,i) getCall( VECTOR_ELT(d->fname,i),VECTOR_ELT(d->args,i),d->rho)
-#define GET_NAME(d,i) CHAR(STRING_ELT( VECTOR_ELT(d->fname,i), 0))
+#define GET_CALL(fname,args,rho,i) getCall( VECTOR_ELT(fname,i),VECTOR_ELT(args,i),rho)
+#define GET_NAME(fname,i) CHAR(STRING_ELT( VECTOR_ELT(fname,i), 0))
 
 
 #ifdef __cplusplus
@@ -48,16 +44,6 @@ void sample_k(double *p, int &k);
 /* cumulative probabilities */
 void cum_prob_k(double mx, double sdx2, double lx, double ly, double lz, double *p, double *mu);
 
-/*
- * R call data struct, fname,args and call could also be
- * lists of names, args and calls to functions
- */
-typedef struct R_Calldata_s {
-    SEXP fname,args,rho,label,call;
-    int nprotect, isPerfect;
-} *R_Calldata;
-
-
 #ifdef __cplusplus
 }
 #endif
@@ -68,8 +54,9 @@ struct R_eval_t {
   typedef R_TYPE return_type;
   SEXP call, rho;
   R_eval_t(SEXP _call, SEXP _rho) :  call(_call), rho(_rho)  {};
-  inline return_type operator()() { return AS_NUMERIC(eval(call,rho));  }
+  inline return_type operator()() { return eval(call,rho);  }
 };
+
 
 template<>
 struct R_eval_t<double> {
@@ -78,9 +65,10 @@ struct R_eval_t<double> {
   {
   };
   inline double operator()() {
-    return asReal(eval(call,rho));
+    return REAL(eval(call,rho))[0];
   }
 };
+
 
 struct R_rlnorm_t {
   double mx,sdx;
@@ -147,13 +135,5 @@ SEXP getSingleCall(SEXP R_fname, SEXP R_arg, SEXP R_rho);
  * @return SEXP call as evaluated by eval(Call, Env)
  */
 SEXP getCall(SEXP R_fname, SEXP R_args, SEXP R_rho);
-
-/**
- * \brief Delete R_Calldata struct and and UNPROTECT SEXPs
- * @param call
- */
-void deleteRCall(R_Calldata call);
-
-R_Calldata getRCallParam(SEXP R_param, SEXP R_cond);
 
 #endif /* UTILS_H_ */
