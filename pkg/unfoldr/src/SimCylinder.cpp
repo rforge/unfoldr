@@ -458,7 +458,7 @@ void STGM::CCylinderSystem::simUnivar(SEXP R_args, rdist2_t rsize, rdist2_t rsha
      double h=0, radius=0, theta=0, phi=0;
      for (size_t niter=0; niter<num; niter++)  {
          h = rsize(p1,p2);
-         s = rshape(s1,s2);
+         s = rshape(s1,s2);			/* could be constant = 1 */
          radius = 0.5*h*s;
          h-=2.0*radius;
 

@@ -795,8 +795,10 @@ void STGM::CSpheroidSystem::simBivariate(SEXP R_args, rdist2_t rshape, STGM::CSp
 
       // shape distribution parameters for both shorter semi-axes
       // defaults are s1=s2=1.0 in R
+      double s2 = 0;
       double s1 = REAL(VECTOR_ELT(VECTOR_ELT(R_args,1),0))[0];
-      double s2 = REAL(VECTOR_ELT(VECTOR_ELT(R_args,1),1))[0];
+      if(LENGTH(VECTOR_ELT( R_args, 1)) > 0)
+      	s2 = REAL(VECTOR_ELT(VECTOR_ELT( R_args, 1),1))[0];
 
       if(PL>100) {
          Rprintf("Spheroids (exact) simulation: \n");
@@ -833,7 +835,7 @@ void STGM::CSpheroidSystem::simBivariate(SEXP R_args, rdist2_t rshape, STGM::CSp
     		  if(!R_FINITE(r))
     		    warning(_("simEllipsoidSysBivariat(): Some NA/NaN, +/-Inf produced"));
 
-    		  c=a*rshape(s1,s2);					/* either constant factor or random beta 2nd. shorter axis */
+    		  c=a*rshape(s1,s2);					/* either constant factor or random 2nd. shorter axis */
 			  switch(dtype) {					    /* sample orientation */
 				   case 0:
 					 runidir(u.ptr(),theta,phi); break;
