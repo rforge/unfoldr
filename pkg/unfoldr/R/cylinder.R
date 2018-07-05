@@ -49,7 +49,6 @@
 #' 					    or \code{shape="rbeta"} as beta distributed shape factor. For a radius distribution
 #'	 					use your own joint distribution, see details.
 #' @param orientation   name of random generating function for orientation distribution
-#' @param type			type of cylinder (ignored and not yet used)
 #' @param rjoint 		name of joint random generating function
 #' @param box 			simulation box
 #' @param mu  			main orientation axis, \code{mu=c(0,1,0)} (default)
@@ -70,14 +69,12 @@
 #' @rdname simCylinderSystem
 #' @export
 simCylinderSystem <- function(theta, lam, size="const", shape="const",
-						orientation="rbetaiso", type=c("sphero","elong"), 
-						 rjoint=NULL, box=list(c(0,1)), mu=c(0,1,0), perfect=TRUE, pl=0, label="N")
+	orientation="rbetaiso", rjoint=NULL, box=list(c(0,1)), mu=c(0,1,0), perfect=TRUE, pl=0, label="N")
 {
-	it <- pmatch(type,c("sphero","elong"))
-	if(length(it)==0 || is.na(it)) stop("Cylinder type 'type' must be either 'sphero' or 'elong'.")
-	
 	if(!is.list(theta))
 		stop("Expected 'theta' as list of named  arguments.")
+	if(any(sapply(theta,length) == 0L))
+		stop("At least one of the lists of simulation parameters given in 'theta' has length zero.")
 	if(!is.numeric(lam) || !(lam>0) )
 		stop("Expected 'lam' as non-negative numeric argument")
 
@@ -89,7 +86,6 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 		stop("Simulation box has wrong dimensions.")
 	names(box) <- c("xrange","yrange","zrange")
 
-	type <- match.arg(type)
 	if(!is.null(rjoint)) {
 		if(!exists(rjoint, mode="function"))
 			stop("Unknown multivarirate random generating function.")
@@ -109,46 +105,60 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 
 		structure(.Call(C_CylinderSystem,
 						list("lam"=lam,"rmulti"=theta),
-						list("type"=type,"rdist"=rjoint,"box"=box,"perfect"=0,
+						list("rdist"=rjoint,"box"=box,"perfect"=0,
 							 "pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label)),
-				box = box)
+			 "mu"= mu, "lam"=lam, "box" = box,"perfect"=perfect)
 
 	} else  {
 		theta <- c("lam"=lam,theta)
 		it <- match(names(theta), c("lam","size","shape","orientation"))
 		if(!is.list(theta) || anyNA(it))
-			stop("Expected 'theta' as list of named arguments.")
+			stop("Expected 'theta' as list of named arguments `size`, `shape`, `orientation`.")
 		if(!is.list(theta$size) || !is.list(theta$shape) || !is.list(theta$orientation) )
-			stop("Expected 'size','shape' and 'orientation' as lists of named arguments.")
+			stop("Expected `size`, `shape`, `orientation` as lists.")
+		
 		it <- pmatch(orientation,c("runifdir","rbetaiso","rvMisesFisher"))
 		if(is.na(it) && !exists(orientation, mode="function"))
-			stop("Unknown random generating function for orientation distribution.")
-
-		if (missing(size))
-		 stop("Argument 'size' has to be given if 'rjoint' is 'NULL'!")
-	 	sdistr <- c("const","rbeta","rgamma","runif")
-	 	its <- pmatch(shape,sdistr)
-	 	if(length(its)==0 || is.na(its))
-		 stop("Unknown shape distribution set. Only 'const', 'rbeta' supported.")
-
-		cond <- list("type"=type,"rdist"=list("size"=size, "shape"=shape,"orientation"=orientation),
+			stop("Undefined distribution function for orientation/direction.")
+		
+		cond <- list("rdist"=list("size"=size,"shape"=shape,"orientation"=orientation),
 					 "box"=box, "pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,"perfect"=as.integer(perfect))
 
-		if(cond$rdist$size %in% c("const","rbinorm")) {
-			structure(.Call(C_CylinderSystem, theta, cond), box = box)
+		if(cond$rdist$shape != "const") {
+			 if(exists(cond$rdist$shape, mode="function")) {
+				 # check arguments of supported distribution functions
+				 fargs <- names(formals(cond$rdist$shape))
+				 if(cond$rdist$shape %in% c("rbeta","rgamma","runif"))
+					 fargs <- fargs[-1]				
+				 it <- match(names(theta$shape),fargs)
+				 if(length(it)==0 || anyNA(it))
+					 stop(paste("Arguments of 'shape' must match formal arguments of function ",cond$rdist$shape,sep=""))
+			 } else
+				 stop(paste("Undefined `", cond$rdist$shape, "` distribution function."))
+		}			 
+			 
+		if(cond$rdist$size == "const") {
+			 if(length(theta$size)==0L)
+				 stop("Arguments for size distribution must be given.")
+		} else if(cond$rdist$size == "rbinorm") {
+			 fargs <- c("mx","my","sdx","sdy","rho","kappa")
+			 it <- match(names(theta$size),fargs)
+			 if(length(it)==0 || anyNA(it))
+				 stop(paste("Arguments of 'size' must match formal arguments: ", paste0("`",fargs,"`",collapse=",")))
+			 
 		} else if(exists(cond$rdist$size, mode="function")) {
 			fargs <- names(formals(cond$rdist$size))
 			if(cond$rdist$size %in% c("rlnorm","rbeta","rgamma","runif"))
 				fargs <- fargs[-1]
-
+			
 			it <- match(names(theta$size),fargs)
 			if(length(it)==0 || anyNA(it))
-				stop(paste("Arguments of 'size' must match formal arguments of function ",cond$rdist$size,sep=""))
-
-			structure(.Call(C_CylinderSystem, theta, cond), box = box)
+				stop(paste("Arguments of 'size' must match formal arguments of function `",cond$rdist$size, "`.",sep=""))
+			
 		} else
-			stop(paste("The ", cond$rdist$size, "random generating function must be defined"))
-
+			stop(paste("Undefined `", cond$rdist$size, "`  distribution function."))
+		 
+		structure(.Call(C_CylinderSystem, theta, cond), "mu"= mu, "lam"=lam, "box" = box,"perfect"=perfect)
 	}
 }
 
@@ -254,7 +264,7 @@ cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE, pl=0) {
 		stop("Normal vector is like c(0,1,0). ")
 	if(!(class(S) %in% c("cylinder")))
 		stop("Class must be `cylinder`.")
-	.Call(C_IntersectCylinderSystem, attr(S,"eptr"), n, d, intern, pl)	
+	.Call(C_IntersectCylinderSystem, as.character(substitute(S)), n, d, intern, .GlobalEnv, pl)	
 }
 
 
@@ -273,6 +283,5 @@ cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE, pl=0) {
 #' @rdname simCylinderIntersection
 #' @export
 simCylinderIntersection <- function(theta, cond) {
-	.Call(C_SimulateCylindersAndIntersect,
-			c("lam"=cond$lam,theta), cond, cond$nsect)
+	.Call(C_SimulateCylindersAndIntersect,c("lam"=cond$lam,theta), cond, cond$nsect)
 }

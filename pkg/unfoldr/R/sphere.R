@@ -7,64 +7,6 @@
 # 
 ###############################################################################
 
-
-#' Get sphere system
-#'
-#' Get the stored sphere system
-#'
-#' The sphere system is internally stored as a C data structure.
-#' This function copies and converts the sphere objects to the R level.
-#'
-#' @param S result of \code{\link{simSphereSystem}}
-#'
-#' @return list of spheres of class \code{spheres}
-#' @author M. Baaske
-#' @rdname getSphereSystem
-#' @export
-getSphereSystem <- function(S) {
-  if(length(S)==0 && class(attr(S,"eptr"))=="externalptr") {
-	if(attr(S,"class")!="spheres")
-		stop("Expected 'S' as object of type 'spheres'.")
-	.Call(C_GetSphereSystem,attr(S,"eptr"))
-  } else S
-}
-
-#' Setup sphere system
-#'
-#' Reinitialize sphere system after R workspace reloading
-#'
-#' The internally stored sphere system has to be reinitialized
-#' after R workspace reloading. Calling this function is needed only in case one desires to get profile
-#' sections of the sphere system again which has been previously stored as an R (list) object and afterwards
-#' reloaded.
-#'
-#' @param S       sphere system
-#' @param box 	  simualtion box
-#' @param perfect logical, \code{TRUE} (default), simulate perfect
-#' @param pl 	  print level
-#' @param label   some character as a label, `\code{N}` (default)
-#' 
-#' @return		 \code{NULL}
-#' 
-#' @author M. Baaske
-#' @rdname setupSphereSystem
-#' @export
-setupSphereSystem <- function(S, box=list(c(0,1)), perfect=TRUE, pl=0, label="N") {
-	if(!(class(attr(S,"eptr"))=="externalptr"))
-		warning("'S' has no external pointer attribute, thus we set one.")
-
-	if(length(box)==0 || !is.list(box))
-		stop("Expected argument 'box' as list type.")
-	if(length(box)==1)
-		box <- rep(box[1],3)
-	else if(length(box)!=3)
-		stop("Simulation box has wrong dimensions.")
-	names(box) <- c("xrange","yrange","zrange")
-	
-	.Call(C_SetupSphereSystem,as.character(substitute(S)),.GlobalEnv,
-					list("lam"=0),list("box"=box, "perfect"=perfect, "pl"=pl))
-}
-
 #' Simulation of sphere system
 #'
 #' The function simulates a Poisson sphere system of
@@ -86,8 +28,8 @@ setupSphereSystem <- function(S, box=list(c(0,1)), perfect=TRUE, pl=0, label="N"
 #' currently available are the beta, gamma and uniform distribution. Only simulations done by \code{rlnorm} can use
 #' the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
 #'
-#' @param theta  simulation parameters
-#' @param lam    mean number of spheres per unit volume
+#' @param theta   simulation parameters
+#' @param lam     mean number of spheres per unit volume
 #' @param rdist   string, radii random generating function name
 #' @param box 	  simualtion box
 #' @param perfect logical: \code{perfect=TRUE} (default) simulate perfect
@@ -112,11 +54,11 @@ simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0,
 	theta <- list("lam"=lam,"radii"=theta)
 	if(!is.numeric(lam) || !(lam>0) )
 		stop("Expected 'lam' as non-negative numeric argument")
-	if(!is.list(theta))
-		stop("Expected 'theta' as list of named arguments.")
+	
 	if(!is.list(theta$radii))
 		stop("Expected 'radii' as list of named arguments.")
-
+	if(length(theta$radii) == 0L)
+		stop("Arguments for the `radii` distribution must be given.")
 	if(length(box)==0 || !is.list(box))
 		stop("Expected 'box' as list.")
 	if(length(box)==1)
@@ -125,23 +67,24 @@ simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0,
 		names(box) <- c("xrange","yrange","zrange")
 
 	cond <- list("rdist"=rdist,"box"=box, "pl"=pl,
-			      "rho"=.GlobalEnv, "perfect"=as.integer(perfect),
-				  "label"=label)
+			     "rho"=.GlobalEnv, "perfect"=as.integer(perfect),
+				 "label"=label)
 
-	if(cond$rdist=="const") {
-		structure(.Call(C_SphereSystem, theta, cond),box = box)
-	} else if(exists(cond$rdist, mode="function")) {
+	if(cond$rdist=="const") {}	
+	else if(exists(cond$rdist, mode="function")) {
 		fargs <- names(formals(cond$rdist))
 		if(cond$rdist %in% c("rlnorm","rbeta","rgamma","runif"))
 		  fargs <- fargs[-1]
 
 		it <- match(names(theta$radii),fargs)
 		if(length(it)==0 || anyNA(it))
-			stop(paste("Arguments of 'radii' must match formal arguments of function ",cond$rdist,sep=""))
-
-		structure(.Call(C_SphereSystem, theta, cond),box = box)
+			stop(paste0("Arguments of 'radii' must match formal arguments of function: ",cond$rdist))
+		
 	} else
-	  stop(paste("The ", cond$rdist, " function must be defined"))
+	   stop(paste("Undefined distirbution function `", cond$rdist, "` for radii."))
+   
+    structure(.Call(C_SphereSystem, theta, cond),
+		   "lam"=lam, "box" = box, "perfect"=perfect)
 
 }
 
@@ -157,17 +100,18 @@ simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0,
 #' @param d 		distance of the intersecting xy-plane to the origin
 #' @param intern 	logical, \code{FALSE} (default), return all planar sections otherwise
 #' 					only those which have their centers inside the intersecting window
+#' @param pl		print level, default \code{pl=0}
 #'
 #' @return  vector of circle diameters
 #' 
 #' @author M. Baaske
 #' @rdname planarSection
 #' @export
-planarSection <- function(S,d,intern=FALSE) {
+planarSection <- function(S,d,intern=FALSE, pl=0) {
 	stopifnot(is.logical(intern))
 	if(!is.list(S))
-		stop("Expected spheres as list argument.")
-	sapply(.Call(C_IntersectSphereSystem,attr(S,"eptr"),c(0,0,1),d,as.integer(intern)),
+	 stop("Expected spheres as list argument.")
+	sapply(.Call(C_IntersectSphereSystem,as.character(substitute(S)),c(0,0,1),d,intern,.GlobalEnv,pl),
 		function(x) 2.0*x$r)
 }
 
