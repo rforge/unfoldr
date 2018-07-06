@@ -4,47 +4,53 @@
 \alias{simSphereSystem}
 \title{Simulation of sphere system}
 \usage{
-simSphereSystem(theta, lam, rdist, box = list(c(0, 1)), perfect = TRUE,
-  pl = 0, label = "N")
+simSphereSystem(theta, lam, rdist, box = list(c(0, 1)), dz = 0, n = c(0,
+  1, 0), profiles = FALSE, intern = FALSE, perfect = TRUE, pl = 0,
+  label = "N")
 }
 \arguments{
 \item{theta}{simulation parameters}
 
 \item{lam}{mean number of spheres per unit volume}
 
-\item{rdist}{string, radii random generating function name}
+\item{rdist}{name of radii distribution}
 
 \item{box}{simualtion box}
 
-\item{perfect}{logical: \code{perfect=TRUE} (default) simulate perfect}
+\item{dz}{distance of the intersecting x-, y-plane to the origin}
 
-\item{pl}{print level}
+\item{n}{normal vector of intersting plane}
 
-\item{label}{some character as a label, `\code{N}` (default)}
+\item{profiles}{logical, \code{profiles=FALSE} (default), whether the simulated system of spheres is intersected afterwards in which case
+only sections profiles are returned}
+
+\item{intern}{logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window}
+
+\item{perfect}{logical, \code{perfect=TRUE} (default), exact simulation}
+
+\item{pl}{integer, print level and return value definition}
+
+\item{label}{character, label passed to each simulated sphere, ´\code{N}´ (default)}
 }
 \value{
-list of class \code{spheres} if \code{pl}>100 or empty list
+The function either returns a list of spheres with elements \code{id}, \code{center} and radius \code{r} of class \code{spheres}
+ 	   or a vector of radii.
 }
 \description{
-The function simulates a Poisson sphere system of
-intensity \code{lam} where each sphere center is uniformly
-distributed in a box. The function returns a list of spheres with elements
-\code{id}, \code{center} and radius \code{r}.
+The function simulates a Poisson sphere system.
 }
 \details{
-Any random generating function, passed as a name, for the radii distribution is accepted as long as
-the formal function parameter names match the actual parameter names exactly as defined in
-the parameter list \code{theta}.
+Any distribution for the radii can be specified as a name in `\code{rdist}`as long as the formal named function parameters
+match the actual named parameters exactly as defined in the parameter list `\code{theta}`.
 
-The simulation box is of type list. The vector arguments correspond to the lower and upper points in x,y
-and z direction. If \code{box} has only one element, i.e. \code{list(c(0,1)}, the same extent is used for
-the other dimensions. The argument \code{pl} denotes the print level of information during simulation.
-Currently, only \code{pl=0} for no output and \code{pl}>100 is implemented. Argument \code{cond$rdist} is of
-type string naming the (user defined) radii random generating function.
-Setting \code{size} equal to 'rlnorm' generates log normally distributed radii for a stationary Poisson
-ball system according to a general approach of perfect simulation (see reference below). Other distributions
-currently available are the beta, gamma and uniform distribution. Only simulations done by \code{rlnorm} can use
-the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
+The simulation box is given by a list of length three. Each element is a vector corresponding to the lower and upper points in x-, y- and z-direction in
+the sense of a canonically oriented simulation box. If \code{box} has only one element, i.e. \code{list(c(0,1)}, the same extent
+is used for the remaining dimensions. The argument \code{pl} denotes the print level of information during simulation and is used to set the type of the
+return value. If \code{pl=10} only the radii are returned otherwise a full list of spheres. The argument `\code{rdist}` declares
+the name of the (user defined) radii distribution. Setting \code{rdist="rlnorm"} leads to lognormally distributed
+radii of the spheres. In this case an exact simulation [1] is available if \code{perfect=TRUE}. Currently available other
+distributions are defined by `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. Use `\code{const}` for a constant
+radius of all spheres.
 }
 \examples{
  theta <- list("meanlog"=-2.5,"sdlog"=0.2)

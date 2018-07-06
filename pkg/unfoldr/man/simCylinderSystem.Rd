@@ -6,10 +6,11 @@
 \usage{
 simCylinderSystem(theta, lam, size = "const", shape = "const",
   orientation = "rbetaiso", rjoint = NULL, box = list(c(0, 1)),
-  mu = c(0, 1, 0), perfect = TRUE, pl = 0, label = "N")
+  mu = c(0, 1, 0), dz = 0, n = c(0, 1, 0), profiles = FALSE,
+  intern = FALSE, perfect = TRUE, pl = 0, label = "N")
 }
 \arguments{
-\item{theta}{simulation parameters}
+\item{theta}{simulation parameters (see examples)}
 
 \item{lam}{mean number of spheroids per unit volume}
 
@@ -28,11 +29,20 @@ use your own joint distribution, see details.}
 
 \item{mu}{main orientation axis, \code{mu=c(0,1,0)} (default)}
 
-\item{perfect}{logical: \code{perfect=TRUE} (default) simulate perfect}
+\item{dz}{distance of the intersecting x-, y-plane to the origin}
 
-\item{pl}{optional: print level}
+\item{n}{normal vector of intersting plane}
 
-\item{label}{optional: set a label to all generated spheroids}
+\item{profiles}{logical, \code{profiles=FALSE} (default), whether the simulated system of cylinder is intersected afterwards in which case
+only sections profiles are returned}
+
+\item{intern}{logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window}
+
+\item{perfect}{logical, \code{perfect=TRUE} (default) simulate perfect}
+
+\item{pl}{integer, print level and return value definition}
+
+\item{label}{character, label passed to each simulated cylinder, `\code{N}` (default)}
 }
 \value{
 list of cylinders
@@ -53,20 +63,16 @@ which correspond to the lower and upper points in each direction. If the argumen
 only one element, i.e. \code{list(c(0,1)}, the same extent is used for the other dimensions.
 If \code{rjoint="rmulti"} names a joint random generating function then argument \code{size} is ignored
 (see example file "sim.R").
-For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivariate normal
-size-shape distribution which leads to a lognormally distributed half height (length) \code{h/2} of the
-cylinder. The main orientation axis of the cylinder is called \code{u} where its length equals \code{h}
-without the end caps and a scaled radius \code{r}. The total length then equals \code{h+2r}. If \eqn{[X,Y]} follow a bivariate normal distribution with 
-correlation parameter \eqn{\rho} then \eqn{h=2.0*exp(x)} defines the sample cylinder axis length together
-with the scaled radius \eqn{r=0.5*h*s} and shape parameter set to \eqn{s=1/(1+exp(-y))}. The parameter 
-\eqn{\rho} defines the degree of correlation between the cylinder axis length and cylinder radius which 
-must be provided as part of the list of simulation parameters \code{theta}. The method of exact simulation
-is tailored to the above described model. For a general approach please see the given reference below.
-Other (univariate) cylinder axis lengths types include the beta, gamma, lognormal and uniform distribution
-where the shape factor to get the radius either follows a beta distribution or is set to a constant.
-Only simulations done by \code{rbinorm} can use the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
-The current implementation does not include routines for unfolding the joint 3d size-shape-orientation
-distribution of cylinders so far. However, this feature this might be provided in a later version.
+For the purpose of exact simulation [2] setting \code{size="rbinorm"} declares a bivariate normal
+size-shape distribution. For a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho}
+the length of the cylinder is defined as \eqn{exp(x)} with (logit-transformed) shape parameter \eqn{s=1/(1+exp(-y))}.
+This modification leads to a lognormally distributed length \code{h+2*r} of the cylinder where \code{h} is the height 
+and \code{r} the radius of the (sphero)cylinder (and also the caps). The direction axis \code{u} is along the longer side of the
+cylinder and independent of the size and shape. The following univariate distributions of the cylinder length and shape are also available:
+`\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}` distribution. Use `\code{const}` for a constant length or shape (radius) of the cylinders.
+Only for `\code{rbinorm}` the exact simulation type can be used as an option if \code{perfect=TRUE}.
+The current implementation does not include routines for unfolding the joint 3D size-shape-orientation
+distribution of cylinders so far.
 
 The argument \code{pl} denotes the print level of output information during simulation.
 Currently, only \code{pl}=0 for no output and \code{pl}>100 for some additional info is implemented.
@@ -109,6 +115,9 @@ S <- simCylinderSystem(theta,lam,size="rbinorm",orientation="rbetaiso",box=box,p
 #cols <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF")
 #cylinders3d(S, box, col=cols)
  
+
+## TODO: joint with return (length,radius,theta,phi,u), shape is implicitly defined as r/length=s [0,1] 
+	
 }
 }
 \references{

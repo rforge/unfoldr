@@ -23,13 +23,27 @@ Estimation of empirical sphere diameter distribution
 The function performs the EM algorithm.
 }
 \examples{
-## beta distributed radii
-lam <-3000
-theta <- list("shape1"=2,"shape2"=4)
-S <- simSphereSystem(theta,lam, rdist="rbeta", box=list(c(0,5)),pl=101)
+library(unfoldr)
 
+## beta distribution for radii
+lam <- 300
+theta <- list("shape1"=2,"shape2"=4)
+S <- simSphereSystem(theta,lam,rdist="rbeta",box=list(c(0,5)),
+		## arguments only for returning intersection profiles
+		dz=2.5,n=c(0,1,0),profiles=FALSE,intern=FALSE,		
+		pl=100,label='N')
+
+class(S)
+length(S)
+
+# planar vertical section
 sp <- planarSection(S,d=2.5)
-ret <- unfold(sp,nclass=20)
+## or equivalently
+## sp0 <- 2.0*sphereIntersection(S,2.5,c(0,0,1),FALSE,10)
+## sp[1:10]
+## sp0[1:10]
+
+ret <- unfold(sp,nclass=25)
  
 ## Point process intensity
 cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\\n")

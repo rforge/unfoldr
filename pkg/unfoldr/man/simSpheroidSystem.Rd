@@ -6,7 +6,8 @@
 \usage{
 simSpheroidSystem(theta, lam, size = "const", shape = "const",
   orientation = "rbetaiso", stype = c("prolate", "oblate"), rjoint = NULL,
-  box = list(c(0, 1)), mu = c(0, 0, 1), perfect = TRUE, pl = 0,
+  box = list(c(0, 1)), mu = c(0, 0, 1), dz = 0, n = c(0, 1, 0),
+  profiles = FALSE, intern = FALSE, perfect = TRUE, pl = 0,
   label = "N")
 }
 \arguments{
@@ -14,28 +15,37 @@ simSpheroidSystem(theta, lam, size = "const", shape = "const",
 
 \item{lam}{mean number of spheroids per unit volume}
 
-\item{size}{name of random generating function for size distribution}
+\item{size}{name of size distribution function}
 
-\item{shape}{\code{shape="const"} (default) as a constant shape}
+\item{shape}{name of shape distribution function}
 
-\item{orientation}{name of random generating function for orientation distribution}
+\item{orientation}{name of direction distribution function}
 
-\item{stype}{spheroid type}
+\item{stype}{spheroid type, either "\code{prolate}" or "\code{oblate}"}
 
-\item{rjoint}{name of joint random generating function}
+\item{rjoint}{name of joint distribution function}
 
 \item{box}{simulation box}
 
-\item{mu}{main orientation axis, \code{mu=c(0,0,1)} (default)}
+\item{mu}{main orientation axis, \code{mu=c(0,0,1)} (default), as the alignment of the coordinate system}
 
-\item{perfect}{logical: \code{perfect=TRUE} (default) simulate perfect}
+\item{dz}{distance of the intersecting x-, y-plane to the origin}
 
-\item{pl}{optional: print level}
+\item{n}{normal vector of intersting plane}
 
-\item{label}{optional: set a label to all generated spheroids}
+\item{profiles}{logical, \code{profiles=FALSE} (default), whether the simulated system of spheroids is intersected afterwards in which case
+only sections profiles are returned}
+
+\item{intern}{logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window}
+
+\item{perfect}{logical, \code{perfect=TRUE} (default) simulate perfect}
+
+\item{pl}{integer, print level and return value definition}
+
+\item{label}{character, label passed to each simulated spheroid, ´\code{N}´ (default)}
 }
 \value{
-list of spheroids either of class \code{prolate} or \code{oblate}
+list of spheroids either of class ´\code{prolate}´ or ´\code{oblate}´
 }
 \description{
 Simulation of Poisson spheroid system
@@ -53,6 +63,14 @@ For the directional orientation of the spheroid's major-axis one has the choice 
 which correspond to the lower and upper points in each direction. If the argument \code{box} has
 only one element, i.e. \code{list(c(0,1)}, the same extent is used for the other dimensions.
 If \code{rjoint} names a joint random generating function then argument \code{size} is ignored.
+
+For the purpose of exact simulation [2] setting \code{size="rbinorm"} declares a bivariate normal
+size-shape distribution. For a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho},
+the length of the semi-major axis is given by \eqn{exp(x)} with a (logit-transformed) shape parameter \eqn{s=1/(1+exp(-y))}.
+This modification leads to a lognormally distributed length of the semi-major axis. The direction \code{u} of the spheroid is
+given by the major axis independent of the size and shape of the spheroid. The following univariate distributions of
+the semi-major axis length and the shape are also available: `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`
+distribution. Use `\code{const}` for a constant length or shape. Only for `\code{rbinorm}` the exact simulation type can be used as an option if \code{perfect=TRUE}.
 
 For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivariate
 size-shape distribution which leads to a log normal distributed semi-major axis \code{a} and a scaled
@@ -95,8 +113,7 @@ rmulti <- function(m,s,kappa) {
    a <- min(x)
    b <- max(x)
    
-   list("a"=a,"b"=b,"u"=dir$u,"shape"=a/b,
-        "theta"=dir$theta, "phi"=dir$phi)
+   list("a"=a,"b"=b, "c"=a, "u"=dir$u,"theta"=dir$theta, "phi"=dir$phi)
 
 }
 
