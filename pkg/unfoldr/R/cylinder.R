@@ -23,25 +23,21 @@
 #' only one element, i.e. \code{list(c(0,1)}, the same extent is used for the other dimensions.
 #' If \code{rjoint="rmulti"} names a joint random generating function then argument \code{size} is ignored
 #' (see example file "sim.R").
-#' For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivariate normal
-#' size-shape distribution which leads to a lognormally distributed half height (length) \code{h/2} of the
-#' cylinder. The main orientation axis of the cylinder is called \code{u} where its length equals \code{h}
-#' without the end caps and a scaled radius \code{r}. The total length then equals \code{h+2r}. If \eqn{[X,Y]} follow a bivariate normal distribution with 
-#' correlation parameter \eqn{\rho} then \eqn{h=2.0*exp(x)} defines the sample cylinder axis length together
-#' with the scaled radius \eqn{r=0.5*h*s} and shape parameter set to \eqn{s=1/(1+exp(-y))}. The parameter 
-#' \eqn{\rho} defines the degree of correlation between the cylinder axis length and cylinder radius which 
-#' must be provided as part of the list of simulation parameters \code{theta}. The method of exact simulation
-#' is tailored to the above described model. For a general approach please see the given reference below.
-#' Other (univariate) cylinder axis lengths types include the beta, gamma, lognormal and uniform distribution
-#' where the shape factor to get the radius either follows a beta distribution or is set to a constant.
-#' Only simulations done by \code{rbinorm} can use the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
-#' The current implementation does not include routines for unfolding the joint 3d size-shape-orientation
-#' distribution of cylinders so far. However, this feature this might be provided in a later version.
+#' For the purpose of exact simulation [2] setting \code{size="rbinorm"} declares a bivariate normal
+#' size-shape distribution. For a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho}
+#' the length of the cylinder is defined as \eqn{exp(x)} with (logit-transformed) shape parameter \eqn{s=1/(1+exp(-y))}.
+#' This modification leads to a lognormally distributed length \code{h+2*r} of the cylinder where \code{h} is the height 
+#' and \code{r} the radius of the (sphero)cylinder (and also the caps). The direction axis \code{u} is along the longer side of the
+#' cylinder and independent of the size and shape. The following univariate distributions of the cylinder length and shape are also available:
+#' `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}` distribution. Use `\code{const}` for a constant length or shape (radius) of the cylinders.
+#' Only for `\code{rbinorm}` the exact simulation type can be used as an option if \code{perfect=TRUE}.
+#' The current implementation does not include routines for unfolding the joint 3D size-shape-orientation
+#' distribution of cylinders so far.
 #'
 #' The argument \code{pl} denotes the print level of output information during simulation.
 #' Currently, only \code{pl}=0 for no output and \code{pl}>100 for some additional info is implemented.
 #'
-#' @param theta 		simulation parameters
+#' @param theta 		simulation parameters (see examples)
 #' @param lam   		mean number of spheroids per unit volume
 #' @param size  		\code{size="const"} (default) or name of random generating function
 #' 						a for specific size distribution
@@ -52,9 +48,14 @@
 #' @param rjoint 		name of joint random generating function
 #' @param box 			simulation box
 #' @param mu  			main orientation axis, \code{mu=c(0,1,0)} (default)
-#' @param perfect 		logical: \code{perfect=TRUE} (default) simulate perfect
-#' @param pl  			optional: print level
-#' @param label 		optional: set a label to all generated spheroids
+#' @param dz		    distance of the intersecting x-, y-plane to the origin
+#' @param n			    normal vector of intersting plane
+#' @param profiles 		logical, \code{profiles=FALSE} (default), whether the simulated system of cylinder is intersected afterwards in which case
+#' 					    only sections profiles are returned 
+#' @param intern        logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window
+#' @param perfect 		logical, \code{perfect=TRUE} (default) simulate perfect
+#' @param pl  			integer, print level and return value definition
+#' @param label 		character, label passed to each simulated cylinder, `\code{N}` (default)
 #' @return 				list of cylinders
 #'
 #' @example inst/examples/cylinder.R
@@ -69,7 +70,8 @@
 #' @rdname simCylinderSystem
 #' @export
 simCylinderSystem <- function(theta, lam, size="const", shape="const",
-	orientation="rbetaiso", rjoint=NULL, box=list(c(0,1)), mu=c(0,1,0), perfect=TRUE, pl=0, label="N")
+	orientation="rbetaiso", rjoint=NULL, box=list(c(0,1)), mu=c(0,1,0),
+	dz=0, n=c(0,1,0), profiles = FALSE, intern=FALSE, perfect=TRUE, pl=0, label="N")
 {
 	if(!is.list(theta))
 		stop("Expected 'theta' as list of named  arguments.")
@@ -100,18 +102,16 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 			stop("Expected list as return type in user defined function.")
 		if(inherits(funret,"try-error"))
 			stop(paste("Error in user defined function ",rjoint,".",sep=""))
-		if(any(!(c("a","b","u","shape","theta","phi") %in% names(funret))))
+		if(any(!(c("h","r","u","theta","phi") %in% names(funret))))
 			stop("Argument names of return value list does not match required arguments.")
 
-		structure(.Call(C_CylinderSystem,
-						list("lam"=lam,"rmulti"=theta),
-						list("rdist"=rjoint,"box"=box,"perfect"=0,
-							 "pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label)),
-			 "mu"= mu, "lam"=lam, "box" = box,"perfect"=perfect)
-
+		cond <- list("rdist"=rjoint,"box"=box,"perfect"=as.integer(perfect),
+				"lam"=lam, "pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=as.character(label),
+				"dz"=dz, "nsect"=n, "intern"=as.integer(intern))
+		
 	} else  {
-		theta <- c("lam"=lam,theta)
-		it <- match(names(theta), c("lam","size","shape","orientation"))
+	
+		it <- match(names(theta), c("size","shape","orientation"))
 		if(!is.list(theta) || anyNA(it))
 			stop("Expected 'theta' as list of named arguments `size`, `shape`, `orientation`.")
 		if(!is.list(theta$size) || !is.list(theta$shape) || !is.list(theta$orientation) )
@@ -122,10 +122,14 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 			stop("Undefined distribution function for orientation/direction.")
 		
 		cond <- list("rdist"=list("size"=size,"shape"=shape,"orientation"=orientation),
-					 "box"=box, "pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,"perfect"=as.integer(perfect))
+					 "lam"=lam, "box"=box, "pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
+					 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),
+					 "perfect"=as.integer(perfect))
 
 		if(cond$rdist$shape != "const") {
-			 if(exists(cond$rdist$shape, mode="function")) {
+			if(length(theta$shape)==0L)
+				stop("Arguments for shape distribution must be given.")
+		} else if(exists(cond$rdist$shape, mode="function")) {
 				 # check arguments of supported distribution functions
 				 fargs <- names(formals(cond$rdist$shape))
 				 if(cond$rdist$shape %in% c("rbeta","rgamma","runif"))
@@ -133,9 +137,9 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 				 it <- match(names(theta$shape),fargs)
 				 if(length(it)==0 || anyNA(it))
 					 stop(paste("Arguments of 'shape' must match formal arguments of function ",cond$rdist$shape,sep=""))
-			 } else
-				 stop(paste("Undefined `", cond$rdist$shape, "` distribution function."))
-		}			 
+		} else
+		    stop(paste("Undefined `", cond$rdist$shape, "` distribution function."))
+					 
 			 
 		if(cond$rdist$size == "const") {
 			 if(length(theta$size)==0L)
@@ -155,11 +159,18 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 			if(length(it)==0 || anyNA(it))
 				stop(paste("Arguments of 'size' must match formal arguments of function `",cond$rdist$size, "`.",sep=""))
 			
-		} else
+		} else {
 			stop(paste("Undefined `", cond$rdist$size, "`  distribution function."))
-		 
-		structure(.Call(C_CylinderSystem, theta, cond), "mu"= mu, "lam"=lam, "box" = box,"perfect"=perfect)
+		}		
 	}
+	
+	if(profiles) {
+		.Call(C_SimulateCylindersAndIntersect, theta, cond)	
+	} else {
+		structure(.Call(C_CylinderSystem, theta, cond),
+				"mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)
+	}
+	
 }
 
 .cylVol <- function(X) {
@@ -178,6 +189,7 @@ simCylinderSystem <- function(theta, lam, size="const", shape="const",
 #' @param draw.box	    logical, if \code{TRUE}, draw the bounding box
 #' @param clipping 		logical, if \code{TRUE}, clip to the bounding box
 #' @param ...			further material properties passed to 3d plotting functions
+#' 
 #' @return NULL
 #' @author M. Baaske
 #' @rdname cylinders3d
@@ -283,5 +295,5 @@ cylinderIntersection <- function(S, d, n = c(0,1,0), intern=FALSE, pl=0) {
 #' @rdname simCylinderIntersection
 #' @export
 simCylinderIntersection <- function(theta, cond) {
-	.Call(C_SimulateCylindersAndIntersect,c("lam"=cond$lam,theta), cond, cond$nsect)
+	.Call(C_SimulateCylindersAndIntersect,c("lam"=cond$lam,theta), cond)
 }

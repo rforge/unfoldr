@@ -90,6 +90,14 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' only one element, i.e. \code{list(c(0,1)}, the same extent is used for the other dimensions.
 #' If \code{rjoint} names a joint random generating function then argument \code{size} is ignored.
 #' 
+#' For the purpose of exact simulation [2] setting \code{size="rbinorm"} declares a bivariate normal
+#' size-shape distribution. For a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho},
+#' the length of the semi-major axis is given by \eqn{exp(x)} with a (logit-transformed) shape parameter \eqn{s=1/(1+exp(-y))}.
+#' This modification leads to a lognormally distributed length of the semi-major axis. The direction \code{u} of the spheroid is
+#' given by the major axis independent of the size and shape of the spheroid. The following univariate distributions of
+#' the semi-major axis length and the shape are also available: `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`
+#' distribution. Use `\code{const}` for a constant length or shape. Only for `\code{rbinorm}` the exact simulation type can be used as an option if \code{perfect=TRUE}.
+#' 
 #' For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivariate
 #' size-shape distribution which leads to a log normal distributed semi-major axis \code{a} and a scaled
 #' semi-minor axis length \code{c}. If \eqn{[X,Y]} follow a bivariate normal distribution with correlation parameter
@@ -108,19 +116,25 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' The argument \code{pl} denotes the print level of output information during simulation.
 #' Currently, only \code{pl}=0 for no output and \code{pl}>100 for some additional info is implemented.
 #'
-#' @param theta simulation parameters
-#' @param lam   mean number of spheroids per unit volume
-#' @param size  name of random generating function for size distribution
-#' @param shape \code{shape="const"} (default) as a constant shape
-#' @param orientation name of random generating function for orientation distribution
-#' @param stype spheroid type
-#' @param rjoint name of joint random generating function
-#' @param box simulation box
-#' @param mu  main orientation axis, \code{mu=c(0,0,1)} (default)
-#' @param perfect logical: \code{perfect=TRUE} (default) simulate perfect
-#' @param pl  optional: print level
-#' @param label optional: set a label to all generated spheroids
-#' @return list of spheroids either of class \code{prolate} or \code{oblate}
+#' @param theta 	simulation parameters
+#' @param lam   	mean number of spheroids per unit volume
+#' @param size  	name of size distribution function 
+#' @param shape 	name of shape distribution function  
+#' @param orientation name of direction distribution function
+#' @param stype    spheroid type, either "\code{prolate}" or "\code{oblate}"
+#' @param rjoint   name of joint distribution function
+#' @param box	   simulation box
+#' @param mu	   main orientation axis, \code{mu=c(0,0,1)} (default), as the alignment of the coordinate system
+#' @param dz	   distance of the intersecting x-, y-plane to the origin
+#' @param n		   normal vector of intersting plane
+#' @param profiles logical, \code{profiles=FALSE} (default), whether the simulated system of spheroids is intersected afterwards in which case
+#' 				   only sections profiles are returned 
+#' @param intern   logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window
+#' @param perfect  logical, \code{perfect=TRUE} (default) simulate perfect
+#' @param pl  	   integer, print level and return value definition
+#' @param label    character, label passed to each simulated spheroid, ´\code{N}´ (default)
+#' 
+#' @return 		   list of spheroids either of class ´\code{prolate}´ or ´\code{oblate}´
 #'
 #' @example inst/examples/sim.R
 #'
@@ -135,7 +149,8 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' @export
 simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientation="rbetaiso",
 								stype=c("prolate","oblate"),rjoint=NULL, box=list(c(0,1)),
-								mu=c(0,0,1), perfect=TRUE, pl=0, label="N")
+								 mu=c(0,0,1), dz=0, n=c(0,1,0), profiles = FALSE, intern=FALSE,
+								  perfect=TRUE, pl=0, label="N")
 {
 	it <- pmatch(stype,c("prolate","oblate"))
 	if(length(it)==0 || is.na(it)) stop("Spheroid type 'stype' is either 'prolate' or 'oblate'.")
@@ -177,17 +192,14 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 			stop(paste0("List of named arguments of user defined function does not match names: ",fargs))
 	    }
 
-		structure(.Call(C_EllipsoidSystem,
-						list("lam"=lam,"rmulti"=theta),
-						list("stype"=stype,"rdist"=rjoint,"box"=box,
-							 "pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
-							 "perfect"=as.integer(perfect))),
-			    "mu"= mu, "lam"=lam, "box" = box,"perfect"=perfect)
-
+		cond <- list("stype"=stype,"rdist"=rjoint,"box"=box,
+					"lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
+					"dz"=dz, "nsect"=n, "intern"=as.integer(intern),
+					"perfect"=as.integer(perfect))
+			
 	} else  {
-		
-		theta <- c("lam"=lam,theta)
-		it <- match(names(theta), c("lam","size","shape","orientation"))
+				
+		it <- match(names(theta), c("size","shape","orientation"))
 		if(!is.list(theta) || anyNA(it))
 			stop("Expected 'theta' as list of named arguments `size`, `shape`, `orientation`.")
 		
@@ -198,24 +210,26 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 		if(is.na(it) && !exists(orientation, mode="function"))
 		 stop("Undefined distribution function for the orientation/direction.")		
 		
-		cond <- list("stype"=stype,
+		cond <- list("stype"=stype, "lam"=lam,
 				     "rdist"=list("size"=size,
 							      "shape"=if(length(theta$shape) == 0L) list(1,1) else shape,
 								  "orientation"=if(length(theta$orientation) == 0L) list("kappa"=1) else orientation),
-					 "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,"perfect"=as.integer(perfect))
+					 "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,
+					 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),"label"=label,"perfect"=as.integer(perfect))
 
 		if(cond$rdist$shape != "const") {
-			if(exists(cond$rdist$shape, mode="function")) {
-				# check arguments of supported distribution functions
-				fargs <- names(formals(cond$rdist$shape))
-				if(cond$rdist$shape %in% c("rbeta","rgamma","runif"))
-					fargs <- fargs[-1]				
-				it <- match(names(theta$shape),fargs)
-				if(length(it)==0 || anyNA(it))
-					stop(paste("Arguments of 'shape' must match formal arguments of function ",cond$rdist$shape,sep=""))
-			} else
-				stop(paste("Undefined `", cond$rdist$shape, "` distribution function."))
-		}
+			if(length(theta$shape)==0L)
+				stop("Arguments for shape distribution must be given.")
+		} else if(exists(cond$rdist$shape, mode="function")) {
+			# check arguments of supported distribution functions
+			fargs <- names(formals(cond$rdist$shape))
+			if(cond$rdist$shape %in% c("rbeta","rgamma","runif"))
+				fargs <- fargs[-1]				
+			it <- match(names(theta$shape),fargs)
+			if(length(it)==0 || anyNA(it))
+				stop(paste("Arguments of 'shape' must match formal arguments of function ",cond$rdist$shape,sep=""))
+		} else
+			stop(paste("Undefined `", cond$rdist$shape, "` distribution function."))
 		
 		if(cond$rdist$size == "const") {
 	         if(length(theta$size)==0L)
@@ -235,12 +249,16 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 			 it <- match(names(theta$size),fargs)
 			 if(length(it)==0 || anyNA(it))
 				 stop(paste("Arguments of 'size' must match formal arguments of function ",cond$rdist$size,sep=""))
-			 
-			 structure(.Call(C_EllipsoidSystem, theta, cond),
-					 "mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)
-		} else
-			 stop(paste("Undefined `", cond$rdist$size, "` distribution function."))
-			
+			 		
+		 } else {
+			stop(paste("Undefined `", cond$rdist$size, "` distribution function."))
+		 }			
+	}
+	if(profiles) {
+		.Call(C_SimulateSpheroidsAndIntersect, theta, cond)
+	} else {
+		structure(.Call(C_EllipsoidSystem, theta, cond),
+				"mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)
 	}
 }
 
@@ -359,25 +377,6 @@ spheroidIntersection <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
 	if(!(class(S) %in% c("prolate","oblate")))
 		stop("Spheroids type does not match.")
 	.Call(C_IntersectSpheroidSystem,as.character(substitute(S)),n, d, intern, .GlobalEnv, pl)	
-}
-
-
-#' Simulate spheroid intersection
-#' 
-#' Simulate a spheroid system and intersect
-#' 
-#' The function first simulates a spheroid system according to the parameter \code{theta} and only
-#' returns the resulting section profiles.
-#' 
-#' @param theta simulation parameters
-#' @param cond  conditioning object for simulation and intersection
-#' 
-#' @return list of intersection profiles
-#' @author M. Baaske
-#' @rdname simSpheroidIntersection 
-#' @export
-simSpheroidIntersection <- function(theta, cond) {
-	.Call(C_SimulateSpheroidsAndIntersect, c("lam"=cond$lam,theta), cond, cond$nsect)
 }
 
 #' Generate 3D plot of spheroid system

@@ -7,36 +7,52 @@
 # 
 ###############################################################################
 
+
+.checkArgs <- function(optlist, options) {
+	if(is.null(names(options)))
+		stop("Options should be a list of named arguments.")
+	if (!is.list(options) || "" %in% names(options))
+		stop("Argument ",as.character(substitute(options)), "  must be a list of named (character) elents.")
+	optnames <- (names(options) %in% names(optlist))
+	if (!all(optnames)) {
+		unames <- as.list(names(options)[!(optnames)])
+		stop(paste(c("Unknown arguments in ",as.character(substitute(options))," : ",do.call("paste", c(unames, sep = ", "))), collapse=" "))
+	}	
+	return (0)
+}
+
+
 #' Simulation of sphere system
 #'
-#' The function simulates a Poisson sphere system of
-#' intensity \code{lam} where each sphere center is uniformly
-#' distributed in a box. The function returns a list of spheres with elements
-#' \code{id}, \code{center} and radius \code{r}.
+#' The function simulates a Poisson sphere system.
 #'
-#' Any random generating function, passed as a name, for the radii distribution is accepted as long as
-#' the formal function parameter names match the actual parameter names exactly as defined in
-#' the parameter list \code{theta}.
+#' Any distribution for the radii can be specified as a name in `\code{rdist}`as long as the formal named function parameters
+#' match the actual named parameters exactly as defined in the parameter list `\code{theta}`.
 #'
-#' The simulation box is of type list. The vector arguments correspond to the lower and upper points in x,y
-#' and z direction. If \code{box} has only one element, i.e. \code{list(c(0,1)}, the same extent is used for
-#' the other dimensions. The argument \code{pl} denotes the print level of information during simulation.
-#' Currently, only \code{pl=0} for no output and \code{pl}>100 is implemented. Argument \code{cond$rdist} is of
-#' type string naming the (user defined) radii random generating function.
-#' Setting \code{size} equal to 'rlnorm' generates log normally distributed radii for a stationary Poisson
-#' ball system according to a general approach of perfect simulation (see reference below). Other distributions
-#' currently available are the beta, gamma and uniform distribution. Only simulations done by \code{rlnorm} can use
-#' the exact simulation type if \code{perfect=TRUE} otherwise it is ignored.
+#' The simulation box is given by a list of length three. Each element is a vector corresponding to the lower and upper points in x-, y- and z-direction in
+#' the sense of a canonically oriented simulation box. If \code{box} has only one element, i.e. \code{list(c(0,1)}, the same extent
+#' is used for the remaining dimensions. The argument \code{pl} denotes the print level of information during simulation and is used to set the type of the
+#' return value. If \code{pl=10} only the radii are returned otherwise a full list of spheres. The argument `\code{rdist}` declares
+#' the name of the (user defined) radii distribution. Setting \code{rdist="rlnorm"} leads to lognormally distributed
+#' radii of the spheres. In this case an exact simulation [1] is available if \code{perfect=TRUE}. Currently available other
+#' distributions are defined by `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. Use `\code{const}` for a constant
+#' radius of all spheres. 
 #'
-#' @param theta   simulation parameters
-#' @param lam     mean number of spheres per unit volume
-#' @param rdist   string, radii random generating function name
-#' @param box 	  simualtion box
-#' @param perfect logical: \code{perfect=TRUE} (default) simulate perfect
-#' @param pl 	  print level
-#' @param label   some character as a label, `\code{N}` (default)
+#' @param theta    simulation parameters
+#' @param lam      mean number of spheres per unit volume
+#' @param rdist    name of radii distribution
+#' @param box 	   simualtion box
+#' @param dz	   distance of the intersecting x-, y-plane to the origin
+#' @param n		   normal vector of intersting plane
+#' @param profiles logical, \code{profiles=FALSE} (default), whether the simulated system of spheres is intersected afterwards in which case
+#' 				   only sections profiles are returned 
+#' @param intern   logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window  
+#' @param perfect  logical, \code{perfect=TRUE} (default), exact simulation
+#' @param pl 	   integer, print level and return value definition
+#' @param label    character, label passed to each simulated sphere, ´\code{N}´ (default)
 #'
-#' @return list of class \code{spheres} if \code{pl}>100 or empty list
+#' @return The function either returns a list of spheres with elements \code{id}, \code{center} and radius \code{r} of class \code{spheres}
+#'  	   or a vector of radii.
 #'
 #' @references
 #'	\itemize{
@@ -50,14 +66,14 @@
 #' @author M. Baaske
 #' @rdname simSphereSystem
 #' @export
-simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0, label="N") {
-	theta <- list("lam"=lam,"radii"=theta)
+simSphereSystem <- function(theta, lam, rdist, box=list(c(0,1)), dz=0, n=c(0,1,0),
+							 profiles = FALSE, intern=FALSE, perfect=TRUE, pl=0, label="N")
+{
 	if(!is.numeric(lam) || !(lam>0) )
-		stop("Expected 'lam' as non-negative numeric argument")
-	
-	if(!is.list(theta$radii))
+		stop("Expected 'lam' as non-negative numeric argument")	
+	if(!is.list(theta))
 		stop("Expected 'radii' as list of named arguments.")
-	if(length(theta$radii) == 0L)
+	if(length(theta) == 0L)
 		stop("Arguments for the `radii` distribution must be given.")
 	if(length(box)==0 || !is.list(box))
 		stop("Expected 'box' as list.")
@@ -65,27 +81,42 @@ simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0,
 		box <- rep(box[1],3)
 	if(is.null(names(box)) || !(names(box) %in% c("xrange","yrange","zrange")))
 		names(box) <- c("xrange","yrange","zrange")
+	if(sum(n)>1 )
+	 stop("Normal vector expected as, e.g. c(0,1,0).")
+	
+ 	cond <- list("rdist"=rdist,
+				 "lam"=lam,
+				 "box"=box,
+				 "pl"=pl,
+				 "rho"=.GlobalEnv,
+			     "perfect"=as.integer(perfect),
+				 "dz"=dz, "nsect"=n,
+				 "intern"=as.integer(intern),
+				 "label"=as.character(label))
 
-	cond <- list("rdist"=rdist,"box"=box, "pl"=pl,
-			     "rho"=.GlobalEnv, "perfect"=as.integer(perfect),
-				 "label"=label)
-
-	if(cond$rdist=="const") {}	
-	else if(exists(cond$rdist, mode="function")) {
+	if(cond$rdist=="const") {
+		if(length(theta)==0L)
+			stop("Arguments for shape distribution must be given.")
+	} else if(exists(cond$rdist, mode="function")) {
 		fargs <- names(formals(cond$rdist))
 		if(cond$rdist %in% c("rlnorm","rbeta","rgamma","runif"))
 		  fargs <- fargs[-1]
 
-		it <- match(names(theta$radii),fargs)
+		it <- match(names(theta),fargs)
 		if(length(it)==0 || anyNA(it))
-			stop(paste0("Arguments of 'radii' must match formal arguments of function: ",cond$rdist))
+			stop(paste0("Arguments of 'theta' must match formal arguments of function: ",cond$rdist))
 		
 	} else
 	   stop(paste("Undefined distirbution function `", cond$rdist, "` for radii."))
-   
-    structure(.Call(C_SphereSystem, theta, cond),
-		   "lam"=lam, "box" = box, "perfect"=perfect)
-
+   	
+    if(profiles) {
+		.Call(C_SimulateSpheresAndIntersect, theta, cond)
+	} else {
+		structure(.Call(C_SphereSystem, theta, cond),
+			"lam"=lam, "box" = box, "perfect"=perfect
+		)	
+			
+	}
 }
 
 #' Sphere planar section
@@ -96,23 +127,54 @@ simSphereSystem <- function(theta,lam,rdist,box=list(c(0,1)),perfect=TRUE, pl=0,
 #' the function returns the section radii from intersecting all spheres
 #' stored in \code{S}.
 #'
-#' @param S 		list of spheres, see \code{\link{simSphereSystem}}
+#' @param S 		list of spheres of class \code{sphere}, see \code{\link{simSphereSystem}}
 #' @param d 		distance of the intersecting xy-plane to the origin
 #' @param intern 	logical, \code{FALSE} (default), return all planar sections otherwise
 #' 					only those which have their centers inside the intersecting window
 #' @param pl		print level, default \code{pl=0}
 #'
-#' @return  vector of circle diameters
+#' @return 			numeric vector of circle diameters
 #' 
 #' @author M. Baaske
 #' @rdname planarSection
 #' @export
-planarSection <- function(S,d,intern=FALSE, pl=0) {
-	stopifnot(is.logical(intern))
-	if(!is.list(S))
+planarSection <- function(S, d, intern=FALSE, pl=0) {
+   stopifnot(is.logical(intern))
+   if(!(c("sphere") %in% class(S) ))
 	 stop("Expected spheres as list argument.")
-	sapply(.Call(C_IntersectSphereSystem,as.character(substitute(S)),c(0,0,1),d,intern,.GlobalEnv,pl),
-		function(x) 2.0*x$r)
+  sp <- .Call(C_IntersectSphereSystem,as.character(substitute(S)),c(0,0,1),d,intern,.GlobalEnv,pl)
+  if(is.list(sp))								# full list of section profiles
+   return (sapply(sp,function(x) 2.0*x$r))		
+  else return (2*sp)							# only radii are returned
+}
+
+#' Sphere intersection
+#' 
+#' Intersect a sphere system
+#' 
+#' Given a sphere system obtained from \code{\link{simSphereSystem}}
+#' the function returns the section radii from intersecting all spheres
+#' stored in \code{S}.
+#'
+#' @param S 		list of spheres, see \code{\link{simSphereSystem}}
+#' @param d 		distance of the intersecting x-, y-plane to the origin
+#' @param n			normal vector of intersting plane
+#' @param intern 	logical, \code{FALSE} (default), return all planar sections otherwise
+#' 					only those which have their centers inside the intersecting window
+#' @param pl		print level, default \code{pl=0}
+#'
+#' @return 			either a list of section profiles or, if \code{pl=10}, a numeric vector of radii only
+#' 
+#' @author M. Baaske
+#' @rdname sphereIntersection
+#' @export 
+sphereIntersection <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {	
+	stopifnot(is.logical(intern))
+	if(sum(n)>1 )
+	  stop("Normal vector is like c(0,1,0). ")
+    if(!(c("sphere") %in% class(S) ))
+		stop(paste0("Class of argument `S` is ",class(S), " but must be `sphere`."))
+	.Call(C_IntersectSphereSystem,as.character(substitute(S)), n, d, intern, .GlobalEnv, pl)	
 }
 
 #' Binning numeric values
