@@ -899,16 +899,13 @@ namespace STGM {
       typedef enum { UNIFORM_D = 0, BETAISOTROP_D = 1, MISES_D = 2} direction_type;
 
      CSpheroid(CVector3d center, double a, double c, double b, CVector3d u,
-                 double alpha, double theta, double phi, double r, int id,
-                 const char *label="N", int interior=1)
-     :  m_label(label),
+                 double theta, double phi, int id, const char *label="N", int interior=1)
+      : m_label(label),
         m_center(center),
         m_u(u),
         m_a(a), m_b(b), m_c(c), 		// a,c: are 1st and 2nd shorter semi-axes, b:   longer semi-axis
-	    m_alpha(alpha),
-        m_theta(theta),
+	    m_theta(theta),
         m_phi(phi),
-        m_r(r),
         m_id(id),
         m_crack(0),
         m_interior(interior)
@@ -976,8 +973,6 @@ namespace STGM {
        double c() const { return m_c;  }
        double b() const { return m_b;  }
 
-       double alpha() const { return m_alpha;  }
-
        const CVector3d& u() const { return m_u; }
 
        double phi()   const { return m_phi; }
@@ -989,9 +984,6 @@ namespace STGM {
        int &interior() { return m_interior; }
        int interior() const { return m_interior; }
 
-       double &radius() { return m_r; }
-       double radius() const { return m_r; }
-
        const char * label() const { return m_label; }
 
        inline bool isInWindow(STGM::CWindow &win) {   return false;   }
@@ -1000,8 +992,8 @@ namespace STGM {
     private:
       CVector3d m_center, m_u;
       double m_a, m_b, m_c;
-      double m_alpha,m_theta, m_phi, m_r;
-      int m_id, m_crack,m_interior;
+      double m_theta, m_phi;
+      int m_id, m_crack, m_interior;
       CMatrix3d m_R, m_A, m_invA;
 
    };
@@ -1018,13 +1010,12 @@ namespace STGM {
       typedef enum { ELONG = 0, SPHERO = 1, CYLINDER = 2 } cylinder_type;
 
       CCylinder(CVector3d &center, CVector3d &u, double h, double r,
-                 double theta, double phi, double radius, int id, const char *label="N", int interior=1 ) :
+                 double theta, double phi, int id, const char *label="N", int interior=1 ) :
             m_label(label),
             m_center(center),
             m_u(u),
             m_h(h),
             m_r(r),
-            m_radius(radius),
             m_theta(theta),
             m_phi(phi),
             m_id(id),
@@ -1079,12 +1070,6 @@ namespace STGM {
         double &r() { return m_r; }
 
         /**
-        * @return exact simulation radius
-        */
-        double radius() const { return m_radius; }
-        double &radius() { return m_radius; }
-
-        /**
         * @return Height of the Cylinder.
         */
         double h() const { return m_h; }
@@ -1134,7 +1119,7 @@ namespace STGM {
         CVector3d m_center, m_u;
         CVector3d m_origin0, m_origin1;
         CMatrix3d m_R;
-        double m_h, m_r, m_radius;
+        double m_h, m_r;
         double m_theta, m_phi;
         int m_id, m_interior, m_crack;
     };

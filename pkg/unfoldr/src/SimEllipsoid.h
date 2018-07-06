@@ -19,11 +19,11 @@ extern "C" {
  //
  SEXP EllipsoidSystem(SEXP R_param, SEXP R_cond);
 
- SEXP SimulateSpheroidsAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n);
+ SEXP DigitizeProfiles(SEXP R_S, SEXP R_cond, SEXP R_delta);
+
+ SEXP SimulateSpheroidsAndIntersect(SEXP R_param, SEXP R_cond);
 
  SEXP IntersectSpheroidSystem(SEXP R_S, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R_env, SEXP R_pl);
-
- SEXP DigitizeEllipseIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta);
 
  SEXP UpdateIntersections(SEXP RS, SEXP R_box);
 
@@ -43,7 +43,7 @@ class CSpheroidSystem
   CSpheroid::spheroid_type m_stype;
 
   CSpheroidSystem(CBox3 &box, double lam, CVector3d &mu, CSpheroid::spheroid_type stype, int perfect = 1)
-    :  m_stype(stype), m_box(box), m_lam(lam), m_maxR(0), m_mu(mu),  num(0), m_perfect(perfect)
+    :  m_stype(stype), m_box(box), m_lam(lam), m_mu(mu),  num(0), m_perfect(perfect)
   {
   };
 
@@ -62,7 +62,6 @@ class CSpheroidSystem
   const STGM::Spheroids &refObjects() const { return m_spheroids; }
 
   inline size_t size()  { return m_spheroids.size(); }
-  inline double maxR()  { return m_maxR; }
   inline double lam()   { return m_lam; }
 
   const STGM::CBox3 &box() const { return m_box; }
@@ -78,7 +77,7 @@ class CSpheroidSystem
  private:
   CBox3 m_box;
 
-  double m_lam, m_maxR;
+  double m_lam;
   CVector3d m_mu;
 
   Spheroids m_spheroids;

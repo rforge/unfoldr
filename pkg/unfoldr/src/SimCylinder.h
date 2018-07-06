@@ -19,11 +19,9 @@ extern "C" {
 
   SEXP CylinderSystem(SEXP R_param, SEXP R_cond);
 
-  SEXP CDigitizeCylinderIntersections(SEXP ext, SEXP R_n, SEXP R_z, SEXP R_delta);
-
   SEXP IntersectCylinderSystem(SEXP R_var, SEXP R_n, SEXP R_dz, SEXP R_intern, SEXP R_env, SEXP R_pl);
 
-  SEXP SimulateCylindersAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n);
+  SEXP SimulateCylindersAndIntersect(SEXP R_param, SEXP R_cond);
 
 #ifdef __cplusplus
 }

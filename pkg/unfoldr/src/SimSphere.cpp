@@ -49,32 +49,33 @@ STGM::CSphere convert_C_Sphere(SEXP R_sphere) {
   return STGM::CSphere(REAL(R_ctr)[0],REAL(R_ctr)[1],REAL(R_ctr)[2],r,id,label,interior);
 }
 
-STGM::CBoolSphereSystem * allocSphereSystem(STGM::CBox3 &box, double lam) {
+STGM::CBoolSphereSystem * allocSphereSystem(STGM::CBox3 &box, double lam, int perfect) {
 	/* set up sphere system */
 	STGM::CBoolSphereSystem *sp = (STGM::CBoolSphereSystem*)Calloc(1,STGM::CBoolSphereSystem);
 	try {
-   	 new(sp)STGM::CBoolSphereSystem(box,lam);
+   	 new(sp)STGM::CBoolSphereSystem(box,lam,perfect);
 	} catch(...) {
 	 Rf_error(_("InitSpheredSystem(): Memory allocation error for sphere system."));
 	}
 	return sp;
 }
 
-STGM::CBoolSphereSystem * InitSphereSystem(SEXP R_param, SEXP R_cond) {
+STGM::CBoolSphereSystem * InitSphereSystem(SEXP R_cond) {
   SEXP R_box = R_NilValue;
   PROTECT(R_box  = getListElement( R_cond, "box"));
 
   double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
   double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
   double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
-  double lam   = NUMERIC_POINTER( getListElement( R_param, "lam"))[0];
 
   /*  print level */
   PL = INTEGER(AS_INTEGER(getListElement( R_cond,"pl")))[0];
+  int perfect = INTEGER_POINTER(getListElement( R_cond,"perfect"))[0];
+  double lam  = NUMERIC_POINTER( getListElement( R_cond, "lam"))[0];
 
   /* simulation box */
   STGM::CBox3 box(boxX,boxY,boxZ);
-  STGM::CBoolSphereSystem * sp = allocSphereSystem(box,lam);
+  STGM::CBoolSphereSystem * sp = allocSphereSystem(box,lam,perfect);
   UNPROTECT(1);
   return sp;
 }
@@ -84,17 +85,20 @@ template< typename  F>
 void STGM::CBoolSphereSystem::simSpheres(F f, const char *label) {
   int nTry = 0;
   while(num==0 && nTry<MAX_ITER) {
-        num = rpois(m_box.volume()*m_lam);
-        ++nTry;
+     num = rpois(m_box.volume()*m_lam);
+     ++nTry;
   }
   m_spheres.reserve(num);
-
+  if(PL>10){
+   Rprintf("box volume: %f, lam %f, number of spheres to simulate %d \n",m_box.volume(),m_lam,num);
+  }
   double m[3] = {m_box.m_size[0]+m_box.m_low[0],
                  m_box.m_size[1]+m_box.m_low[1],
                  m_box.m_size[2]+m_box.m_low[2]};
 
   /* loop over all */
-  for (size_t niter=0;niter<num; niter++) {
+  for (size_t niter=0;niter<num; niter++)
+  {
       STGM::CVector3d center(runif(0.0,1.0)*m[0],runif(0.0,1.0)*m[1],runif(0.0,1.0)*m[2]);
       m_spheres.push_back( STGM::CSphere(center, f(), m_spheres.size()+1,label));
   }
@@ -102,7 +106,7 @@ void STGM::CBoolSphereSystem::simSpheres(F f, const char *label) {
 
 void STGM::CBoolSphereSystem::simSpheresPerfect(double mx, double sdx, const char *label, int perfect) {
   int nTry=0, k=0;
-  double p[4],sdx2=SQR(sdx), mu=0,r=0;;
+  double p[4],sdx2=SQR(sdx),mu=0,r=0;;
 
   if(perfect) {
    cum_prob_k(mx,sdx2,m_box.m_up[0],m_box.m_up[1],m_box.m_up[2],p,&mu);
@@ -115,10 +119,10 @@ void STGM::CBoolSphereSystem::simSpheresPerfect(double mx, double sdx, const cha
   }
   m_spheres.reserve(num);
 
-  if(PL>100) {
+  if(PL>10) {
      if(perfect){
-       Rprintf("Spheres (perfect) simulation, bivariate lognormal length/shape: \n");
-       Rprintf("\t size distribution: %f %f %f \n",  mx,sdx,mu);
+       Rprintf("Spheres (perfect) simulation, lognormal radius. \n");
+       Rprintf("\t size distribution: mx=%f, sdx=%f, mu=%f \n",  mx,sdx,mu);
        Rprintf("\t cum sum of probabilities: %f, %f, %f, %f \n",p[0],p[1],p[2],p[3]);
      }
   }
@@ -148,25 +152,26 @@ void STGM::CBoolSphereSystem::simSpheresPerfect(double mx, double sdx, const cha
 }
 
 
-void STGM::CBoolSphereSystem::simSphereSys(SEXP R_param, SEXP R_cond) {
-  SEXP R_fname, R_args, R_label;
+void STGM::CBoolSphereSystem::simSphereSys(SEXP R_args, SEXP R_cond) {
+  SEXP R_fname, R_label;
   PROTECT(R_fname = getListElement( R_cond, "rdist"));
-  PROTECT(R_args  = getListElement( R_param,"radii"));
   PROTECT(R_label = getListElement( R_cond, "label"));
 
   /* radii distribution */
    const char *ftype = CHAR(STRING_ELT(R_fname, 0));
    const char *label = translateChar(asChar(R_label));
 
+   GetRNGstate();
    if (!std::strcmp( ftype, "rlnorm") ||
 	   !std::strcmp( ftype, "rbeta" ) ||
 	   !std::strcmp( ftype, "rgamma") ||
 	   !std::strcmp( ftype, "runif" ) ||
 	   !std::strcmp( ftype, "const" ))
    {
-	   // simulate
-	   double p1=REAL_ARG_LIST(R_args,0),
-			  p2=LENGTH(R_args)>1 ? REAL_ARG_LIST(R_args,1) : 0;
+	   double p1 = REAL_ARG_LIST(R_args,0);
+       double p2 = LENGTH(R_args) > 1 ? REAL_ARG_LIST(R_args,1) : 0;
+
+       if(PL>10) Rprintf("sphere simulation parameters: %f, %f ( %s ) \n",p1,p2, ftype);
 
 	   if(!std::strcmp(ftype, "rlnorm")) {
 		  int isPerfect = 0;
@@ -174,64 +179,69 @@ void STGM::CBoolSphereSystem::simSphereSys(SEXP R_param, SEXP R_cond) {
 		  PROTECT(R_exact = getListElement( R_cond, "perfect" ));
 		  if(!isNull(R_exact) && !isLogical(R_exact))
 			 isPerfect = LOGICAL(getListElement( R_cond, "perfect" ))[0];
-		  GetRNGstate();
 		  simSpheresPerfect(p1,p2,label,isPerfect);
-		  PutRNGstate();
 		  UNPROTECT(1);
 
 	   } else {
 		  R_rndGen_t<rdist2_t> rrandom(p1,p2,ftype);
-		  /* simulate with R's random generating functions */
 		  simSpheres<R_rndGen_t<rdist2_t> >(rrandom,label);
 	   }
 
    } else {
-
+	  if(PL>10) Rprintf("simulate acc. to user-defined distribution ... \n");
 	  SEXP R_call, R_rho;
 	  PROTECT(R_rho = getListElement( R_cond, "rho" ));
 	  PROTECT(R_call = getCall(R_fname,R_args,R_rho));
 	  R_eval_t<double> reval(R_call,R_rho);
-	  GetRNGstate();
 	  simSpheres<R_eval_t<double> &>(reval,label);
-	  PutRNGstate();
 	  UNPROTECT(2);
-
    }
 
-   if(PL>100){
-	Rprintf("Simulated %d spheres.\n", getNumSpheres());
-   }
-
-   UNPROTECT(3);
+   PutRNGstate();
+   if(PL>10) Rprintf("simulated %d spheres.\n", m_spheres.size());
+   UNPROTECT(2);
    return;
 }
 
 
 SEXP SphereSystem(SEXP R_param, SEXP R_cond)
 {
-  STGM::CBoolSphereSystem *sp = InitSphereSystem(R_param,R_cond);
-  if(PL>100)
+  STGM::CBoolSphereSystem *sp = InitSphereSystem(R_cond);
+  if(PL>10)
 	Rprintf("Simulate... \n");
 
   sp->simSphereSys(R_param,R_cond);
   STGM::Spheres &spheres = sp->refObjects();
 
   SEXP R_spheres = R_NilValue;
-  PROTECT(R_spheres = convert_R_SphereSystem(spheres, sp->box()));
-  SET_CLASS_NAME(R_spheres,"sphere");
+  if(PL==10) {
+      /* return radii only */
+	  size_t num = sp->getNumSpheres();
+	  Rprintf("number of spheres: %d \n", num);
 
+      PROTECT(R_spheres = allocVector(REALSXP,num));
+      for(size_t k=0; k<num; k++)
+        REAL(R_spheres)[k] = spheres[k].r();
+
+  } else {
+      /* return full circle object */
+      PROTECT(R_spheres = convert_R_SphereSystem(spheres, sp->box()));
+      SET_CLASS_NAME(R_spheres,"sphere");
+  }
+
+  _free_spheres(sp);
   UNPROTECT(1);
   return R_spheres;
 }
 
 
-SEXP SimulateSpheresAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n) {
+SEXP SimulateSpheresAndIntersect(SEXP R_param, SEXP R_cond) {
   int nprotect = 0;
   /* init */
-  STGM::CBoolSphereSystem *sp = InitSphereSystem(R_param,R_cond);
-  if(PL>100)
-  	Rprintf("Simulate and intersect ... \n");
-
+  STGM::CBoolSphereSystem *sp = InitSphereSystem(R_cond);
+  if(PL>10){
+  	Rprintf("simulate sphere system...\n");
+  }
   sp->simSphereSys(R_param,R_cond);
   STGM::Intersectors<STGM::CSphere>::Type objects;
 
@@ -240,6 +250,7 @@ SEXP SimulateSpheresAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n) {
   PROTECT(R_intern = AS_INTEGER(getListElement(R_cond,"intern"))); ++nprotect;
   if(!isNull(getListElement(R_cond,"intern")))
    intern = INTEGER(R_intern)[0];
+  else { warning(_("Undefined argument `intern`. Set to zero.")); }
 
   double dz = 0.0;
   SEXP R_dz = R_NilValue;
@@ -248,13 +259,20 @@ SEXP SimulateSpheresAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n) {
    dz = REAL(R_dz)[0];
   else warning(_("Intersection coordinate is set to zero"));
 
+  SEXP R_n = R_NilValue;
+  PROTECT(R_n = AS_NUMERIC(getListElement(R_cond,"nsect"))); ++nprotect;
+  if(isNull(R_n))
+   error(_("Normal vector defining intersecting plane is `Null`."));
+
   STGM::CVector3d n(REAL(R_n)[0],REAL(R_n)[1],REAL(R_n)[2]);
   STGM::CPlane plane(n,dz);
   //* intersection */
   sp->IntersectWithPlane(objects,plane,intern);
 
-  if(PL>100)
-   Rprintf("number of intersections: %d at %f \n",objects.size(),dz);
+  if(PL>10){
+	  Rprintf("Plane normal to: [%f %f %f] \n", n[0],n[1],n[2]);
+	  Rprintf("Number of intersections: %d at %f (intern=%d) \n",objects.size(),dz,intern);
+  }
 
   SEXP R_circles = R_NilValue;
   if(PL==10) {
@@ -281,7 +299,7 @@ SEXP IntersectSphereSystem(SEXP R_var, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R
   SEXP R_box;
   PROTECT(R_box = getAttrib(R_S, install("box")));
   if(isNull(R_box))
-    error(_("Sphere systen is missing a simulation box."));
+    error(_("Sphere system is missing a simulation box."));
 
   double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
   double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
@@ -293,15 +311,21 @@ SEXP IntersectSphereSystem(SEXP R_var, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R
  	error(_("Intensity parameter must be given as an attribute."));
   double lam = REAL(AS_NUMERIC(R_lam))[0];
 
-  STGM::CBox3 box(boxX,boxY,boxZ);
-  STGM::CBoolSphereSystem * sp = allocSphereSystem(box, lam);
+  SEXP R_perfect = R_NilValue;
+  PROTECT(R_perfect = getAttrib(R_S,install("perfect")));
+  if(isNull(R_perfect))
+  	  error(_("Whether simulation was exact or not must be given as an attribute."));
+  int perfect = INTEGER(AS_INTEGER(R_perfect))[0];
 
-  sp->refObjects() = convert_C_Spheres(R_var);
+  STGM::CBox3 box(boxX,boxY,boxZ);
+  STGM::CBoolSphereSystem * sp = allocSphereSystem(box, lam, perfect);
+
+  sp->refObjects() = convert_C_Spheres(R_S);
 
   STGM::CVector3d n(REAL(R_n)[0],REAL(R_n)[1],REAL(R_n)[2]);
   STGM::CPlane plane( n , REAL(AS_NUMERIC(R_z))[0]);
 
-  if(PL>100)
+  if(PL>10)
 	Rprintf("Intersect with plane: %d \n", sp->refObjects().size());
 
   STGM::Intersectors<STGM::CSphere>::Type objects;
@@ -309,9 +333,22 @@ SEXP IntersectSphereSystem(SEXP R_var, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R
   if(!isNull(R_intern))
    intern = INTEGER(AS_INTEGER(R_intern))[0];
   sp->IntersectWithPlane(objects,plane,intern);
+  if(PL>10) Rprintf("successful intersection of spheres. \n");
 
-  UNPROTECT(3);
-  return convert_R_Circles(objects);
+  SEXP R_circles = R_NilValue;
+  if(PL == 10) {
+      /* return radii only */
+      PROTECT(R_circles = allocVector(REALSXP,objects.size()));
+      for(size_t k=0;k<objects.size();k++)
+        REAL(R_circles)[k] = objects[k].getCircle().r();
+  } else {
+      /* return full circle object */
+      PROTECT(R_circles = convert_R_Circles(objects));
+  }
+
+  _free_spheres(sp);
+  UNPROTECT(5);
+  return R_circles;
 }
 
 
@@ -341,12 +378,14 @@ void STGM::CBoolSphereSystem::IntersectWithPlane(STGM::Intersectors<STGM::CSpher
 	   for(size_t i=0; i<m_spheres.size(); ++i) {
 	   		STGM::Intersector<STGM::CSphere> intersector( m_spheres[i], plane, m_box.m_size);
 	   		if(intersector.FindIntersection())
-	   		 objects.push_back( intersector );
+	   		   objects.push_back( intersector );
 	    }
    }
 }
 
 SEXP convert_R_SphereSystem(STGM::Spheres& spheres, STGM::CBox3 &box) {
+  if(PL>10) Rprintf("converting spheres ... \n");
+
   SEXP R_resultlist = R_NilValue;
   PROTECT(R_resultlist = allocVector(VECSXP, spheres.size()) );
 
@@ -356,8 +395,7 @@ SEXP convert_R_SphereSystem(STGM::Spheres& spheres, STGM::CBox3 &box) {
   SEXP R_tmp, R_center;
   const char *nms[] = {"id", "center", "r", ""};
 
-  for(size_t k=0;k<spheres.size();k++)
-  {
+  for(size_t k=0;k<spheres.size();k++) {
     STGM::CSphere &sphere = spheres[k];
 
     /* does the sphere touch the bounding box? (inner/outer particle) */
@@ -394,34 +432,39 @@ SEXP convert_R_SphereSystem(STGM::Spheres& spheres, STGM::CBox3 &box) {
 }
 
 STGM::Spheres convert_C_Spheres(SEXP R_spheres) {
-  SEXP R_tmp, R_ctr;
-  int id=0, N=length(R_spheres), interior=1;
-  STGM::Spheres spheres;
-  spheres.reserve(N);
+  if(PL>10) Rprintf("converting %d spheres ... \n", length(R_spheres));
 
-  double r=0;
+  SEXP R_tmp, R_ctr;
+  STGM::Spheres spheres;
+  spheres.reserve(length(R_spheres));
+
+  int interior = 1;
   const char *label = "N";
-  for(int i=0; i<N; i++) {
+  for(int i=0; i<length(R_spheres); i++) {
       PROTECT(R_tmp = VECTOR_ELT(R_spheres,i));
-      PROTECT(R_ctr = AS_NUMERIC( getListElement( R_tmp, "center")));
-      id = INTEGER(AS_INTEGER( getListElement( R_tmp, "id")))[0];
-      r = REAL(getListElement( R_tmp, "r"))[0];
+      PROTECT(R_ctr = AS_NUMERIC(getListElement( R_tmp, "center")));
 
       if(!isNull(getAttrib(R_tmp, install("label"))))
         label = translateChar(asChar(getAttrib(R_tmp, install("label"))));
-      else { label = "N"; }
+      else {
+    	label = "N";
+    	warning(_("Undefined attribute `label`. Set to 'N'."));
+      }
 
       if(!isNull(getAttrib(R_tmp, install("interior"))))
        interior = LOGICAL(getAttrib(R_tmp, install("interior")))[0];
       else {
-    	  interior=1;
-    	  warning(_("Cannot know whether sphere is really `interior`."));
+    	interior = 0;
+    	warning(_("Undefined attribute `interior`. Set to zero."));
       }
 
-      spheres.push_back(STGM::CSphere(REAL(R_ctr)[0],REAL(R_ctr)[1],REAL(R_ctr)[2],r,id,label,interior));
+      spheres.push_back(STGM::CSphere(REAL(R_ctr)[0],REAL(R_ctr)[1],REAL(R_ctr)[2],
+    		  REAL(getListElement( R_tmp, "r"))[0],
+			  INTEGER(AS_INTEGER(getListElement( R_tmp, "id")))[0],
+			  label,interior));
+
       UNPROTECT(2);
   }
-
   return spheres;
 }
 

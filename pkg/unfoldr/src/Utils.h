@@ -87,16 +87,16 @@ struct R_rndGen_t {
   R_rndGen_t(double p,double q, const char* fname)
     : mx(p), sdx(q)
   {
-    if ( !std::strcmp(fname, "rbeta" )) {
-        rdist2=rbeta;
+    if (!std::strcmp(fname, "rbeta" )) {
+        rdist2=&rbeta;
     } else if(!std::strcmp(fname, "rlnorm")) {
-        rdist2=rlnorm;
+        rdist2=&rlnorm;
     } else if(!std::strcmp(fname, "rgamma")) {
-        rdist2=rgamma;
+        rdist2=&rgamma;
     } else if(!std::strcmp(fname, "runif" )) {
-        rdist2=rweibull;
+        rdist2=&rweibull;
     } else if(!std::strcmp(fname, "const" )) {
-        rdist2=rconst;
+        rdist2=&rconst;
     } else {
         error("Undefined random generating function for radii distribution");
     }

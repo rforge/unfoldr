@@ -18,9 +18,11 @@ extern "C" {
 
   SEXP SphereSystem(SEXP R_param, SEXP R_cond);
 
-  SEXP SimulateSpheresAndIntersect(SEXP R_param, SEXP R_cond, SEXP R_n);
+  SEXP SimulateSpheresAndIntersect(SEXP R_param, SEXP R_cond);
 
   SEXP IntersectSphereSystem(SEXP R_var, SEXP R_n, SEXP R_z, SEXP R_intern, SEXP R_env, SEXP R_pl);
+
+  SEXP DigitizeDiscs(SEXP R_S, SEXP R_cond, SEXP R_delta);
 
 #ifdef __cplusplus
 }
@@ -32,8 +34,8 @@ namespace STGM {
 class CBoolSphereSystem {
 public:
 
-  CBoolSphereSystem(CBox3 &box, double lam) :
-    m_box(box), m_lam(lam), num(0)
+  CBoolSphereSystem(CBox3 &box, double lam, int perfect) :
+    m_box(box), m_lam(lam), num(0), m_perfect(perfect)
   {}
 
   ~CBoolSphereSystem() {};
@@ -55,6 +57,7 @@ private:
   CBox3 m_box;
   double m_lam;
   size_t num;
+  int m_perfect;
   Spheres m_spheres;
 
 };
