@@ -20,8 +20,7 @@ rmulti <- function(m,s,kappa) {
    a <- min(x)
    b <- max(x)
    
-   list("a"=a,"b"=b,"u"=dir$u,"shape"=a/b,
-        "theta"=dir$theta, "phi"=dir$phi)
+   list("a"=a,"b"=b, "c"=a, "u"=dir$u,"theta"=dir$theta, "phi"=dir$phi)
 
 }
 

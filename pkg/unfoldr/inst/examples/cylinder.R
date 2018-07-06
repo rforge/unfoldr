@@ -35,4 +35,7 @@ S <- simCylinderSystem(theta,lam,size="rbinorm",orientation="rbetaiso",box=box,p
 #cols <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF")
 #cylinders3d(S, box, col=cols)
  
+
+## TODO: joint with return (length,radius,theta,phi,u), shape is implicitly defined as r/length=s [0,1] 
+	
 }
