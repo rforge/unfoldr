@@ -7,11 +7,8 @@
 
 #include <R_ext/Rdynload.h>
 
-#include "SimSphere.h"
-#include "SimEllipsoid.h"
-#include "SimCylinder.h"
-
 #include "unfold.h"
+#include "SimPoisson.h"
 
 #ifdef _OPENMP
  #include <omp.h>
@@ -656,22 +653,15 @@ static R_CMethodDef CEntries[]  = {
 };
 
 static R_CallMethodDef CallEntries[] = {
-      CALLDEF(EllipsoidSystem,2),
-      CALLDEF(CylinderSystem,2),
-      CALLDEF(IntersectSpheroidSystem,6),
-	  CALLDEF(IntersectCylinderSystem,6),
-      CALLDEF(IntersectSphereSystem,6),
-      CALLDEF(UpdateIntersections,2),
-      CALLDEF(SphereSystem,2),
-      CALLDEF(SimulateSpheresAndIntersect,2),
-      CALLDEF(SimulateSpheroidsAndIntersect,2),
-	  CALLDEF(SimulateCylindersAndIntersect,2),
-      CALLDEF(DigitizeProfiles,3),
-	  CALLDEF(Binning3d,6),
-      CALLDEF(Binning1d,2),
-      CALLDEF(CoefficientMatrixSpheroids,7),
-      CALLDEF(EMS,3),
-      {NULL, NULL, 0}
+	CALLDEF(PoissonSystem,2),
+	CALLDEF(IntersectPoissonSystem,3),
+    CALLDEF(UpdateIntersections,2),
+    CALLDEF(DigitizeProfiles,4),
+    CALLDEF(Binning3d,6),
+    CALLDEF(Binning1d,2),
+    CALLDEF(CoefficientMatrixSpheroids,7),
+    CALLDEF(EMS,3),
+    {NULL, NULL, 0}
 };
 
 
