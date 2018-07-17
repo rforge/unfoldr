@@ -768,6 +768,7 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #' @author M. Baaske
 #' @rdname digitizeProfiles
 #' @export 
-digitizeProfiles <- function(sp, cond, delta) {
-	.Call(C_DigitizeProfiles,sp,cond,delta,.GlobalEnv)
+digitizeProfiles <- function(sp, delta, win = NULL ) {
+	# TODO: check window input! 
+	.Call(C_DigitizeProfiles,sp,delta,win,.GlobalEnv)
 }

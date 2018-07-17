@@ -339,7 +339,7 @@ SEXP UpdateIntersections(SEXP R_var, SEXP R_env)
     return R_ret;
 }
 
-SEXP DigitizeProfiles(SEXP R_var, SEXP R_win, SEXP R_delta, SEXP R_env)
+SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 {
 	int nprotect = 0;
 	SEXP R_S = R_NilValue;
