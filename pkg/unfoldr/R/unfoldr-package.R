@@ -14,12 +14,12 @@
 #' shaped particles based on the same measured quantities of corresponding planar
 #' section profiles. A single trivariate discretized version of the (stereological)
 #' integral equation in the case of prolate and oblate spheroids is solved
-#' numerically by the EM algorithm. The estimation of diameter distribution of
-#' spheres from planar sections (Wicksell's corpuscle problem) is also implemented.
+#' numerically by the EM algorithm. The estimation of the empirical diameter distribution of
+#' spheres from planar sections (better known as the Wicksell's corpuscle problem) is also implemented.
 #' Further, the package provides routines for the simulation of a Poisson germ-
-#' grain process with either spheroids, spherocylinders or spheres as grains together
-#' with functions for planar sections. For the purpose of exact simulation a bivariate size-shape
-#' distribution is implemented.
+#' grain process with either spheroids, (sphero)cylinders or spheres as grains together
+#' with functions for planar and veritcal sections. An exact simulation type based on a bivariate size-shape
+#' distribution with an independent orientation distribtion of the grains is also given as an option.
 #' 
 #' @docType package
 #' @name unfoldr-package

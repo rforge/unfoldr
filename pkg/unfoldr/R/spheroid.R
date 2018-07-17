@@ -20,41 +20,45 @@
 }
 
 
-#' Spheroid intersections with box
+#' Check intersections with simultion box
 #'
-#' Determine intersections of spheroids with bounding (simulation) box
+#' Check itersections of either spheres, spheroids or cylinders with the bounding (simulation) box
 #'
-#' For a given list of spheroids, spheres or cylinders the function tests whether the objects intersect
-#' the simulation bounding box.
+#' For a given list of spheres, spheroids or cylinders the function tests whether an object intersects
+#' the bounding simulation box. The vector returned is of length equal to \code{S} and has entries either \code{1}
+#' for an object which is intersected by one of the bounding lateral planes of the simulation box or otherwise \code{0}.
 #'
-#' @param S 	geometric objects system
-#' @param box   the simulation box
-#' @return 		integer vector indicating intersection=\code{1} or non intersection by \code{0}
+#' @param S 	list of spheres, spheroids or cylinders, see \code{\link{simPoissonSystem}}
+#'  
+#' @return 		binary integer vector of length equal to the length of \code{S} 
+#'  
 #' @author M. Baaske
+#' 
 #' @rdname updateIntersections
 #' @export
-updateIntersections <- function(S,box) {
-  .Call(C_UpdateIntersections,S,box)
+updateIntersections <- function(S) {
+	.Call(C_UpdateIntersections,as.character(substitute(S)), .GlobalEnv)
 }
 
-#' Constuctor section profiles
+#' Construct section profiles of spheroids
 #'
-#' Storing structure for section profiles
+#' Get a storing structure for section profiles of spheroids
 #'
 #' The function aggregates the necessary data for the trivariate unfolding procedure either for \code{type}
-#' \code{prolate} or \code{oblate} spheroids. Argument \code{size} is a numeric matrix which contains the
+#' "\code{prolate}" or "\code{oblate}" spheroids. Argument \code{size} is a numeric matrix which contains the
 #' axes lengths (first column corresponds to major semi-axis, second one to minor semi-axis). The \code{angle}
-#' is the orientation angle between the major axis and the vertical axis direction in the section plane.
+#' is the orientation angle between the major axis and the vertical axis direction in the vertical intersection plane.
 #' If the angles range within \eqn{[0,2\pi]} these are transformed to \eqn{[0,\pi/2]}. The function returns a
 #' list which consists of either longer or shorter axis \code{A} of section profiles corresponding to the type
-#' of spheroids which are intended to be reconstructed, the aspect ratio as the shape parameter \code{S} with
-#' values in \eqn{(0,1]}, and the orientation angle \code{alpha}.
+#' of spheroids which are intended to be reconstructed (by unfolding), the aspect ratio of both semi-axes is given by
+#' the shape factor \code{S} between \eqn{(0,1]} and the orientation angle is named \code{alpha}.
 #'
 #' @param size	  matrix of axes lengths
-#' @param angle   orientation angle
-#' @param type    \code{prolate} or \code{oblate}, default class is \code{prolate}
+#' @param angle   orientation angle of spheroids, see details
+#' @param type    name of spheroid type, either "\code{prolate}" or "\code{oblate}"
 #'
-#' @return 		  section profiles object, either of class \code{prolate} or \code{oblate}
+#' @return 		  section profiles object, either of class "\code{prolate}" or "\code{oblate}"
+#' 
 #' @author M. Baaske
 #' @rdname sectionProfiles
 #' @export
@@ -67,74 +71,73 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 		stop(paste("'angle' must have values between zero and ",quote(pi/2),sep=""))
 	if(max(angle)>pi/2)
 	 angle <- sapply(angle,.getAngle)	
-	structure(list("A"=if(type=="prolate") size[,2] else size[,1],
+	
+    structure(list("A"=if(type=="prolate") size[,2] else size[,1],
 				   "S"=size[,2]/size[,1],
 				   "alpha"=angle),
 		   class=type)
 }
 
-#' Simulation of spheroid system
+#' Simulation of a Poisson germ-grain process
 #'
-#' Simulation of Poisson spheroid system
+#' Simulation of a Poisson germ-grain process with either spheres, spheroids or spherocylinders as grains
 #'
-#' The function simulates a Poisson spheroid system according to the supplied
-#' simulation parameter \code{theta} in a predefined simulation box.
-#' The argument \code{size} is of type string and denotes the major-axis length random generating
-#' function name.
-#'
-#' Further the function simulates either \code{stype}="prolate" or \code{stype}='oblate' spheroids.
-#' For the directional orientation of the spheroid's major-axis one has the choice of a uniform
-#' (\code{runifdir}), isotropic random planar (\code{rbetaiso}, see reference) or von Mises-Fisher
-#' (\code{rvMisesFisher}) distribution. The simulation box is a list containing of vector arguments
-#' which correspond to the lower and upper points in each direction. If the argument \code{box} has
-#' only one element, i.e. \code{list(c(0,1)}, the same extent is used for the other dimensions.
-#' If \code{rjoint} names a joint random generating function then argument \code{size} is ignored.
+#' The function simulates a Poisson germ-grain process given the simulation parameters in the argument \code{theta}
+#' and a predefined bounding box where the positions of the germs are generated independently according to a Poisson process with mean
+#' intensity parameter \code{lam}. The function either generates \code{type="prolate"} or \code{type="oblate"} spheroids, spheres or spherocylinders.
+#' The argument \code{size} is a name of the distribution function of the size of the grains, i.e. the semi-major axis lengths in case of spheroids,
+#' radii for spheres or the lengths of the main axis of cylinders. 
 #' 
-#' For the purpose of exact simulation [2] setting \code{size="rbinorm"} declares a bivariate normal
-#' size-shape distribution. For a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho},
-#' the length of the semi-major axis is given by \eqn{exp(x)} with a (logit-transformed) shape parameter \eqn{s=1/(1+exp(-y))}.
-#' This modification leads to a lognormally distributed length of the semi-major axis. The direction \code{u} of the spheroid is
-#' given by the major axis independent of the size and shape of the spheroid. The following univariate distributions of
-#' the semi-major axis length and the shape are also available: `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`
-#' distribution. Use `\code{const}` for a constant length or shape. Only for `\code{rbinorm}` the exact simulation type can be used as an option if \code{perfect=TRUE}.
+#' The following directional orientation distributions of the spheroid's major-axis or cylinder's main axis are available:
+#' a uniform distribution (\code{runifdir}), isotropic random planar distribution (\code{rbetaiso}, see the reference below)
+#' and a "von Mises-Fisher" (\code{rvMisesFisher}) distribution. The simulation box is a list containing the ranges of each box dimension
+#' corresponding to the lower and upper limits in each direction. If the argument \code{box} contains only a single range, i.e. \code{list(c(0,1)}, the
+#' same limits are assumed for the remaining dimensions. The argument \code{rjoint} names a joint distribution function which can be any function
+#' provided by the user in order to generate the required random parameters for spheroids or cylinders, see below.
 #' 
-#' For the purpose of exact simulation setting \code{size} equal to \code{rbinorm} declares a bivariate
-#' size-shape distribution which leads to a log normal distributed semi-major axis \code{a} and a scaled
-#' semi-minor axis length \code{c}. If \eqn{[X,Y]} follow a bivariate normal distribution with correlation parameter
-#' \eqn{\rho} then \eqn{a=exp(x)} defines the sample semi-major axis length together with the scaled semi-minor
-#' axis length \eqn{c=a*s} and shape parameter set to \eqn{s=1/(1+exp(-y))}. Thus the parameter \eqn{\rho} defines the
-#' dependence of the semi-major and semi-minor axis lengths and must be provided as part of the list of simulation
-#' parameters given by \code{theta}. The method of exact simulation is tailored to the above parametric model. For a general
-#' approach please see the given reference below. Other (univariate)  semi-major axis lengths distributions include the `beta`,
-#' `gamma`, `lognormal` and uniform where the shape factor, which sets the semi-minor axis length, either
-#' follows a `beta` distribution or is set to a constant factor. In case of a biavariate normal major-axis size distribution
-#' (\code{size}="\code{rbinorm}"), setting \code{shape="rbeta"} (default option is \code{"const"}) generates a `beta` distributed
-#' second shape factor which is multiplied to the first shorter semi-axis in order to calculate the second one. This
-#' allows the simulation of general ellipsoids. Only simulations done by \code{rbinorm} can use the exact simulation type
-#' if \code{perfect=TRUE} otherwise it is ignored.
+#' In addition, the function supports an exact simulation [2] of the grains. In case of spheroids and cylinders setting \code{size="rbinorm"}
+#' declares a bivariate normal size-shape distribution for which the exact simulation is available as an option if \code{perfect=TRUE}. More specifically,
+#' for a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho}, the length of the semi-major axis of a spheroid is given by \eqn{a=exp(x)}
+#' with a (logit-transformed) shape parameter as \eqn{s=1/(1+exp(-y))} and thus a scaled semi-minor axis length \eqn{c=a*s}. This modification leads to a lognormally
+#' distributed length of the semi-major axis. In case of cylinders, the lognormally distributed length of a cylinder is \eqn{len=h+2*r} where
+#' \code{h} is the height and \eqn{r=len/2*s} the radius. The direction \code{u} of the a spheroid or cylinder is determined by the
+#' major axis independent of the size and shape. Also, the following univariate distributions of the lengths \code{a} and \code{len}, the shapes \code{s} are
+#' available: `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. Use `\code{const}` for a simulation with a constant length or shape.
+#' Only simulations by "\code{rbinorm}" can use the exact simulation if \code{perfect=TRUE}.
 #'
-#' The argument \code{pl} denotes the print level of output information during simulation.
-#' Currently, only \code{pl}=0 for no output and \code{pl}>100 for some additional info is implemented.
+#' For spheres any distribution of the radii can be specified as a name of a user-defined function in \code{size} as long as the formal named
+#' function parameters match the actual named parameters exactly as defined in the parameters given by \code{theta}.
+#' Besides this, all other distributions given above are also available. In particular, setting \code{size="rlnorm"} leads to lognormally distributed
+#' radii of the spheres in which case the exact simulation is available as an option (\code{perfect=TRUE}). Use "\code{const}" for a constant
+#' radius of simulated spheres. 
+#'  
+#' The argument \code{pl>=0} denotes both the print level of intermediate information and type of return value after simulations. 
+#' If \code{pl=10} then shorter lists of spheroids, spheres or cylinders are returned to speed up computation. Note that, the current
+#' implementation does not include routines for unfolding the joint 3D size-shape-orientation
+#' distribution of cylinders so far. 
+#' 
 #'
-#' @param theta 	simulation parameters
-#' @param lam   	mean number of spheroids per unit volume
+#' @param theta 	list of simulation parameters which must consist of elements: \code{size}, \code{shape} and \code{orientation}
+#' @param lam   	mean number of grains per unit volume
 #' @param size  	name of size distribution function 
 #' @param shape 	name of shape distribution function  
 #' @param orientation name of direction distribution function
-#' @param stype    spheroid type, either "\code{prolate}" or "\code{oblate}"
-#' @param rjoint   name of joint distribution function
+#' @param type     spheroid type, either "\code{prolate}" or "\code{oblate}"
+#' @param rjoint   name of joint distribution function given by the user
 #' @param box	   simulation box
 #' @param mu	   main orientation axis, \code{mu=c(0,0,1)} (default), as the alignment of the coordinate system
 #' @param dz	   distance of the intersecting x-, y-plane to the origin
 #' @param n		   normal vector of intersting plane
-#' @param profiles logical, \code{profiles=FALSE} (default), whether the simulated system of spheroids is intersected afterwards in which case
-#' 				   only sections profiles are returned 
+#' @param intersect use "\code{full}" to return the simulated system together with section profiles as two lists, choose "\code{only}" for section
+#' 					 profiles only and "\code{original}" for the 3D system only
 #' @param intern   logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window
 #' @param perfect  logical, \code{perfect=TRUE} (default) simulate perfect
-#' @param pl  	   integer, print level and return value definition
-#' @param label    character, label passed to each simulated spheroid, ´\code{N}´ (default)
+#' @param pl  	   integer, print level and return value type, see details
+#' @param label    character, label set to each generated grain, ´\code{N}´ (default)
 #' 
-#' @return 		   list of spheroids either of class ´\code{prolate}´ or ´\code{oblate}´
+#' @return 		   list of grains either of class "\code{prolate}" or "\code{oblate}", "\code{sphere}" or "\code{cylinder}" or a list of length two if
+#' 				   \code{intersect="full"} where the first element stores the 3D generated objects as a list and the second the corresponding section profiles
+#' 				   either in a short verion (if \code{pl=10}) or in a long version otherwise
 #'
 #' @example inst/examples/sim.R
 #'
@@ -145,15 +148,15 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' 					Springer, Berlin, 2002. Zbl 0990.86007}
 #' 	  }
 #' @author M. Baaske
-#' @rdname simSpheroidSystem
+#' @rdname simPoissonSystem
 #' @export
-simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientation="rbetaiso",
-								stype=c("prolate","oblate"),rjoint=NULL, box=list(c(0,1)),
-								 mu=c(0,0,1), dz=0, n=c(0,1,0), profiles = FALSE, intern=FALSE,
-								  perfect=TRUE, pl=0, label="N")
+simPoissonSystem <- function(theta, lam, size="const", shape="const", orientation="rbetaiso",
+								type=c("prolate","oblate","sphere","cylinder"), rjoint=NULL, box=list(c(0,1)),
+								 mu=c(0,0,1), dz=0, n=c(0,1,0), intersect=c("full","only","original"), 
+								  intern=FALSE, perfect=TRUE, pl=0, label="N")
 {
-	it <- pmatch(stype,c("prolate","oblate"))
-	if(length(it)==0 || is.na(it)) stop("Spheroid type 'stype' is either 'prolate' or 'oblate'.")
+	it <- pmatch(type,c("prolate","oblate","sphere","cylinder"))
+	if(length(it)==0 || is.na(it)) stop("Spheroid type 'type' is either 'prolate' or 'oblate'.")
 
 	if(!is.list(theta))
 		stop("Expected 'theta' as list of named arguments `size`, `shape`, `orientation`.")
@@ -163,7 +166,7 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 		stop("Expected 'lam' as non-negative numeric argument")
 
 	if(length(box)==0 || !is.list(box))
-		stop("Expected argument 'box' as list type.")
+	  stop("Expected argument 'box' as list type.")
 	if(length(box)==1)
 	  box <- rep(box[1],3)
   	else if(length(box)!=3)
@@ -171,10 +174,12 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
     names(box) <- c("xrange","yrange","zrange")
 
 	# spheroid type
-	stype <- match.arg(stype)
+	type <- match.arg(type)
+	intersect <- match.arg(intersect)
+	
 	if(!is.null(rjoint)) {
 		if(!exists(rjoint, mode="function"))
-			stop("Unknown multivarirate random generating function.")
+		 stop("Unknown multivarirate random generating function.")
 		#largs <- theta[-(which(it==1))]
 		it <- match(names(theta),names(formals(rjoint)))
 		if(length(it)==0 || anyNA(it))
@@ -187,15 +192,20 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 		if(inherits(funret,"try-error"))
 		  stop(paste("Error in user defined function ",rjoint,".",sep=""))
 		
-	    fargs <- c("a","b","c","u","shape","theta","phi")
+	    fargs <- 
+		  if(type %in% c("prolate","oblate")) {
+			  c("a","b","c","u","shape","theta","phi")			
+		  } else if(type %in% c("cylinder")) {
+			  c("h","r","u","theta","phi")		
+		  } else { c("r") }
 	    if(any(!(fargs %in% names(funret)))){		    
-			stop(paste0("List of named arguments of user defined function does not match names: ",fargs))
+			stop("Argument names of return value list does not match required arguments.")
 	    }
 
-		cond <- list("stype"=stype,"rdist"=rjoint,"box"=box,
-					"lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
-					"dz"=dz, "nsect"=n, "intern"=as.integer(intern),
-					"perfect"=as.integer(perfect))
+		cond <- list("type"=type,"rdist"=rjoint,"box"=box,
+					 "lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
+					 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),
+					 "perfect"=as.integer(perfect), "intersect"=intersect)
 			
 	} else  {
 				
@@ -210,12 +220,13 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 		if(is.na(it) && !exists(orientation, mode="function"))
 		 stop("Undefined distribution function for the orientation/direction.")		
 		
-		cond <- list("stype"=stype, "lam"=lam,
+		cond <- list("type"=type, "lam"=lam,
 				     "rdist"=list("size"=size,
 							      "shape"=if(length(theta$shape) == 0L) list(1,1) else shape,
 								  "orientation"=if(length(theta$orientation) == 0L) list("kappa"=1) else orientation),
 					 "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,
-					 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),"label"=label,"perfect"=as.integer(perfect))
+					 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),"label"=label,
+					 "perfect"=as.integer(perfect), "intersect"=intersect)
 
 		if(cond$rdist$shape != "const") {
 			if(length(theta$shape)==0L)
@@ -254,12 +265,8 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 			stop(paste("Undefined `", cond$rdist$size, "` distribution function."))
 		 }			
 	}
-	if(profiles) {
-		.Call(C_SimulateSpheroidsAndIntersect, theta, cond)
-	} else {
-		structure(.Call(C_EllipsoidSystem, theta, cond),
-				"mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)
-	}
+	structure(.Call(C_PoissonSystem, theta, cond),
+		"mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)	
 }
 
 #' Calculate coefficients for unfolding
@@ -289,7 +296,7 @@ simSpheroidSystem <- function(theta, lam, size="const", shape="const", orientati
 #' @rdname coefficientMatrixSpheroids 
 #' @export
 coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
-								check=TRUE,nCores=getOption("par.unfoldr",1))
+										check=TRUE,nCores=getOption("par.unfoldr",1))
 {
 	stype <- match.arg(stype)
 	it <- match(names(breaks), c("size","angle","shape"))
@@ -315,15 +322,15 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 
 #' Spheroid vertical section
 #'
-#' Vertical section of a spheroid system
+#' Get a vertical section of a spheroid system
 #'
 #' The function intersects a spheroid system by an intersecting plane defined by a normal 
 #' vector \code{n=c(0,1,0)} (default), which depends on the main orientation axis of the
 #' coordinate system.
 #'
-#' @param S		 list of spheroids, see \code{\link{simSpheroidSystem}}
-#' @param d 	 distance of intersecting plane to the origin
-#' @param n 	 normal vector of intersting plane
+#' @param S		 list of spheroids, see \code{\link{simPoissonSystem}}
+#' @param d 	 distance of the box-aligned intersecting plane from the origin
+#' @param n 	 normal vector which defines the intertecting plane
 #' @param intern logical, \code{FALSE} (default), return all section profiles otherwise
 #' 				 only those which have their centers inside the intersection window (if the 
 #' 				 intersected spheroid system had been simulated using exact simulation)
@@ -333,14 +340,23 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 #' @rdname verticalSection 
 #' @export
 verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
-	stopifnot(is.logical(intern))
+	if(!(class(S) %in% c("prolate","oblate")))
+	 stop("Only spheroids of class `prolate` or `oblate` can be used.")
+ 	stopifnot(is.numeric(d))	
+ 	stopifnot(is.logical(intern))
 	if( sum(n)>1 )
 	  stop("Normal vector is like c(0,1,0). ")
-	if(!(class(S) %in% c("prolate","oblate")))
-	  stop("Spheroids type does not match.")
-	ss <- .Call(C_IntersectSpheroidSystem,attr(S,"eptr"),n, d, intern, 10)
-	A <- if(class(S)=="prolate") sapply(ss,"[[",2) else sapply(ss,"[[",1)
-	structure(
+	
+    ss <- Call(C_IntersectPoissonSystem,
+		 		 as.character(substitute(S)),
+		  		 list("nsect"=n,"dz"=d,"intern"=intern,"pl"=10),
+		  		 .GlobalEnv)
+  	
+	A <- if(class(S)=="prolate")
+			sapply(ss,"[[",2)
+		 else sapply(ss,"[[",1)
+	
+    structure(
 	    list("A"=A,
 			 "S"=sapply(ss,"[[",3),
 		 "alpha"=sapply(ss,"[[",4)),
@@ -348,18 +364,18 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	)
 }
 
-#' Intersect spheroid system
+#' Intersect a 3D system of grains
 #'
-#' Intersect a spheroid system with a given plane
+#' Intersect a system of spheres, spheroids or cylinders by a given plane
 #'
-#' The function intersects a given spheroid system with a plane defined by a
-#' normal vector, e.g. \code{n=c(0,1,0)}, perpendicular to one of the simulation bounding planes. 
-#' The print level \code{pl} sets the type of return value. If \code{pl=10} the functions only returns
-#' the lengths of the semiaxes, the shape factor of both and the angle in the intersection plane in \code{[0,pi/2]}.    
+#' The function intersects a given system of spheres, spheroids or cylinders by a plane which is defined by a
+#' normal vector, e.g. \code{n=c(0,1,0)}, perpendicular to one of the lateral planes of the simulation box. 
+#' The print level \code{pl>=0} sets the type of return value. If \code{pl=10} the functions only returns
+#' the lengths of the semi axes, the shape factor of the angle in the intersection plane between \code{[0,pi/2]}.    
 #'
-#' @param S		 list of spheroids, see \code{\link{simSpheroidSystem}}
-#' @param d 	 distance of intersecting plane to the origin
-#' @param n 	 normal vector of intersting plane
+#' @param S		 list of spheroids, see \code{\link{simPoissonSystem}}
+#' @param d 	 distance of the the box-aligned intersecting plane from the origin
+#' @param n 	 normal vector which defines the intersting plane
 #' @param intern logical, \code{FALSE} (default), return all section profiles otherwise
 #' 				 only those which have their centers inside the intersection window (if the 
 #' 				 intersected spheroid system had been simulated using exact simulation)
@@ -368,15 +384,20 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 #' @return list of size, shape and angle of section profiles
 #' 
 #' @author M. Baaske
-#' @rdname spheroidIntersection 
+#' @rdname intersectSystem
 #' @export
-spheroidIntersection <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
+intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
+	if(!(class(S) %in% c("prolate","oblate","sphere","cylinder")))
+	  stop("Unknown class of obects.")
+    stopifnot(is.numeric(d))
 	stopifnot(is.logical(intern))
-	if( sum(n)>1 )
-		stop("Normal vector is like c(0,1,0). ")
-	if(!(class(S) %in% c("prolate","oblate")))
-		stop("Spheroids type does not match.")
-	.Call(C_IntersectSpheroidSystem,as.character(substitute(S)),n, d, intern, .GlobalEnv, pl)	
+	if(sum(n)>1)
+	  stop("Normal vector is like c(0,1,0). ")	
+	
+	.Call(C_IntersectPoissonSystem,
+			as.character(substitute(S)),
+			list("nsect"=n,"dz"=d,"intern"=intern,"pl"=pl),
+		    .GlobalEnv)	
 }
 
 #' Generate 3D plot of spheroid system
@@ -469,6 +490,82 @@ spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE, bg
 }
 
 
+#' 3D a cylinder system
+#'
+#' Draw 3D spherocylinders
+#'
+#' The function requires the package \code{rgl} to be installed.
+#'
+#' @param S				a list of cylinders
+#' @param box			simulation box
+#' @param draw.axes		logical, if \code{TRUE}, draw the axes
+#' @param draw.box	    logical, if \code{TRUE}, draw the bounding box
+#' @param clipping 		logical, if \code{TRUE}, clip to the bounding box
+#' @param ...			further material properties passed to 3d plotting functions
+#' 
+#' @return NULL
+#' @author M. Baaske
+#' @rdname cylinders3d
+#' @export
+cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,...)
+{
+	if (!requireNamespace("rgl", quietly=TRUE))
+		stop("Please install 'rgl' package from CRAN repositories before running this function.")
+	
+	cylinder <- function(m, radius=1, h=1, rotM=diag(3), u=c(0,0,1)) {
+		cyl <- rgl::cylinder3d(rbind(c(0,0,0),c(0,0,1)), radius=radius,
+				e1=cbind(0, 0, 1), e2=cbind(1, 0, 0), sides=25,closed=-2	)
+		result <-rgl::scale3d(cyl,1,1,h)
+		result <- rgl::rotate3d(result,matrix=rotM)
+		## translate to midpoint of cylinder, center of mass
+		m <- m-0.5*h*u
+		result <- rgl::translate3d(result, m[1],m[2],m[3])
+		invisible(result)
+	}
+	
+	args <- list(...)
+	ok <- sapply(S, function(x) x$length>0)
+	
+	cyls <- lapply(S[ok], function(x) { cylinder(x$center, x$r, x$length, x$rotM, x$u) })
+	rgl::shapelist3d(cyls,...)
+	
+	if("col" %in% names(args)) {
+		cols <- rep(rep(args$col,length.out=length(S)),each=2)
+		args$col <- NULL
+	} else cols <- "black"
+	
+	# spheres
+	Xc <- do.call(rbind,lapply(S[ok],function(x) rbind( c(x$origin0,x$r),c(x$origin1,x$r))))
+	rgl::spheres3d(Xc,radius=Xc[,4],col=cols,unlist(args))
+	if(!all(ok)) {
+		Xc <- do.call(rbind,lapply(S[!ok],function(x) rbind(c(x$center,x$r))))
+		rgl::spheres3d(Xc,radius=Xc[,4],col="darkgray",unlist(args))
+	}
+	
+	x <- box$xrange[2];	y <- box$yrange[2];	z <- box$zrange[2]
+	c3d.origin <- rgl::translate3d(rgl::scale3d(rgl::cube3d(col="darkgray", alpha=0.1),x/2,y/2,z/2),x/2,y/2,z/2)
+	rgl::shade3d(c3d.origin)
+	
+	if(clipping) {
+		rgl::clipplanes3d(-1,0,0,box$xrange[1])
+		rgl::clipplanes3d(0,-1,0,box$yrange[1])
+		rgl::clipplanes3d(0,0,-1,box$zrange[1])
+		rgl::clipplanes3d(1,0,0,box$xrange[2])
+		rgl::clipplanes3d(0,1,0,box$yrange[2])
+		rgl::clipplanes3d(0,0,1,box$zrange[2])
+	}
+	
+	if(draw.axes) {
+		rgl::axes3d(c('x','y','z'), pos=c(0,0,0))
+		rgl::title3d('','','x','y','z')
+	}
+	if(draw.box) {
+		rgl::axes3d(edges = "bbox",labels=TRUE,tick=FALSE,box=TRUE,nticks=0,
+				expand=1.0,xlen=0,xunit=0,ylen=0,yunit=0,zlen=0,zunit=0)
+	}
+}
+
+
 #' Plot Spheroid intersection
 #'
 #' Drawing section profiles in 3D plane
@@ -500,4 +597,177 @@ drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 	s <- 2*pi/np
 	t <- seq(from=0,to=2*pi,by=s)
 	invisible(lapply(E,function(x) .plotEllipse(x) ))
+}
+
+
+
+.checkArgs <- function(optlist, options) {
+	if(is.null(names(options)))
+		stop("Options should be a list of named arguments.")
+	if (!is.list(options) || "" %in% names(options))
+		stop("Argument ",as.character(substitute(options)), "  must be a list of named (character) elents.")
+	optnames <- (names(options) %in% names(optlist))
+	if (!all(optnames)) {
+		unames <- as.list(names(options)[!(optnames)])
+		stop(paste(c("Unknown arguments in ",as.character(substitute(options))," : ",do.call("paste", c(unames, sep = ", "))), collapse=" "))
+	}	
+	return (0)
+}
+
+#' Sphere planar section
+#'
+#' Intersection of given spheres by a plane
+#'
+#' The function intersects a sphere system and returns the diameters of the corrsponding planar section profiles.
+#'
+#' @param S 		list of spheres of class \code{sphere}, see \code{\link{simPoissonSystem}}
+#' @param d 		distance of the intersecting xy-plane to the origin (as a planar section)
+#' @param intern 	logical, \code{FALSE} (default), return all planar section profiles otherwise
+#' 					only those which have their centers inside the intersecting window
+#' @param pl		print level, \code{pl=0} (default) for no output
+#'
+#' @return 			numeric vector of planar section diameters
+#' 
+#' @author M. Baaske
+#' @rdname planarSection
+#' @export
+planarSection <- function(S, d, intern=FALSE, pl=0) {
+	stopifnot(is.logical(intern))
+	if(!(c("sphere") %in% class(S) ))
+		stop("Expected spheres as list argument.")
+	
+	sp <- .Call(C_IntersectPoissonSystem,
+			as.character(substitute(S)),
+			list("nsect"=c(0,0,1),"dz"=d,"intern"=intern,"pl"=pl),
+			.GlobalEnv)
+	
+	if(is.list(sp))								# full list of section profiles
+		return (sapply(sp,function(x) 2.0*x$r))		
+	else return (2*sp)							# only radii are returned
+}
+
+#' Binning numeric values
+#'
+#' Vector of count data
+#'
+#' This function provides basic binning (grouping) of numeric values into
+#' classes defined by the breaks vector \code{bin}. The values are binned
+#' according to bin[i[j]]\eqn{<}x[j]\eqn{\leq} bin[i[j]+1] for interval i=1,...,N-1
+#' for \code{length(bin)=N} and value x[j].
+#' If x[j] > bin[N] or x[j] < bin[1] then x[j] is not counted at all.
+#'
+#' @param x   	 numeric values to be binned
+#' @param bin    non-decreasingly sorted breaks vector
+#' @param na.rm  logical, removing missing values (including NaN) in the argument \code{x}?
+#'
+#' @return Vector of count data
+#'
+#' @examples
+#' 	x <- runif(100,0,1)
+#' 	bin <- seq(0,1,by=0.1)
+#' 	binning1d(x,bin)
+#' 
+#' @author M. Baaske
+#' @rdname binning1d
+#' @export
+binning1d <- function(x,bin, na.rm = FALSE) {
+	if (anyNA(x)) {
+		if(na.rm) x <- x[which (!is.na(x))]
+		else stop("Vectors contains missing values or NAs.")
+	}
+	if(anyNA(bin) )
+		stop("'bin' vector contains missing values or NAs.")
+	
+	if (is.unsorted(bin))
+		stop("'bin' must be sorted non-decreasingly")
+	
+	.Call(C_Binning1d,x,bin)
+}
+
+#' Calculate coefficients (spheres)
+#'
+#' Matrix of coefficients for Wicksell's corpuscle problem
+#'
+#' The function calculates the matrix of coefficients of the
+#' discretized integral equation for Wicksell's corpuscle problem.
+#'
+#' @param bin  non-decreasing vector of class limits
+#' @return 	   array of coefficients
+#'
+#' @references
+#'  Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
+#' 
+#' @author M. Baaske
+#' @rdname coefficientMatrixSpheres
+#' @export
+coefficientMatrixSpheres <- function(bin) {
+	## count of bin classes
+	n <- length(bin)-1
+	if (n<=0)
+		stop("'bin' has length zero")
+	if (anyNA(bin))
+		stop("Vectors contain NA values")
+	if (is.unsorted(bin))
+		stop("'bin' must be sorted non-decreasingly")
+	
+	if(any(bin<0))
+		stop("Breaks vector must have non-negative values.")
+	
+	p <- .C(C_em_saltykov_p, as.integer(n),as.numeric(bin),
+			p=as.numeric(matrix(0,n,n)))$p
+	dim(p) <- c(n,n)
+	return (p)
+}
+
+#' Expectation Maximization algorithm
+#'
+#' Estimation of empirical sphere diameter distribution
+#'
+#' The function performs the EM algorithm.
+#'
+#' @param y   		vector of observed absolute frequencies of circle diameters
+#' @param bin 		non-decreasing vector of class limits
+#' @param maxIt		maximum number of iterations used
+#' @return 			vector of count data of absolute frequenties of sphere diameters
+#'
+#' @example inst/examples/sphere.R
+#'
+#' @references
+#' Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
+#' 
+#' @author M. Baaske
+#' @rdname em.saltykov
+#' @export 
+em.saltykov <- function(y,bin,maxIt=32) {
+	if (length(y)==0) stop("input array 'y' has length zero")
+	if (anyNA(y) || anyNA(bin) )
+		stop("Vectors contain NA values")
+	if (is.unsorted(bin))
+		stop("'bin' must be sorted non-decreasingly")
+	
+	n <- length(y)
+	p <- .C(C_em_saltykov_p, as.integer(n),as.numeric(bin),
+			p=as.vector(matrix(0,n,n)))$p
+	
+	theta <- y+1.0e-6
+	.C(C_em_saltykov,as.integer(n), as.integer(maxIt),
+			as.numeric(p),as.numeric(y),theta=as.numeric(theta))$theta
+}
+
+#' Digitize section profiles
+#'
+#' Digitize 2D objects (section profiles)  
+#'
+#' A list of section profiles, e.g. discs, ellipses or segments from intersected spherocylinders, is digitized according
+#' to a given resolution such that the result is an image stored in matrix form.  
+#'
+#' @param sp   		list of section profiles, see \code{\link{intersectSystem}}
+#' 
+#' @return 			image as a matrix
+#'
+#' @author M. Baaske
+#' @rdname digitizeProfiles
+#' @export 
+digitizeProfiles <- function(sp, cond, delta) {
+	.Call(C_DigitizeProfiles,sp,cond,delta,.GlobalEnv)
 }
