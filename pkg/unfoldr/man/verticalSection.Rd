@@ -7,11 +7,11 @@
 verticalSection(S, d, n = c(0, 1, 0), intern = FALSE)
 }
 \arguments{
-\item{S}{list of spheroids, see \code{\link{simSpheroidSystem}}}
+\item{S}{list of spheroids, see \code{\link{simPoissonSystem}}}
 
-\item{d}{distance of intersecting plane to the origin}
+\item{d}{distance of the box-aligned intersecting plane from the origin}
 
-\item{n}{normal vector of intersting plane}
+\item{n}{normal vector which defines the intertecting plane}
 
 \item{intern}{logical, \code{FALSE} (default), return all section profiles otherwise
 only those which have their centers inside the intersection window (if the 
@@ -21,7 +21,7 @@ intersected spheroid system had been simulated using exact simulation)}
 list sizes \code{A}, shapes \code{S} and angles \code{alpha} of section profiles
 }
 \description{
-Vertical section of a spheroid system
+Get a vertical section of a spheroid system
 }
 \details{
 The function intersects a spheroid system by an intersecting plane defined by a normal 

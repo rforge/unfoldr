@@ -2,32 +2,32 @@
 % Please edit documentation in R/spheroid.R
 \name{sectionProfiles}
 \alias{sectionProfiles}
-\title{Constuctor section profiles}
+\title{Construct section profiles of spheroids}
 \usage{
 sectionProfiles(size, angle, type = c("prolate", "oblate"))
 }
 \arguments{
 \item{size}{matrix of axes lengths}
 
-\item{angle}{orientation angle}
+\item{angle}{orientation angle of spheroids, see details}
 
-\item{type}{\code{prolate} or \code{oblate}, default class is \code{prolate}}
+\item{type}{name of spheroid type, either "\code{prolate}" or "\code{oblate}"}
 }
 \value{
-section profiles object, either of class \code{prolate} or \code{oblate}
+section profiles object, either of class "\code{prolate}" or "\code{oblate}"
 }
 \description{
-Storing structure for section profiles
+Get a storing structure for section profiles of spheroids
 }
 \details{
 The function aggregates the necessary data for the trivariate unfolding procedure either for \code{type}
-\code{prolate} or \code{oblate} spheroids. Argument \code{size} is a numeric matrix which contains the
+"\code{prolate}" or "\code{oblate}" spheroids. Argument \code{size} is a numeric matrix which contains the
 axes lengths (first column corresponds to major semi-axis, second one to minor semi-axis). The \code{angle}
-is the orientation angle between the major axis and the vertical axis direction in the section plane.
+is the orientation angle between the major axis and the vertical axis direction in the vertical intersection plane.
 If the angles range within \eqn{[0,2\pi]} these are transformed to \eqn{[0,\pi/2]}. The function returns a
 list which consists of either longer or shorter axis \code{A} of section profiles corresponding to the type
-of spheroids which are intended to be reconstructed, the aspect ratio as the shape parameter \code{S} with
-values in \eqn{(0,1]}, and the orientation angle \code{alpha}.
+of spheroids which are intended to be reconstructed (by unfolding), the aspect ratio of both semi-axes is given by
+the shape factor \code{S} between \eqn{(0,1]} and the orientation angle is named \code{alpha}.
 }
 \author{
 M. Baaske
