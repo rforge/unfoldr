@@ -48,13 +48,17 @@ STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid);
 STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids);
 
 SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp);
-SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects);
+SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box);
+
+STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E);
+STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n);
+STGM::CCircle3 convert_C_Circle(SEXP R_C, STGM::CVector3d &n);
 
 /* spheres */
 STGM::CSphere convert_C_Sphere(SEXP R_sphere);
 STGM::Spheres convert_C_Spheres(SEXP R_spheres);
 SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp);
-SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type& objects);
+SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type& objects, STGM::CBox3 &box);
 
 /* cylinders */
 STGM::CCylinder convert_C_Cylinder(SEXP R_cyl);
@@ -62,7 +66,7 @@ STGM::Cylinders convert_C_Cylinders(SEXP R_cyls);
 
 SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes , STGM::CBox3 &box);
 SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp);
-SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects);
+SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects, STGM::CBox3 &box);
 
 namespace STGM {
 
@@ -120,14 +124,14 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				SEXP R_S = R_NilValue;
 				PROTECT(R_S = convert_R_Ellipsoids(sp));
 				SEXP R_tmp = R_NilValue;
-				PROTECT(R_tmp = convert_R_Ellipses(intersected));
+				PROTECT(R_tmp = convert_R_Ellipses(intersected, box));
 
 				SET_VECTOR_ELT(R_ret,0,R_S);
 				SET_VECTOR_ELT(R_ret,1,R_tmp);
 				UNPROTECT(2);
 
 			} else {
-				PROTECT(R_ret = convert_R_Ellipses(intersected));
+				PROTECT(R_ret = convert_R_Ellipses(intersected, box));
 			}
 
 		} else if(!std::strcmp(profiles, "original" )) {
@@ -153,13 +157,13 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 				SEXP R_tmp = R_NilValue, R_S = R_NilValue;
 				PROTECT(R_S = convert_R_Cylinders(sp));
-				PROTECT(R_tmp = convert_R_CylinderIntersections(intersected));
+				PROTECT(R_tmp = convert_R_CylinderIntersections(intersected, box));
 				SET_VECTOR_ELT(R_ret,0,R_S);
 				SET_VECTOR_ELT(R_ret,1,R_tmp);
 				UNPROTECT(2);
 
 			} else {
-				PROTECT(R_ret = convert_R_CylinderIntersections(intersected));
+				PROTECT(R_ret = convert_R_CylinderIntersections(intersected, box));
 			}
 
 		}  else if(!std::strcmp(profiles, "original" )) {
@@ -184,14 +188,14 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 				SEXP R_tmp = R_NilValue, R_S = R_NilValue;
 				PROTECT(R_S = convert_R_Spheres(sp));
-				PROTECT(R_tmp = convert_R_Circles(intersected));
+				PROTECT(R_tmp = convert_R_Circles(intersected, box));
 				SET_VECTOR_ELT(R_ret,0,R_S);
 				SET_VECTOR_ELT(R_ret,1,R_tmp);
 				UNPROTECT(2);
 
 			} else {
 				/* return full circle object */
-				PROTECT(R_ret = convert_R_Circles(intersected));
+				PROTECT(R_ret = convert_R_Circles(intersected, box));
 			}
 
 		} else {
@@ -248,7 +252,7 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
 	    STGM::Intersectors<STGM::CSpheroid>::Type intersected;
 	    STGM::IntersectWithPlane<STGM::CSpheroid>(sp, intersected, R_cond);
 
-	   	PROTECT(R_ret = convert_R_Ellipses(intersected));
+	   	PROTECT(R_ret = convert_R_Ellipses(intersected, box));
 
   } else if(!std::strcmp(type_str, "cylinders" )) {
 
@@ -258,7 +262,7 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
 	  STGM::Intersectors<STGM::CCylinder>::Type intersected;
 	  STGM::IntersectWithPlane<STGM::CCylinder>(sp, intersected, R_cond);
 
-	  PROTECT(R_ret = convert_R_CylinderIntersections(intersected));
+	  PROTECT(R_ret = convert_R_CylinderIntersections(intersected, box));
 
   } else if(!std::strcmp(type_str, "spheres" )) {
 
@@ -268,7 +272,7 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
 	  STGM::Intersectors<STGM::CSphere>::Type intersected;
 	  STGM::IntersectWithPlane<STGM::CSphere>(sp, intersected, R_cond);
 
-	  PROTECT(R_ret = convert_R_Circles(intersected));
+	  PROTECT(R_ret = convert_R_Circles(intersected, box));
 
   } else {
 	   error(_("Unknown simulation object type."));
@@ -335,33 +339,62 @@ SEXP UpdateIntersections(SEXP R_var, SEXP R_env)
     return R_ret;
 }
 
-SEXP DigitizeProfiles(SEXP R_var, SEXP R_cond, SEXP R_delta, SEXP R_env)
+SEXP DigitizeProfiles(SEXP R_var, SEXP R_win, SEXP R_delta, SEXP R_env)
 {
-
+	int nprotect = 0;
 	SEXP R_S = R_NilValue;
-	PROTECT(R_S = getVar(R_var,R_env));
+	PROTECT(R_S = getVar(R_var,R_env));							// section profiles
 	const char *name = GET_OBJECT_CLASS(R_S);
 
-	SEXP R_box = R_NilValue;
-	PROTECT(R_box = getAttrib(R_S, install("box")));
-	if(isNull(R_box))
-	  error(_("Undefined simulation box."));
+	/*  get the window if not provided:
+	 *  this has the correct dimension of the original box
+	 *  and corresponds to the intersecting plane  (normal vector)
+	 */
+	if(isNull(R_win))
+	 PROTECT(R_win = getAttrib(R_S, install("win"))); ++nprotect;
+	STGM::CWindow win(REAL(R_win));
+	int nPix[2] = { (int) (win.m_size[0]/REAL(R_delta)[0]),
+			        (int) (win.m_size[1]/REAL(R_delta)[0])};
 
-	double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
-	double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
-	double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
+	if(PL>10) Rprintf("Digitize with resolution [%d,%d] (delta: %f ) \n",nPix[0], nPix[1], REAL(R_delta)[0]);
 
-	STGM::CBox3 box(boxX,boxY,boxZ);
-	int nPix = (int) box.m_size[0]/REAL(R_delta)[0];
+	/* alloc return matrix */
+	SEXP R_w = R_NilValue;
+	PROTECT(R_w = allocMatrix(INTSXP,nPix[0],nPix[1]));
 
-	if(PL>10) Rprintf("Digitize: nPix: %d, delta: %f \n",nPix,REAL(R_delta)[0]);
+	// init digitizer
+	STGM::CDigitizer digitizer(INTEGER(R_w),nPix[0],nPix[1],REAL(R_delta)[0]);
 
-	/* return matrix */
-	SEXP R_W = R_NilValue;
-	PROTECT(R_W = allocMatrix(INTSXP,nPix,nPix));
+	SEXP R_obj;
+	int type = 0;
+	for(int k=0;k < LENGTH(R_S); k++)
+	{
+	   PROTECT(R_obj = VECTOR_ELT(R_S, k));
+	   type = INTEGER(VECTOR_ELT(R_obj, 1))[0];   			// intersection type
+
+	   if(type == STGM::ELLIPSE_2D)							// CEllipse2
+	   {
+		   STGM::CEllipse2 ellipse = convert_C_Ellipse2(R_obj);
+		   digitizer(ellipse);
+
+	   } else if(type == STGM::DISC || type == STGM::CAP) {	// CCircle3 (disc) and caps (from spherocylinders)
+
+		   STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
+		   STGM::CCircle3 disc3 = convert_C_Circle(R_obj, n);
+		   digitizer(disc3);
+
+	   } else {												// CEllipse3: other objects from intersected cylinders
+
+		   STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
+		   STGM::CEllipse3 ellipse = convert_C_Ellipse3(R_obj, n);
+		   digitizer(ellipse);
+
+	   }
+
+	}
 
 	UNPROTECT(2);
-    return R_W;
+    return R_w;
 
   /*
    *
@@ -1095,19 +1128,20 @@ void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &i
   CBox3 &box = sp.box();
   typename CPoissonSystem<T>::objects_array_t &objects = sp.refObjects();
 
-  int i=0,j=0;
-  switch(plane.idx()) {
-      case 0: i=1; j=2; break; // YZ
-      case 1: i=0; j=2; break; // XZ
-      case 2: i=0; j=1; break; // XY
-  }
-
-  // assume left-down corner as the origin of the box
+  // assume left-down corner
+  // as the origin of the box
   if(intern)
   {
-      CWindow win(box.m_size[i],box.m_size[j]);
-      for(size_t i=0; i < objects.size(); ++i) {
-           Intersector<T> intersector( objects[i], plane, box.m_size);
+	  int i=0, j=0;
+	  switch(plane.idx()) {
+	        case 0: i=1; j=2; break; // YZ
+	        case 1: i=0; j=2; break; // XZ
+	        case 2: i=0; j=1; break; // XY
+	  }
+
+	  CWindow win(box.m_size[i],box.m_size[j]);
+      for(size_t k=0; k < objects.size(); ++k) {
+           Intersector<T> intersector( objects[k], plane, box.m_size);
            if(intersector.FindIntersection()) {
                if((intersector.getObject())->isInWindow(win))
                  intersected.push_back( intersector );
@@ -1116,8 +1150,8 @@ void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &i
 
   } else {
 
-      for(size_t i=0; i < objects.size(); ++i) {
-          Intersector<T> intersector( objects[i], plane, box.m_size);
+      for(size_t k=0; k < objects.size(); ++k) {
+          Intersector<T> intersector( objects[k], plane, box.m_size);
           if(intersector.FindIntersection()) {
         	  intersected.push_back( intersector );
           }
@@ -1263,6 +1297,20 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp) {
   return R_ret;
 }
 
+
+STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
+{
+   STGM::CPoint2d ctr(REAL(VECTOR_ELT(R_E,2)));			// center
+   STGM::CPoint2d minorAxis(REAL(VECTOR_ELT(R_E,5)));	// minor
+   STGM::CPoint2d majorAxis(REAL(VECTOR_ELT(R_E,6)));	// major
+
+   double *ab = REAL(VECTOR_ELT(R_E,4));
+   return STGM::CEllipse2(ctr,majorAxis,minorAxis,ab[0],ab[1],
+		   INTEGER(VECTOR_ELT(R_E,0))[0],REAL(VECTOR_ELT(R_E,9))[0]);
+
+}
+
+
 /**
  * @brief Convert ellipses to R objects
  * 		  Need angle between [0,2pi] for
@@ -1273,7 +1321,7 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp) {
  * @param objects Intersection object
  * @return R ellipses
  */
-SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects) {
+SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box) {
   SEXP R_ret = R_NilValue;
   PROTECT(R_ret = allocVector(VECSXP, objects.size()) );
 
@@ -1297,6 +1345,7 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects) {
 		   else if(phi < 1.5*M_PI) phi = std::fmod(phi,M_PI);
 		   else phi = 2.0*M_PI-phi;
 		}
+
 		SET_VECTOR_ELT(R_tmp,3,ScalarReal(phi));
 		SET_VECTOR_ELT(R_ret,k,R_tmp);
 		UNPROTECT(1);
@@ -1305,8 +1354,8 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects) {
   } else {
 
 	  /* full version of ellipse list */
-	  SEXP R_tmp, R_center, R_ab, R_A;
-	  const char *nms[] = {"id", "type", "center", "A", "ab", "phi", "S", ""};
+	  SEXP R_tmp, R_center, R_minor, R_major, R_ab, R_A;
+	  const char *nms[] = {"id", "type", "center", "A", "ab", "minor", "major", "phi", "S", "rot", ""};
 
 	  for(size_t k=0; k<objects.size(); ++k)
 	  {
@@ -1316,9 +1365,18 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects) {
 		  PROTECT(R_center = allocVector(REALSXP, 2));
 		  PROTECT(R_ab = allocVector(REALSXP, 2));
 		  PROTECT(R_A = allocMatrix(REALSXP,2,2));
+		  PROTECT(R_minor = allocVector(REALSXP, 2));
+		  PROTECT(R_major = allocVector(REALSXP, 2));
 
 		  REAL(R_center)[0] = ellipse.center()[0];
 		  REAL(R_center)[1] = ellipse.center()[1];
+
+		  REAL(R_minor)[0] = ellipse.minorAxis()[0];
+ 		  REAL(R_minor)[1] = ellipse.minorAxis()[1];
+
+ 		  REAL(R_major)[0] = ellipse.majorAxis()[0];
+ 		  REAL(R_major)[1] = ellipse.majorAxis()[1];
+
 
 		  REAL(R_ab)[0] = ellipse.a();    // major semi-axis (for both prolate/oblate)
 		  REAL(R_ab)[1] = ellipse.b();	  // minor semi-axis (for both prolate/oblate)
@@ -1327,31 +1385,45 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects) {
 			for (int j = 0; j < 2; j++)
 			  REAL(R_A)[i + 2 *j] = ellipse.MatrixA()[i][j];
 
-
 		  SET_VECTOR_ELT(R_tmp,0,ScalarInteger(ellipse.Id()));
 		  SET_VECTOR_ELT(R_tmp,1,ScalarInteger(STGM::ELLIPSE_2D));
 		  SET_VECTOR_ELT(R_tmp,2,R_center);
 		  SET_VECTOR_ELT(R_tmp,3,R_A);
 		  SET_VECTOR_ELT(R_tmp,4,R_ab);
+		  SET_VECTOR_ELT(R_tmp,5,R_minor);
+		  SET_VECTOR_ELT(R_tmp,6,R_major);
 
 		  /* return angle between [0,2pi] */
-		  SET_VECTOR_ELT(R_tmp,5,ScalarReal(ellipse.phi()));
-		  SET_VECTOR_ELT(R_tmp,6,ScalarReal(ellipse.b()/ellipse.a()));
+		  SET_VECTOR_ELT(R_tmp,7,ScalarReal(ellipse.phi()));
+		  SET_VECTOR_ELT(R_tmp,8,ScalarReal(ellipse.b()/ellipse.a()));
+		  SET_VECTOR_ELT(R_tmp,9,ScalarReal(ellipse.rot()));
 
 		  SET_VECTOR_ELT(R_ret,k,R_tmp);
-		  UNPROTECT(4);
+		  UNPROTECT(6);
 	  }
   }
+  // set intersecting plane normal vector
   SEXP R_plane = R_NilValue;
-  const STGM::CPlane &plane = objects[0].getPlane();
+  STGM::CPlane &plane = objects[0].getPlane();
+
   PROTECT(R_plane = allocVector(REALSXP,3));
   REAL(R_plane)[0] = plane.n[0];
   REAL(R_plane)[1] = plane.n[1];
   REAL(R_plane)[2] = plane.n[2];
-  setAttrib(R_ret,R_plane,install("plane"));
+  setAttrib(R_ret,install("plane"),R_plane);
+
+  // set intersection window
+  int i=0, j=0, k=0;
+  plane.getPlaneIdx(i,j,k);
+
+  SEXP R_win;
+  PROTECT(R_win = allocVector(REALSXP,2));
+  REAL(R_win)[0] = box.m_size[i];
+  REAL(R_win)[1] = box.m_size[j];
+  setAttrib(R_ret,install("win"),R_win);
 
   SET_CLASS_NAME(R_ret,"ellipses");
-  UNPROTECT(2);
+  UNPROTECT(3);
   return(R_ret);
 }
 
@@ -1696,7 +1768,7 @@ STGM::Cylinders convert_C_Cylinders(SEXP R_cyls)
   return cylinders;
 }
 
-SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects) {
+SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::CBox3 &box) {
   SEXP R_ret = R_NilValue;
 
   if(PL==10)
@@ -1707,6 +1779,7 @@ SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects) {
 	    REAL(R_ret)[k] = objects[k].getCircle().r();
 
   } else {
+
 	  SEXP R_tmp, R_center;
 	  const char *nms[] = {"id", "type", "center", "r", ""};
 	  PROTECT(R_ret = allocVector(VECSXP, objects.size()) );
@@ -1730,22 +1803,43 @@ SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects) {
 		 SET_VECTOR_ELT(R_ret,k,R_tmp);
 		 UNPROTECT(2);
 	   }
+
   }
+
   SEXP R_plane = R_NilValue;
-  const STGM::CPlane &plane = objects[0].getPlane();
+  STGM::CPlane &plane = objects[0].getPlane();
   PROTECT(R_plane = allocVector(REALSXP,3));
   REAL(R_plane)[0] = plane.n[0];
   REAL(R_plane)[1] = plane.n[1];
   REAL(R_plane)[2] = plane.n[2];
   setAttrib(R_ret,R_plane,install("plane"));
 
+  // set intersection window
+  int i=0, j=0, k=0;
+  plane.getPlaneIdx(i,j,k);
+
+  SEXP R_win;
+  PROTECT(R_win = allocVector(REALSXP,2));
+  REAL(R_win)[0] = box.m_size[i];
+  REAL(R_win)[1] = box.m_size[j];
+  setAttrib(R_ret,install("win"),R_win);
+
   SET_CLASS_NAME(R_ret,"discs");
-  UNPROTECT(2);
+  UNPROTECT(3);
   return R_ret;
 }
 
+// TODO:
+STGM::CCircle3 convert_C_Circle(SEXP R_C, STGM::CVector3d &n)
+{
+	STGM::CVector3d ctr(REAL(VECTOR_ELT(R_C,2)));
+	return STGM::CCircle3(ctr,REAL(VECTOR_ELT(R_C,3))[0],n,0);
+}
 
-
+STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n)
+{
+  return STGM::CEllipse3();
+}
 
 
 SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp )
@@ -1788,7 +1882,7 @@ SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp )
   return(R_ret);
 }
 
-SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects)
+SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects, STGM::CBox3 &box)
 {
   int  nLoopProtected=0, ncomps=16, ncompsCircle=4,inWindow=1;
   SEXP R_result, R_center, R_minor, R_major, R_ipt0, R_ipt1,
@@ -1932,12 +2026,22 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
   }
 
   SEXP R_plane = R_NilValue;
-  const STGM::CPlane &plane = objects[0].getPlane();
+  STGM::CPlane & plane = objects[0].getPlane();
   PROTECT(R_plane = allocVector(REALSXP,3));
   REAL(R_plane)[0] = plane.n[0];
   REAL(R_plane)[1] = plane.n[1];
   REAL(R_plane)[2] = plane.n[2];
   setAttrib(R_result,R_plane,install("plane"));
+
+  // set intersection window
+  int i=0, j=0, k=0;
+  plane.getPlaneIdx(i,j,k);
+
+  SEXP R_win;
+  PROTECT(R_win = allocVector(REALSXP,2));
+  REAL(R_win)[0] = box.m_size[i];
+  REAL(R_win)[1] = box.m_size[j];
+  setAttrib(R_result,install("win"),R_win);
 
   SET_CLASS_NAME(R_result,"cylsects");
   UNPROTECT(2);

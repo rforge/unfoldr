@@ -52,6 +52,19 @@ namespace STGM {
          m_extent[1] = 0.5*b;
      }
 
+     CWindow(STGM::CPoint2d p)
+	   : m_center(STGM::CVector2d(0.5*p[0],0.5*p[1])),
+		 m_u(STGM::CVector2d(1.0,0.0)),
+		 m_v(STGM::CVector2d(0.0,1.0)),
+		 m_size(p)
+	  {
+		  m_axis[0] = &m_u;
+		  m_axis[1] = &m_v;
+		  m_extent[0] = 0.5*p[0];
+		  m_extent[1] = 0.5*p[1];
+	  }
+
+
      /**
       * @brief Constructor
       *
@@ -189,6 +202,14 @@ namespace STGM {
            return l;
         }
 
+        void getPlaneIdx(int &i, int &j, int &k) {
+			switch(idx()) {
+			  case 0: i=1; j=2; k=0; break; // YZ
+			  case 1: i=0; j=2; k=1; break; // XZ
+			  case 2: i=0; j=1; k=2; break; // XY
+			}
+		}
+
         CVector3d n;
         double c;
    };
@@ -209,7 +230,7 @@ namespace STGM {
 
      ~CCircle3 (){};
 
-     CCircle3(CVector3d &_center,double &_radius, CVector3d &_n, int id = 0)
+     CCircle3(CVector3d &_center, double &_radius, CVector3d &_n, int id = 0)
        : m_center(_center), m_n(_n), m_plane(STGM::CPlane(_n)), m_radius(_radius), m_id(id)
      {
        setPlaneIdx();
@@ -230,7 +251,7 @@ namespace STGM {
      }
 
      void setPlane(CPlane& plane) {
-       m_plane =plane;
+       m_plane = plane;
        m_n = m_plane.n;
        setPlaneIdx();
      }
@@ -252,7 +273,6 @@ namespace STGM {
            t += s;
        }
      }
-
 
      inline int Id() { return m_id; }
 
@@ -660,10 +680,12 @@ namespace STGM {
       CEllipse3() :
         m_center(STGM::CVector3d(0,0,0)), m_n(STGM::CVector3d(0,0,1)),
         m_majorAxis(STGM::CVector3d(0,0,1)), m_minorAxis(STGM::CVector3d(0,0,0)),
-        m_a(1), m_b(1), m_phi(0), m_i(0), m_j(1), m_type(7), m_side(0), m_side0(0)                 /// default values because not intersected yet
+		m_plane(STGM::CPlane()),
+        m_a(1), m_b(1), m_phi(0), m_i(0), m_j(1), m_type(7), m_side(0), m_side0(0)   // default values because not intersected yet
       {
          m_psi[0] = 0;
          m_psi[1] = 0;
+         setPlaneIdx();
       }
 
       virtual ~CEllipse3() {};
@@ -671,14 +693,24 @@ namespace STGM {
       CEllipse3(STGM::CVector3d &center, STGM::CVector3d &n, /* STGM::CVector3d &u, */
                 STGM::CVector3d &major,STGM::CVector3d &minor,
                 double a, double b, double phi, double psi0, double psi1) :
-                  m_center(center), m_n(n), m_majorAxis(major), m_minorAxis(minor), m_a(a), m_b(b),
+                  m_center(center), m_n(n), m_majorAxis(major), m_minorAxis(minor), m_plane(STGM::CPlane(n)),
+				  m_a(a), m_b(b),
                   m_phi(phi), m_i(0), m_j(1),
-                  m_type(7), m_side(0),  m_side0(0)     /// default values because not intersected yet
+                  m_type(7), m_side(0),  m_side0(0)     	// default values because not intersected yet
       {
         m_psi[0] = psi0;
         m_psi[1] = psi1;
+        setPlaneIdx();
       };
 
+
+      inline void setPlaneIdx() {
+		  switch(m_plane.idx()) {
+			case 0: m_i=1; m_j=2; break; // YZ
+			case 1: m_i=0; m_j=2; break; // XZ
+			case 2: m_i=0; m_j=1; break; // XY
+		  }
+	  }
 
       /**
        *
@@ -867,6 +899,7 @@ namespace STGM {
      /** members */
      STGM::CVector3d m_center, m_n;
      STGM::CVector3d m_majorAxis, m_minorAxis;
+     STGM::CPlane m_plane;
 
      double m_a, m_b;
      double m_phi, m_psi[2];

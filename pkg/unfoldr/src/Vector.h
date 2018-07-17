@@ -43,6 +43,7 @@ struct CPoint {
   CPoint(const CPoint &x);
   CPoint(value_t x0 = 0.0, value_t x1 = 0.0, value_t x2 = 0.0);
   CPoint(const std::vector<value_t> &x);
+  CPoint(value_t * v);
 
   CPoint& operator= (const CPoint &p_);
   value_t &operator[](size_t i) { return p[i]; }
@@ -85,6 +86,12 @@ CPoint<N>::CPoint(const std::vector<value_t> &x) : n_(N) {
   if(x.size() != n_)
     error("Length error");
   Memcpy(p,x.data(),n_);
+}
+
+template <size_t N>
+CPoint<N>::CPoint(value_t * v) : n_(N) {
+  for (size_t i=0; i<n_; i++)
+    p[i] = v[i];
 }
 
 

@@ -19,7 +19,7 @@ extern "C" {
 
  SEXP PoissonSystem(SEXP R_param, SEXP R_cond);
 
- SEXP DigitizeProfiles(SEXP R_var, SEXP R_cond, SEXP R_delta, SEXP R_env);
+ SEXP DigitizeProfiles(SEXP R_var, SEXP R_win, SEXP R_delta, SEXP R_env);
 
  SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env);
 

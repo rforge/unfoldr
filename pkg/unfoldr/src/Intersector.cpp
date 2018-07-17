@@ -19,22 +19,9 @@ namespace STGM
     //m_spheroid.CalculateMatrixA(m_iF);
     const CMatrix3d &A = m_spheroid.MatrixA();
 
-    /** Get indices according to the given plane for intersections only by XY,XZ,YZ planes  */
-    int l;
-    for(l=0; l<3; l++)
-        if(m_plane.n[l] == 1 || m_plane.n[l] == -1) break;
-
-    switch (l) {
-      case 0: // YZ
-        i=1;j=2;k=0;
-        break;
-      case 1: // XZ
-        i=0;j=2;k=1;
-        break;
-      case 2: // XY
-        i=0;j=1;k=2;
-        break;
-    }
+    /** Get indices according to the given plane
+     *  for intersections only by XY,XZ,YZ planes  */
+    m_plane.getPlaneIdx(i,j,k);
 
     double d = A[i][i]*A[j][j]-SQR(A[i][j]);
     double s[] = { ( A[i][k]*A[j][j]-A[j][k]*A[i][j] ) /d ,
@@ -57,22 +44,9 @@ namespace STGM
         int i=0,j=0,k=0;
         const CMatrix3d &A = m_spheroid.MatrixA();
 
-        /** Get indices according to the given plane for intersections only by XY,XZ,YZ planes  */
-        int l;
-        for(l=0; l<3; l++)
-          if(m_plane.n[l] == 1 || m_plane.n[l] == -1) break;
-
-        switch (l) {
-          case 0: // YZ
-            i=1;j=2;k=0;
-            break;
-          case 1: // XZ
-            i=0;j=2;k=1;
-            break;
-          case 2: // XY
-            i=0;j=1;k=2;
-            break;
-        }
+        /** Get indices according to the given plane
+         *  for intersections only by XY,XZ,YZ planes  */
+        m_plane.getPlaneIdx(i,j,k);
 
         double d = A[i][i]*A[j][j]-SQR(A[i][j]);
         double s[] = { ( A[i][k]*A[j][j]-A[j][k]*A[i][j] ) /d ,
@@ -98,7 +72,7 @@ namespace STGM
             A_new[1][1]= A[j][j] / (1-tmp);
 
             /** store ellipse */
-            m_ellipse = CEllipse2(A_new,m_new, m_spheroid.Id());
+            m_ellipse = CEllipse2(A_new,m_new,m_spheroid.Id());
 
             return true;
        }
@@ -180,7 +154,6 @@ namespace STGM
    {
      double cosTheta = m_cylinder.u().dot(m_plane.n);
      double absCosTheta = fabs(cosTheta);
-
 
      if (absCosTheta > 0.0)
      {
