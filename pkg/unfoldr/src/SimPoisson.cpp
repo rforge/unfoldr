@@ -374,8 +374,8 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_win, SEXP R_delta, SEXP R_env)
 
 	   if(type == STGM::ELLIPSE_2D)							// CEllipse2
 	   {
-		   STGM::CEllipse2 ellipse = convert_C_Ellipse2(R_obj);
-		   digitizer(ellipse);
+		   STGM::CEllipse2 ellipse2 = convert_C_Ellipse2(R_obj);
+		   digitizer(ellipse2);
 
 	   } else if(type == STGM::DISC || type == STGM::CAP) {	// CCircle3 (disc) and caps (from spherocylinders)
 
@@ -386,8 +386,8 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_win, SEXP R_delta, SEXP R_env)
 	   } else {												// CEllipse3: other objects from intersected cylinders
 
 		   STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
-		   STGM::CEllipse3 ellipse = convert_C_Ellipse3(R_obj, n);
-		   digitizer(ellipse);
+		   STGM::CEllipse3 ellipse3 = convert_C_Ellipse3(R_obj, n);
+		   digitizer(ellipse3);
 
 	   }
 
@@ -1305,6 +1305,8 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
    STGM::CPoint2d majorAxis(REAL(VECTOR_ELT(R_E,6)));	// major
 
    double *ab = REAL(VECTOR_ELT(R_E,4));
+
+   // TODO: eigentlich Konstruktor wie in Intersector aufrufen, also über Matrix A!
    return STGM::CEllipse2(ctr,majorAxis,minorAxis,ab[0],ab[1],
 		   INTEGER(VECTOR_ELT(R_E,0))[0],REAL(VECTOR_ELT(R_E,9))[0]);
 
@@ -1402,6 +1404,7 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		  UNPROTECT(6);
 	  }
   }
+
   // set intersecting plane normal vector
   SEXP R_plane = R_NilValue;
   STGM::CPlane &plane = objects[0].getPlane();
