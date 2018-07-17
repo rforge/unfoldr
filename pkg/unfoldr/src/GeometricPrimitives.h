@@ -296,9 +296,9 @@ namespace STGM {
 
    class CSphere :  public CGeometry {
       public:
-       const char *m_label;
+        const char *m_label;
 
-        CSphere(double _x, double _y, double _z, double _r, int id=0, const char *label = "N", int interior=1)
+        CSphere(double _x, double _y, double _z, double _r, int id = 0, const char *label = "N", int interior = 1)
          : m_label(label), m_crack(0), m_id(id), m_center(CVector3d(_x,_y,_z)), m_r(_r), m_interior(interior)
         {
         }
@@ -895,10 +895,8 @@ namespace STGM {
    class CSpheroid : public CGeometry{
      public:
       const char *m_label;
-      typedef enum { PROLATE = 0, OBLATE = 1 } spheroid_type;
-      typedef enum { UNIFORM_D = 0, BETAISOTROP_D = 1, MISES_D = 2} direction_type;
 
-     CSpheroid(CVector3d center, double a, double c, double b, CVector3d u,
+      CSpheroid(CVector3d center, double a, double c, double b, CVector3d u,
                  double theta, double phi, int id, const char *label="N", int interior=1)
       : m_label(label),
         m_center(center),
@@ -1006,8 +1004,6 @@ namespace STGM {
     {
     public:
       const char *m_label;
-      typedef enum { UNIFORM_D = 0, BETAISOTROP_D = 1, MISES_D = 2} direction_type;
-      typedef enum { ELONG = 0, SPHERO = 1, CYLINDER = 2 } cylinder_type;
 
       CCylinder(CVector3d &center, CVector3d &u, double h, double r,
                  double theta, double phi, int id, const char *label="N", int interior=1 ) :
@@ -1123,8 +1119,6 @@ namespace STGM {
         double m_theta, m_phi;
         int m_id, m_interior, m_crack;
     };
-
-    typedef std::vector<CCylinder > Cylinders;
 
 
    /**
@@ -1280,8 +1274,13 @@ namespace STGM {
     };
 
 
-   typedef std::vector<CSpheroid> Spheroids;
-   typedef std::vector<CEllipse2> Ellipses;
+    // typedefs 3D
+    typedef std::vector<CSphere> Spheres;
+    typedef std::vector<CSpheroid> Spheroids;
+    typedef std::vector<CCylinder> Cylinders;
+
+    // typedefs 2D
+    typedef std::vector<CEllipse2> Ellipses;
 
 
 } /* namespace STGM */

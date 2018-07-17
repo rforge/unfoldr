@@ -13,8 +13,6 @@
 namespace STGM
 {
 
-
-
   // Information about the intersection set
   enum IntersectionType  {
     EMPTY=0,          // 0
@@ -52,7 +50,7 @@ namespace STGM
   template<>
   class Intersector<STGM::CSpheroid>
   {
-  public:
+   public:
     Intersector(CSpheroid &_spheroid, CPlane &_plane, CPoint3d &_dimensions)
      : m_spheroid(_spheroid), m_plane(_plane), m_size(_dimensions), m_type(EMPTY)
     {
@@ -77,7 +75,8 @@ namespace STGM
     CSpheroid &getSpheroid() { return m_spheroid; }
     const CSpheroid &getSpheroid() const { return m_spheroid; }
 
-    CGeometry * getObject(int type) { return &m_ellipse; }
+    CGeometry * getObject() { return &m_ellipse; }
+    const CGeometry * getObject() const { return &m_ellipse; }
 
     /**
      * @brief Only check if Spheroid intersects a given plane
@@ -149,6 +148,9 @@ namespace STGM
     CSphere &getSphere() { return m_sphere; }
     const CSphere &getSphere() const { return m_sphere; }
 
+    CGeometry * getObject() { return &m_circle;; }
+    const CGeometry * getObject() const { return &m_circle; }
+
     bool operator() (const CPlane &plane) {
       m_plane = plane;
       if(TestIntersection()) {
@@ -217,8 +219,8 @@ namespace STGM
       int getType() const { return m_type; };
       int getSide() const { return m_side; };
 
-      CGeometry * getObject(int type) {
-        if(type == CIRCLE_CAPS || type == CIRCLE) {
+      CGeometry * getObject() {
+        if(m_type == CIRCLE_CAPS || m_type == CIRCLE) {
              return & m_circle1;
          } else //if(type == ELLIPSE ||  type == ELLIPSE_ARC ||  type == ELLIPSE_SEGMENT) {
           return &m_ellipse;
