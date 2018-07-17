@@ -1280,7 +1280,8 @@ namespace STGM {
     typedef std::vector<CCylinder> Cylinders;
 
     // typedefs 2D
-    typedef std::vector<CEllipse2> Ellipses;
+    typedef std::vector<CEllipse2> Ellipses2;
+    typedef std::vector<CEllipse3> Ellipses3;
 
 
 } /* namespace STGM */

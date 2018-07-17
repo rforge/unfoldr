@@ -192,7 +192,7 @@ namespace STGM
 
          } else {
              int id = 1;
-             m_type = CIRCLE;
+             m_type = DISC;
              m_circle1 = STGM::CCircle3(m_cylinder.center(),m_cylinder.r(),m_plane.n,id );
              return true;
          }
@@ -209,12 +209,11 @@ namespace STGM
     m_center -= ipt;
     double r = sqrt( SQR(m_cylinder.r()) - SQR(m_center.Length()) );
 
-    /** @todo: Get right index here for coordinates according to intersection plane */
     double x = ipt[m_i]+r*m_ellipse.m_minorAxis[m_i];
     double y = ipt[m_j]+r*m_ellipse.m_minorAxis[m_j];
 
     return acos( (x-m_ellipse.m_center[m_i] + sin(m_cylinder.phi())/cos(m_cylinder.phi())*(y-m_ellipse.m_center[m_j]))
-                          /(m_ellipse.m_a*cos(m_cylinder.phi())+m_ellipse.m_a*SQR(sin(m_cylinder.phi()))/cos(m_cylinder.phi())));
+                  /(m_ellipse.m_a*cos(m_cylinder.phi())+m_ellipse.m_a*SQR(sin(m_cylinder.phi()))/cos(m_cylinder.phi())));
   }
 
   CCircle3 Intersector<STGM::CCylinder>::GetCircle(STGM::CVector3d &spherecenter, double sDist) {
@@ -340,12 +339,12 @@ namespace STGM
           if (fabs(sDist) <= m_cylinder.r()) {
               // origin0 is the sphere m_center
               m_circle1=GetCircle(m_cylinder.origin0(), sDist);
-              m_type=CIRCLE_CAPS;
+              m_type=CAP;
           }
           if (fabs(sDist2) <= m_cylinder.r()) {
               // origin1 is the sphere m_center
               m_circle1=GetCircle(m_cylinder.origin1(), sDist2);
-              m_type=CIRCLE_CAPS;
+              m_type=CAP;
           }
 
      }

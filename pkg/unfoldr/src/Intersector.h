@@ -20,8 +20,8 @@ namespace STGM
     POINT,            // 2
     LINE,             // 3
     LINES,            // 4
-    CIRCLE,           // 5
-    CIRCLE_CAPS,      // 6
+    DISC,       	  // 5
+    CAP,		      // 6
     ELLIPSE,          // 7
     ELLIPSE_ARC,      // 8
     ELLIPSE_SEGMENT,  // 9
@@ -68,6 +68,7 @@ namespace STGM
     bool FindIntersection ();
 
     void setPlane(CPlane &_plane) { m_plane = _plane; }
+    const CPlane getPlane() const { return m_plane; }
 
     CEllipse2 & getEllipse() { return m_ellipse; }
     const CEllipse2 & getEllipse() const { return m_ellipse; }
@@ -141,6 +142,7 @@ namespace STGM
     bool FindIntersection ();
 
     void setPlane(CPlane &plane) { m_plane = plane; }
+    const CPlane getPlane() const { return m_plane; }
 
     CCircle3 & getCircle() { return m_circle; }
     const CCircle3 & getCircle() const { return m_circle; }
@@ -219,11 +221,14 @@ namespace STGM
       int getType() const { return m_type; };
       int getSide() const { return m_side; };
 
+      const CPlane getPlane() const { return m_plane; }
+
       CGeometry * getObject() {
-        if(m_type == CIRCLE_CAPS || m_type == CIRCLE) {
+        if(m_type == CAP || m_type == DISC) {
              return & m_circle1;
-         } else //if(type == ELLIPSE ||  type == ELLIPSE_ARC ||  type == ELLIPSE_SEGMENT) {
-          return &m_ellipse;
+         } else {  					/* if(type == ELLIPSE ||  type == ELLIPSE_ARC ||  type == ELLIPSE_SEGMENT) */
+             return &m_ellipse;
+         }
       }
 
       /**
@@ -379,10 +384,10 @@ namespace STGM
 
      template<class T>
      void digitize(typename STGM::Intersectors<T>::Type &objects, int *w, int nPix, double delta) {
-       int type = 0;
+       //int type = 0;
        STGM::CDigitizer digitizer(w,nPix,nPix,delta);
        for(size_t k=0;k<objects.size();k++) {
-          digitizer.start(objects[k].getObject(type));
+          digitizer.start(objects[k].getObject());
        }
      }
 
