@@ -769,6 +769,14 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #' @rdname digitizeProfiles
 #' @export 
 digitizeProfiles <- function(sp, delta, win = NULL ) {
-	# TODO: check window input! 
-	.Call(C_DigitizeProfiles,sp,delta,win,.GlobalEnv)
+	if(!is.null(win)){
+		if(!is.list(win) || length(win) == 0L )
+			stop("Expected argument 'win' as list type.")
+		if(length(win) == 1L)
+			win <- rep(win[1],2)
+		else if(length(win) != 2L)
+			stop("Digitization window has wrong dimensions.")
+		names(box) <- c("xrange","yrange")
+	}
+	.Call(C_DigitizeProfiles,as.character(substitute(sp)),delta,win,.GlobalEnv)
 }

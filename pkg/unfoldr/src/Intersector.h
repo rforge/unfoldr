@@ -13,21 +13,6 @@
 namespace STGM
 {
 
-  // Information about the intersection set
-  enum IntersectionType  {
-    EMPTY=0,          // 0
-    NON_EMPTY,        // 1
-    POINT,            // 2
-    LINE,             // 3
-    LINES,            // 4
-    DISC,       	  // 5
-    CAP,		      // 6
-    ELLIPSE,          // 7
-    ELLIPSE_ARC,      // 8
-    ELLIPSE_SEGMENT,  // 9
-    ELLIPSE_2D        // 10
-  };
-
   template<class T>
   class Intersector
     {

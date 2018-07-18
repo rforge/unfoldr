@@ -50,7 +50,7 @@ namespace STGM
 
         double d = A[i][i]*A[j][j]-SQR(A[i][j]);
         double s[] = { ( A[i][k]*A[j][j]-A[j][k]*A[i][j] ) /d ,
-                      (  A[j][k]*A[i][i]-A[i][k]*A[i][j] ) /d };
+                       ( A[j][k]*A[i][i]-A[i][k]*A[i][j] ) /d };
 
         double sum = s[0]*s[0]*A[i][i] + s[0]*s[1]*A[i][j] + s[1]*s[0]*A[j][i] + s[1]*s[1]*A[j][j];
 

@@ -219,13 +219,13 @@ namespace STGM {
   typedef const double (*matrix_t)[3];
 
   void real_eval(double *a, int *n, double *evalf, int *err) {
-              // size(evalf): n
-              // result: evec = a
+	  // size(evalf): n
+	  // result: evec = a
 
-              int lda = *n,  lwork = 3*lda-1;
-              double *work = Calloc(lwork, double);
-              F77_NAME(dsyev)("V","U", &lda, a, &lda, evalf, work, &lwork, err);
-              Free(work);
+	  int lda = *n,  lwork = 3*lda-1;
+	  double *work = Calloc(lwork, double);
+	  F77_NAME(dsyev)("V","U", &lda, a, &lda, evalf, work, &lwork, err);
+	  Free(work);
 
   }
 

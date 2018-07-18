@@ -50,9 +50,9 @@ STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids);
 SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp);
 SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box);
 
+/* R to C ellipse conversions */
 STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E);
 STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n);
-STGM::CCircle3 convert_C_Circle(SEXP R_C, STGM::CVector3d &n);
 
 /* spheres */
 STGM::CSphere convert_C_Sphere(SEXP R_sphere);
@@ -339,6 +339,11 @@ SEXP UpdateIntersections(SEXP R_var, SEXP R_env)
     return R_ret;
 }
 
+
+/**
+ * Digitize intersections
+ *  @param
+ */
 SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 {
 	int nprotect = 0;
@@ -348,15 +353,17 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 
 	/*  get the window if not provided:
 	 *  this has the correct dimension of the original box
-	 *  and corresponds to the intersecting plane  (normal vector)
-	 */
-	if(isNull(R_win))
-	 PROTECT(R_win = getAttrib(R_S, install("win"))); ++nprotect;
+	 *  and corresponds to the intersecting plane  (normal vector) */
+	if(isNull(R_win)){
+	  PROTECT(R_win = getAttrib(R_S, install("win"))); ++nprotect;
+	}
 	STGM::CWindow win(REAL(R_win));
-	int nPix[2] = { (int) (win.m_size[0]/REAL(R_delta)[0]),
-			        (int) (win.m_size[1]/REAL(R_delta)[0])};
+	int nPix[] = { (int) std::floor((win.m_size[0]/REAL(R_delta)[0])),
+			       (int) std::floor((win.m_size[1]/REAL(R_delta)[0]))};
 
-	if(PL>10) Rprintf("Digitize with resolution [%d,%d] (delta: %f ) \n",nPix[0], nPix[1], REAL(R_delta)[0]);
+	if(PL>10){
+	 Rprintf("Digitize (resolution [%d, %d]), delta: %f \n",nPix[0], nPix[1], REAL(R_delta)[0]);
+	}
 
 	/* alloc return matrix */
 	SEXP R_w = R_NilValue;
@@ -380,7 +387,8 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	   } else if(type == STGM::DISC || type == STGM::CAP) {	// CCircle3 (disc) and caps (from spherocylinders)
 
 		   STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
-		   STGM::CCircle3 disc3 = convert_C_Circle(R_obj, n);
+		   STGM::CVector3d ctr(REAL(VECTOR_ELT(R_S,2)));
+		   STGM::CCircle3 disc3(ctr,REAL(VECTOR_ELT(R_S,3))[0],n,k);
 		   digitizer(disc3);
 
 	   } else {												// CEllipse3: other objects from intersected cylinders
@@ -1300,16 +1308,21 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp) {
 
 STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 {
-   STGM::CPoint2d ctr(REAL(VECTOR_ELT(R_E,2)));			// center
-   STGM::CPoint2d minorAxis(REAL(VECTOR_ELT(R_E,5)));	// minor
-   STGM::CPoint2d majorAxis(REAL(VECTOR_ELT(R_E,6)));	// major
+   STGM::CPoint2d ctr(REAL(VECTOR_ELT(R_E,2)));
+   STGM::CPoint2d minorA(REAL(VECTOR_ELT(R_E,5)));
+   STGM::CPoint2d majorA(REAL(VECTOR_ELT(R_E,6)));
 
+   STGM::CMatrix2d A(REAL(VECTOR_ELT(R_E,3)));
    double *ab = REAL(VECTOR_ELT(R_E,4));
 
-   // TODO: eigentlich Konstruktor wie in Intersector aufrufen, also über Matrix A!
-   return STGM::CEllipse2(ctr,majorAxis,minorAxis,ab[0],ab[1],
-		   INTEGER(VECTOR_ELT(R_E,0))[0],REAL(VECTOR_ELT(R_E,9))[0]);
-
+   return STGM::CEllipse2(ctr,								// center
+		   	   	   	   	  A,								// matrix A
+						  majorA,							// semi-major
+						  minorA,							// semi-minor
+						  ab[0],ab[1],						// a,b
+						  REAL(VECTOR_ELT(R_E,7))[0],		// phi
+						  INTEGER(VECTOR_ELT(R_E,0))[0],	// id
+						  REAL(VECTOR_ELT(R_E,9))[0]);		// rot
 }
 
 
@@ -1832,16 +1845,23 @@ SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::
   return R_ret;
 }
 
-// TODO:
-STGM::CCircle3 convert_C_Circle(SEXP R_C, STGM::CVector3d &n)
-{
-	STGM::CVector3d ctr(REAL(VECTOR_ELT(R_C,2)));
-	return STGM::CCircle3(ctr,REAL(VECTOR_ELT(R_C,3))[0],n,0);
-}
 
 STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n)
 {
-  return STGM::CEllipse3();
+	STGM::CVector3d ctr(REAL(VECTOR_ELT(R_E,2)));
+	STGM::CVector3d majorA(REAL(VECTOR_ELT(R_E,3)));
+	STGM::CVector3d minorA(REAL(VECTOR_ELT(R_E,4)));
+
+	double *ab = REAL(VECTOR_ELT(R_E,9));
+	double *psi= REAL(VECTOR_ELT(R_E,12));
+
+	return STGM::CEllipse3(ctr,
+							n,											// plane normal
+							majorA, minorA,								// axes vectors
+							ab[0],ab[1],								// lengths
+							REAL(VECTOR_ELT(R_E,10))[0],				// angle phi
+							psi[0],psi[1],								// segment angles
+							INTEGER(VECTOR_ELT(R_E,14))[0]);			// `m_side` to set reference side `m_side0`.
 }
 
 

@@ -18,6 +18,21 @@ extern "C" void ContactRadius(double *u, double *li, double *lj, double *ri, dou
 
 namespace STGM {
 
+// Information about the intersection set
+  enum IntersectionType  {
+    EMPTY=0,          // 0
+    NON_EMPTY,        // 1
+    POINT,            // 2
+    LINE,             // 3
+    LINES,            // 4
+    DISC,       	  // 5
+    CAP,		      // 6
+    ELLIPSE,          // 7
+    ELLIPSE_ARC,      // 8
+    ELLIPSE_SEGMENT,  // 9
+    ELLIPSE_2D        // 10
+  };
+
   /** some type definitions */
   typedef std::vector<STGM::CPoint2d> PointVector2d;
   typedef std::vector<STGM::CPoint2d>::iterator PointIterator;
@@ -408,9 +423,9 @@ namespace STGM {
      * @param center
      * @param id
      */
-    CEllipse2(STGM::CMatrix2d &A_new, STGM::CPoint2d &center, int id, double rot = 0) :
-       m_center(center), m_A(A_new), m_a(0), m_b(0), m_phi(0), m_rot(rot), m_id(id),  m_type(10)
-        {
+    CEllipse2(STGM::CMatrix2d &A, STGM::CPoint2d &center, int id, double rot = 0) :
+       m_center(center), m_A(A), m_a(0), m_b(0), m_phi(0), m_rot(rot), m_id(id),  m_type(10)
+    {
           int n = 2, err = 0;
           double B[4];
           B[0] = m_A[0][0];
@@ -429,77 +444,98 @@ namespace STGM {
           m_minorAxis[0] = B[2];
           m_minorAxis[1] = B[3];
 
-          if(!err) {
-        	/* phi is relative to x axis */
-        	/// double cos_phi = B[0];
- 	        /// double sin_phi = B[1];
-
-        	/* phi is relative to z axis */
- 	        double cos_phi = B[1];
-            double sin_phi = B[3];
-
-            m_phi = acos(cos_phi);     // angle in the intersecting plane
-            if( (cos_phi<0 && sin_phi<0) || (cos_phi<0 && sin_phi>=0)) {
-                m_phi = atan(sin_phi/cos_phi)+M_PI;
-            } else if(cos_phi>0 && sin_phi<0) {
-                m_phi = atan(sin_phi/cos_phi)+2*M_PI;
-            }
-
-           /* add offset angle because of 3d rgl image,
-            * Here phi does not match with matrix A.
-            * Leave out otherwise
-            */
-            m_phi += m_rot;
-
-            m_b = 1.0/sqrt(evalf[1]);
-            m_a = 1.0/sqrt(evalf[0]);
-
+          if(err) {
+        	Rf_error("Eigenvalue decomposition (LAPACK routine) failed in `ellipse2` constructor.");
           } else {
-              error("Error in eigenvalue decomposition (LAPACK) in ellipse construction method.");
-          }
-          /** @todo : minor/major axis */
+				/* phi is relative to x axis */
+				// double cos_phi = B[0];
+				// double sin_phi = B[1];
 
-        };
+				/* phi is relative to z axis */
+				double cos_phi = B[1];
+				double sin_phi = B[3];
+
+				m_phi = acos(cos_phi);     // angle in the intersecting plane
+				if( (cos_phi<0 && sin_phi<0) || (cos_phi<0 && sin_phi>=0)) {
+					m_phi = atan(sin_phi/cos_phi)+M_PI;
+				} else if(cos_phi>0 && sin_phi<0) {
+					m_phi = atan(sin_phi/cos_phi)+2*M_PI;
+				}
+
+			   /* add offset angle because of 3D rgl image,
+				* Here phi does not match with matrix A.
+				* Leave out otherwise */
+				m_phi += m_rot;
+				m_b = 1.0/sqrt(evalf[1]);
+				m_a = 1.0/sqrt(evalf[0]);
+          }
+
+    };
+
+    /* no re-computation of matrix A */
+    CEllipse2(STGM::CPoint2d &center, STGM::CMatrix2d &A, STGM::CPoint2d &major,
+    		   STGM::CPoint2d &minor, double a,  double b, double phi, int id, double rot = 0) :
+		 m_center(center),
+		 m_A(A),
+		 m_a(a),
+		 m_b(b),
+		 m_phi(phi),
+		 m_rot(rot),
+		 m_id(id),
+		 m_type(ELLIPSE_2D),
+		 m_majorAxis(major),
+		 m_minorAxis(minor)
+
+	{;}
+
 
     CEllipse2(STGM::CPoint2d &center, STGM::CPoint2d &major, STGM::CPoint2d &minor,
-               double a, double b, int id,  double rot = 0) :
-                 m_center(center), m_a(a), m_b(b), m_phi(0), m_rot(rot), m_id(id), m_type(10),
-                 m_majorAxis(major), m_minorAxis(minor)
+               double a,  double b, int id, double rot = 0) :
+         m_center(center),
+		 m_a(a),
+		 m_b(b),
+		 m_phi(0),
+		 m_rot(rot),
+		 m_id(id),
+		 m_type(ELLIPSE_2D),
+         m_majorAxis(major),
+		 m_minorAxis(minor)
 
     {
-      ComputeMatrix();
+    	ComputeMatrix();
     }
 
-    void ComputeMatrix() {
+    void ComputeMatrix()
+    {
           STGM::CMatrix2d B;
           B[0][0] = m_minorAxis[0];
           B[1][0] = m_minorAxis[1];
           B[0][1] = m_majorAxis[0];
           B[1][1] = m_majorAxis[1];
 
+          // compute A
+          m_A[0][0] = 1.0 / SQR(m_a);
+	      m_A[1][1] = 1.0 / SQR(m_b);
+	  	  m_A = m_A * B;
+		  B.Transpose();
+		  m_A = B * m_A;
+
           double cos_phi = m_minorAxis[0];
           double sin_phi = m_minorAxis[1];
 
-          /* angle in the intersecting plane relative to z axis */
+          /* angle in the intersecting plane is relative to z axis */
           m_phi = acos(cos_phi) ;
           if( (cos_phi<0 && sin_phi<0) || (cos_phi<0 && sin_phi>=0)) {
               m_phi = atan(sin_phi/cos_phi)+M_PI;
           } else if(cos_phi>0 && sin_phi<0) {
               m_phi = atan(sin_phi/cos_phi)+2.0*M_PI;
           }
-
           /* add offset angle because of 3d rgl image,
            * Here phi does not match with matrix A.
            * Leave out otherwise */
           m_phi += m_rot;
-
-          m_A[0][0] = 1.0 / SQR(m_a);
-          m_A[1][1] = 1.0 / SQR(m_b);
-          m_A = m_A * B;
-          B.Transpose();
-          m_A = B * m_A;
-
      }
+
 
     /**
      * @brief Set dx/dt=0 and dy/dt=0 -> reorder for t values
@@ -678,10 +714,16 @@ namespace STGM {
   public:
 
       CEllipse3() :
-        m_center(STGM::CVector3d(0,0,0)), m_n(STGM::CVector3d(0,0,1)),
-        m_majorAxis(STGM::CVector3d(0,0,1)), m_minorAxis(STGM::CVector3d(0,0,0)),
+        m_center(STGM::CVector3d(0,0,0)),
+		m_n(STGM::CVector3d(0,0,1)),
+        m_majorAxis(STGM::CVector3d(0,0,1)),
+		m_minorAxis(STGM::CVector3d(0,0,0)),
 		m_plane(STGM::CPlane()),
-        m_a(1), m_b(1), m_phi(0), m_i(0), m_j(1), m_type(7), m_side(0), m_side0(0)   // default values because not intersected yet
+        m_a(1),
+		m_b(1),
+		m_phi(0),
+		m_i(0), m_j(1),
+		m_type(7), m_side(0), m_side0(0)   // default values because not intersected yet
       {
          m_psi[0] = 0;
          m_psi[1] = 0;
@@ -690,17 +732,23 @@ namespace STGM {
 
       virtual ~CEllipse3() {};
 
-      CEllipse3(STGM::CVector3d &center, STGM::CVector3d &n, /* STGM::CVector3d &u, */
+      CEllipse3(STGM::CVector3d &center, STGM::CVector3d &n,
                 STGM::CVector3d &major,STGM::CVector3d &minor,
-                double a, double b, double phi, double psi0, double psi1) :
-                  m_center(center), m_n(n), m_majorAxis(major), m_minorAxis(minor), m_plane(STGM::CPlane(n)),
-				  m_a(a), m_b(b),
-                  m_phi(phi), m_i(0), m_j(1),
-                  m_type(7), m_side(0),  m_side0(0)     	// default values because not intersected yet
+                double a, double b, double phi, double psi0, double psi1,
+				int side = 0) :
+         m_center(center),
+		 m_n(n),
+		 m_majorAxis(major),
+		 m_minorAxis(minor),
+		 m_plane(STGM::CPlane(n)),
+		 m_a(a), m_b(b),
+         m_phi(phi), m_i(0), m_j(1),
+         m_type(7), m_side(side),  m_side0(0)     	// default values because not intersected yet
       {
         m_psi[0] = psi0;
         m_psi[1] = psi1;
-        setPlaneIdx();
+        setPlaneIdx();								// set m_i and m_j to select coordinates
+        setReferenceSide();							// set m_side0
       };
 
 
@@ -876,9 +924,9 @@ namespace STGM {
       *
       */
      void setReferenceSide() {
-       /// choose either 0
+       // choose either 0
        double t = 0;
-       /// or PI as a point on the ellipse to determine the the cut off side
+       // or PI as a point on the ellipse to determine the the cut off side
        if(m_side<0) t = M_PI;
        m_side0 = whichSide(PointOnEllipse(t),0);
      }
