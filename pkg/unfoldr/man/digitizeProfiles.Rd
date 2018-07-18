@@ -4,7 +4,7 @@
 \alias{digitizeProfiles}
 \title{Digitize section profiles}
 \usage{
-digitizeProfiles(sp, cond, delta)
+digitizeProfiles(sp, delta, win = NULL)
 }
 \arguments{
 \item{sp}{list of section profiles, see \code{\link{intersectSystem}}}
