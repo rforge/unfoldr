@@ -26,12 +26,11 @@ The function performs the EM algorithm.
 library(unfoldr)
 
 ## beta distribution for radii
-lam <- 300
-theta <- list("shape1"=2,"shape2"=4)
-S <- simSphereSystem(theta,lam,rdist="rbeta",box=list(c(0,5)),
-		## arguments only for returning intersection profiles
-		dz=2.5,n=c(0,1,0),profiles=FALSE,intern=FALSE,		
-		pl=100,label='N')
+lam <- 10
+theta <- list("size"=list("shape1"=2,"shape2"=4))
+
+debug(simPoissonSystem)
+S <- simPoissonSystem(theta,lam,size="rbeta",box=list(c(0,5)),type="sphere",pl=1)
 
 class(S)
 length(S)
