@@ -544,7 +544,9 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    }
 	}
 
-	if(PL>10) Rprintf("Objects simulated: %d \n", m_objects.size());
+	if(PL>10){
+	 Rprintf("Objects simulated: %d \n", m_objects.size());
+	}
 
 	PutRNGstate();
 	UNPROTECT(2);
@@ -587,9 +589,9 @@ void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char *la
          if(info != 0)
            error(_("simJoint(): R `try` error in user defined distribution function."));
 
-         a=REAL(getListElement(Reval,"a"))[0];
-         b=REAL(getListElement(Reval,"b"))[0];
-         c=REAL(getListElement(Reval,"c"))[0];
+         a=REAL(getListElement(Reval,"a"))[0];			// 2nd. semi-minor
+         b=REAL(getListElement(Reval,"b"))[0];			// 		semi-major
+         c=REAL(getListElement(Reval,"c"))[0];			// 1st. semi-minor
          theta=REAL(getListElement(Reval,"theta"))[0];
          phi=REAL(getListElement(Reval,"phi"))[0];
 
@@ -632,7 +634,7 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 	  }
 
       CVector3d u;
-      double a=0,c=0,    						/* two shorter semiaxes a,c and major semiaxis b */
+      double b=0,c=0,    							/*  shorter semi-minor lengths a,c and semi-major length b */
     		 s=1.0,phi=0,theta=0;
 
       if(perfect) {
@@ -640,10 +642,10 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
     	  double r=0.0;
     	  for (size_t niter=0; niter<m_num; niter++)
     	  {
-    		  rdist(s,a,c);							/* shape factor from bivariate distribution is included */
-    		  r=a;
+    		  rdist(s,b,c);							/* shape factor, semi-major, 1st. semi-minor */
+    		  r=b;
     		  if(m_type==OBLATE)
-    		    std::swap(a,c);
+    		    std::swap(b,c);
 
     		  // direction
     		  rdir(u,theta,phi);
@@ -653,7 +655,7 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 			                   runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
 
 			  /* a = r */
-			  m_objects.push_back( CSpheroid(center,c,c,a,u,theta,phi,niter+1,label) );
+			  m_objects.push_back( CSpheroid(center,c,c,b,u,theta,phi,niter+1,label) );
     	  }
 
       } else {
@@ -664,15 +666,15 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 
     	  for (size_t niter=0; niter<m_num; niter++)
     	  {
-    		  rdist(s,a,c);
+    		  rdist(s,b,c);
 			  if(m_type==OBLATE)
-				std::swap(a,c);
+				std::swap(b,c);
 
 			  // direction
 			  rdir(u,theta,phi);
 
 			  CVector3d center(runif(0.0,1.0)*m1, runif(0.0,1.0)*m2,runif(0.0,1.0)*m3);
-			  m_objects.push_back( CSpheroid(center,c,c,a,u,theta,phi,niter+1,label) );
+			  m_objects.push_back( CSpheroid(center,c,c,b,u,theta,phi,niter+1,label) );
 
     	  }
       }
@@ -926,11 +928,7 @@ void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &i
   if(intern)
   {
 	  int i=0, j=0;
-	  switch(plane.idx()) {
-	        case 0: i=1; j=2; break; // YZ
-	        case 1: i=0; j=2; break; // XZ
-	        case 2: i=0; j=1; break; // XY
-	  }
+	  plane.getPlaneIdx(i,j);
 
 	  CWindow win(box.m_size[i],box.m_size[j]);
       for(size_t k=0; k < objects.size(); ++k) {
@@ -1025,9 +1023,10 @@ SEXP convert_C2R_ellipses(STGM::Ellipses2 &ellipses) {
 }
 
 
-/** TODO: use really sphere system */
 SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp) {
-  if(PL>10) Rprintf("converting spheres ... \n");
+  if(PL>10){
+	Rprintf("converting spheres ... \n");
+  }
   STGM::Spheres &spheres = sp.refObjects();
 
   SEXP R_ret = R_NilValue;

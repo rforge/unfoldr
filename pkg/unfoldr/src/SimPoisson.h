@@ -251,10 +251,10 @@ struct rndSizeShape_t {
   {
   };
 
-  void operator()(double &s, double &a, double &c) {
-	 a = rsize();
+  void operator()(double &s, double &b, double &c) {
+	 b = rsize();
 	 c = rshape();
-	 s = c/a;
+	 s = c/b;
   }
 
 };
@@ -296,11 +296,11 @@ struct rbinorm_exact_t {
 		cum_prob_k(mx,sdx2,box.m_up[0],box.m_up[1],box.m_up[2],p,&mu);
 	}
 
-	void operator()(double &s, double &a, double &c) {
+	void operator()(double &s, double &b, double &c) {
 		rbinorm_exact(p,mx,sdx,my,sdy,rho,x,y);
 		s=1.0/(1.0+std::exp(-y));
-		a=std::exp(x); 						/* a = r for exact simulation*/
-		c=a*s;
+		b=std::exp(x); 						/* a = r for exact simulation*/
+		c=b*s;
 	}
 
 };
@@ -318,11 +318,11 @@ struct rbinorm_t {
 	{
 	};
 
-	void operator()(double &s, double &a, double &c) {
+	void operator()(double &s, double &b, double &c) {
 		rbinorm(mx,sdx,my,sdy,rho,x,y);
 		s=1.0/(1.0+std::exp(-y));
-		a=std::exp(x); 						/* a = r for exact simulation*/
-		c=a*s;
+		b=std::exp(x); 						/* a = r for exact simulation*/
+		c=b*s;
 	}
 
 };

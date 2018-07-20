@@ -217,6 +217,15 @@ namespace STGM {
            return l;
         }
 
+
+        void getPlaneIdx(int &i, int &j) {
+			switch(idx()) {
+			  case 0: i=1; j=2; break; // YZ
+			  case 1: i=0; j=2; break; // XZ
+			  case 2: i=0; j=1; break; // XY
+			}
+		}
+
         void getPlaneIdx(int &i, int &j, int &k) {
 			switch(idx()) {
 			  case 0: i=1; j=2; k=0; break; // YZ
@@ -982,7 +991,7 @@ namespace STGM {
       : m_label(label),
         m_center(center),
         m_u(u),
-        m_a(a), m_b(b), m_c(c), 		// a,c: are 1st and 2nd shorter semi-axes, b:   longer semi-axis
+        m_a(a), m_b(b), m_c(c), 		/* a,c are 1st and 2nd semi-minor lengths, b is semi-major length (conform with FBA implementation) */
 	    m_theta(theta),
         m_phi(phi),
         m_id(id),
@@ -1156,6 +1165,7 @@ namespace STGM {
         * @return Polar angle of the Cylinder.
         */
         double theta() const { return m_theta; }
+        double &theta() { return m_theta; }
 
         /**
         * @return Plane angle of the Cylinder.
