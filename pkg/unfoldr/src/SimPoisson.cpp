@@ -406,31 +406,7 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	UNPROTECT(nprotect);
     return R_w;
 
-  /*
-   *
-   checkPtr(ext, spheroid_type_tag);
-   STGM::CSpheroidSystem *sp = static_cast<STGM::CSpheroidSystem *>(getExternalPtr(ext));
-   STGM::CVector3d n(REAL(R_n)[0],REAL(R_n)[1],REAL(R_n)[2]);
-   STGM::CPlane plane( n , asReal(R_z));
-
-   if(PL>10) Rprintf("Intersect with plane: %d \n", sp->refObjects().size());
-   STGM::Intersectors<STGM::CSpheroid>::Type objects;
-   sp->IntersectWithPlane(objects,plane,0);
-
-   if(PL>10) Rprintf("done: %d \n", objects.size());
-   int nPix = (int) sp->box().m_size[0]/REAL(R_delta)[0];
-
-   SEXP R_W = R_NilValue;
-   PROTECT(R_W = allocMatrix(INTSXP,nPix,nPix));
-
-
-   STGM::digitize<STGM::CSpheroid>(objects,INTEGER(R_W),nPix,asReal(R_delta));
-
-   UNPROTECT(1);
-   return R_W;
-*/
-
- }
+}
 
 
 namespace STGM
