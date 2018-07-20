@@ -156,12 +156,9 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 								  intern=FALSE, perfect=TRUE, pl=0, label="N")
 {
 	it <- pmatch(type,c("prolate","oblate","sphere","cylinder"))
-	if(length(it)==0 || is.na(it)) stop("Spheroid type 'type' is either 'prolate' or 'oblate'.")
-
-	if(!is.list(theta))
-		stop("Expected 'theta' as list of named arguments `size`, `shape`, `orientation`.")
-	if(any(sapply(theta,length) == 0L))
-		stop("At least one of the lists of simulation parameters given in 'theta' has length zero.")
+	if(length(it)==0 || is.na(it))
+	  stop(paste("`type` is one of: ", paste0("`",c("prolate","oblate","sphere","cylinder"),"`",collapse=","),sep=""))
+	
 	if(!is.numeric(lam) || !(lam>0) )
 		stop("Expected 'lam' as non-negative numeric argument")
 
@@ -177,10 +174,15 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 	type <- match.arg(type)
 	intersect <- match.arg(intersect)
 	
-	if(!is.null(rjoint)) {
+	cond <-
+	 if(!is.null(rjoint))
+	 {
 		if(!exists(rjoint, mode="function"))
-		 stop("Unknown multivarirate random generating function.")
+		 stop("Unknown multivariate distribution function.")
 		#largs <- theta[-(which(it==1))]
+		if(!is.list(theta) || length(theta) == 0L)
+		 stop("Expected 'theta' as list of named arguments matching exactly with formal arguments of function `rjoint`.")
+				
 		it <- match(names(theta),names(formals(rjoint)))
 		if(length(it)==0 || anyNA(it))
 			stop(paste("Arguments must match formal arguments of function ",rjoint,sep=""))
@@ -197,74 +199,83 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 			  c("a","b","c","u","shape","theta","phi")			
 		  } else if(type %in% c("cylinder")) {
 			  c("h","r","u","theta","phi")		
-		  } else { c("r") }
+		  } else if(type %in% c("sphere")) {
+			  c("r") 
+		  } else { stop("Undefined type!")}
+  
 	    if(any(!(fargs %in% names(funret)))){		    
-			stop("Argument names of return value list does not match required arguments.")
+		 stop("Argument names of return value list does not match required arguments.")
 	    }
 
-		cond <- list("type"=type,"rdist"=rjoint,"box"=box,
-					 "lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
-					 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),
-					 "perfect"=as.integer(perfect), "intersect"=intersect)
+		list("type"=type,"rdist"=rjoint,"box"=box,
+			 "lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
+			 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),
+			 "perfect"=as.integer(perfect), "intersect"=intersect)
 			
 	} else  {
+		
+		# set defaults if not provided
+		if(!is.list(theta))
+		 stop("Expected 'theta' as list of named arguments `size`, `shape`, `orientation`.")
+		nms <- c("size","shape","orientation")
+		it <- match(names(theta), nms)
+		if(length(it)>0L && anyNA(it))
+		 names(theta)[it] <- nms[it]		
 				
-		it <- match(names(theta), c("size","shape","orientation"))
-		if(!is.list(theta) || anyNA(it))
-			stop("Expected 'theta' as list of named arguments `size`, `shape`, `orientation`.")
+		if(shape == "const")
+		{
+			if(!is.list(theta$shape) || length(theta$shape) == 0L)
+			 theta$shape <- list(1,1)
 		
-		if(!is.list(theta$size) || !is.list(theta$shape) || !is.list(theta$orientation) )
-			stop("Expected `size`, `shape`, `orientation` as lists.")
-		
-		it <- pmatch(orientation,c("runifdir","rbetaiso","rvMisesFisher"))
-		if(is.na(it) && !exists(orientation, mode="function"))
-		 stop("Undefined distribution function for the orientation/direction.")		
-		
-		cond <- list("type"=type, "lam"=lam,
-				     "rdist"=list("size"=size,
-							      "shape"=if(length(theta$shape) == 0L) list(1,1) else shape,
-								  "orientation"=if(length(theta$orientation) == 0L) list("kappa"=1) else orientation),
-					 "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,
-					 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),"label"=label,
-					 "perfect"=as.integer(perfect), "intersect"=intersect)
-
-		if(cond$rdist$shape != "const") {
-			if(length(theta$shape)==0L)
-				stop("Arguments for shape distribution must be given.")
-		} else if(exists(cond$rdist$shape, mode="function")) {
+		} else if(exists(shape, mode="function")) {
 			# check arguments of supported distribution functions
-			fargs <- names(formals(cond$rdist$shape))
-			if(cond$rdist$shape %in% c("rbeta","rgamma","runif"))
-				fargs <- fargs[-1]				
+			fargs <- names(formals(shape))
+			if(shape %in% c("rbeta","rgamma","runif"))
+				fargs <- fargs[-1]	
+			if(!is.list(theta$shape) || length(theta$shape) == 0L)
+			 stop("`shape` parameters must be given in `theta`.")
 			it <- match(names(theta$shape),fargs)
 			if(length(it)==0 || anyNA(it))
-				stop(paste("Arguments of 'shape' must match formal arguments of function ",cond$rdist$shape,sep=""))
-		} else
-			stop(paste("Undefined `", cond$rdist$shape, "` distribution function."))
+				stop(paste("Arguments of 'shape' must match formal arguments of function ",shape,sep=""))
+		} else {
+			stop(paste("Undefined `", shape, "` distribution function."))
+		}
 		
-		if(cond$rdist$size == "const") {
-	         if(length(theta$size)==0L)
-				 stop("Arguments for size distribution must be given.")
-		} else if(cond$rdist$size == "rbinorm") {
+		if(!is.list(theta$size) || length(theta$size)==0L)
+			stop("Arguments for size distribution must be given in `theta`.")
+		if(size == "rbinorm") {
 			 fargs <- c("mx","my","sdx","sdy","rho","kappa")
 		     it <- match(names(theta$size),fargs)
 			 if(length(it)==0 || anyNA(it))
 				 stop(paste("Arguments of 'size' must match formal arguments: ", paste0("`",fargs,"`",collapse=",")))
 			 
-  	    } else if(exists(cond$rdist$size, mode="function")) {
+  	    } else if(exists(size, mode="function")) {
 			 # check arguments of supported distribution functions
-			 fargs <- names(formals(cond$rdist$size))
-			 if(cond$rdist$size %in% c("rlnorm","rbeta","rgamma","runif"))
+			 fargs <- names(formals(size))
+			 if(size %in% c("rlnorm","rbeta","rgamma","runif"))
 				 fargs <- fargs[-1]
 			 
 			 it <- match(names(theta$size),fargs)
 			 if(length(it)==0 || anyNA(it))
-				 stop(paste("Arguments of 'size' must match formal arguments of function ",cond$rdist$size,sep=""))
+				 stop(paste("Arguments of 'size' must match formal arguments of function ",size,sep=""))
 			 		
 		 } else {
-			stop(paste("Undefined `", cond$rdist$size, "` distribution function."))
-		 }			
+			stop(paste("Undefined `", size, "` distribution function."))
+		 }
+		 
+		 it <- pmatch(orientation,c("runifdir","rbetaiso","rvMisesFisher"))
+		 if(is.na(it) && !exists(orientation, mode="function"))
+			 stop("Undefined distribution function for the orientation/direction.")	 
+		 if(!is.list(theta$orientation) || length(theta$orientation) == 0L)
+			 theta$orientation <- list("kappa"=1)
+		 
+		 list("type"=type, "lam"=lam,
+			  "rdist"=list("size"=size, "shape"=shape, "orientation"=orientation),
+			  "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,
+			  "dz"=dz, "nsect"=n, "intern"=as.integer(intern),"label"=label,
+			  "perfect"=as.integer(perfect), "intersect"=intersect)
 	}
+	
 	structure(.Call(C_PoissonSystem, theta, cond),
 		"mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)	
 }
