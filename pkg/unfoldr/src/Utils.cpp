@@ -77,24 +77,23 @@ void rbinorm(double mx, double sdx, double my, double sdy,double rho, double &x,
  *        Number of elements to sample from is n=4
  *
  * @param p         given cumulative probabilities
- * @param k [out]   sampled (int) value
  */
-void sample_k(double *p, int &k) {
+int sample_k(double *p) {
   int j;
   double rU = unif_rand();
   for (j=0;j<3;j++) {
       if (rU <= p[j])
         break;
   }
-  k=j;
+  return j;
 }
 
 void rbinorm_exact(double *p, double mx, double sdx, double my, double sdy,
-					 double rho, double &x, double &y) {
-  int k=0;
-  double q1=rnorm(0,1),
-		 q2=rnorm(0,1);
-  sample_k(p,k);
+					 double rho, double &x, double &y)
+{
+  double q1=rnorm(0,1), q2=rnorm(0,1);
+
+  int k = sample_k(p);
   x=std::sqrt(1-R_pow(rho,2.0))*sdx*q1 + rho*sdx*q2 + (mx+k*sdx*sdx);
   y=my+sdy*q2;
 }

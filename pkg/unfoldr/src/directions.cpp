@@ -33,17 +33,21 @@ void vectorRotation(double *u, double *w, double *mu)
 
 }
 
-void rVonMisesFisher(double *u, double *mu, double kappa, double &phi)
+void rVonMisesFisher(double *u, double *mu, double kappa, double &theta, double &phi)
 {
     double v[2], s, w[3];
+
     phi = 2.0*PI*runif(0.0,1.0);
-    v[0] = cos(phi); v[1] = sin(phi);
+    v[0] = cos(phi);
+    v[1] = sin(phi);
     w[2] = log(exp(-kappa)+(exp(kappa)-exp(-kappa))*runif(0.0,1.0))/kappa;
     s = sqrt(1-w[2]*w[2]);
     w[0] = s*v[0];
     w[1] = s*v[1];
 
     vectorRotation(u,w,mu);
+    // TODO: get theta from u
+    theta = 0.0;
 }
 
 void rOhserSchladitz(double *u, double *mu, double kappa, double &theta, double &phi)

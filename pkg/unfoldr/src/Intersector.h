@@ -316,7 +316,7 @@ namespace STGM
 
     };
 
-    /** some type definitions */
+    /** some type definition */
     template<class T>
     struct Intersectors { typedef typename std::vector< Intersector<T> > Type;  };
 

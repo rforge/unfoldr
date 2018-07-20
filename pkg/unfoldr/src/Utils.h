@@ -39,7 +39,7 @@ void rbinorm(double mx, double sdx, double my, double sdy,double rho, double &x,
 void rbinorm_exact(double *p, double mx, double sdx, double my, double sdy,double rho, double &x, double &y);
 
 /* sample */
-void sample_k(double *p, int &k);
+int sample_k(double *p);
 
 /* cumulative probabilities */
 void cum_prob_k(double mx, double sdx2, double lx, double ly, double lz, double *p, double *mu);
@@ -51,62 +51,57 @@ void cum_prob_k(double mx, double sdx2, double lx, double ly, double lz, double 
 
 template<typename R_TYPE>
 struct R_eval_t {
-  typedef R_TYPE return_type;
   SEXP call, rho;
-  R_eval_t(SEXP _call, SEXP _rho) :  call(_call), rho(_rho)  {};
-  inline return_type operator()() { return eval(call,rho);  }
+  double mu;
+
+  R_eval_t(SEXP _call, SEXP _rho, double _mu) :  call(_call), rho(_rho), mu(_mu)  {};
+
+  R_TYPE operator()() { return eval(call,rho);  }
 };
 
 
 template<>
 struct R_eval_t<double> {
   SEXP call, rho;
-  R_eval_t(SEXP _call, SEXP _rho) :  call(_call), rho(_rho)
-  {
-  };
-  inline double operator()() {
-    return REAL(eval(call,rho))[0];
+  double mu;
+
+  R_eval_t(SEXP _call, SEXP _rho, double _mu) :  call(_call), rho(_rho), mu(_mu) {};
+
+  double operator()() {
+	  int info = 0;
+	  SEXP Reval;
+
+	  PROTECT(Reval = R_tryEval(call,rho,&info));
+	  if(info != 0)
+	    error(_("simJoint(): `try` error in user defined distribution function."));
+
+	  UNPROTECT(1);
+	  return REAL(Reval)[0];
   }
 };
 
 
-struct R_rlnorm_t {
-  double mx,sdx;
-  R_rlnorm_t(double p,double q)
-    : mx(p), sdx(q)
-  {};
+// TODO: check !
+/*
+ switch(dtype) {
+	 case 0:
+	   runidir(u.ptr(),theta,phi); break;
+	 case 1:
+	   if(kappa<1e-8) {
+		 u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
+	   } else {
+		 rOhserSchladitz(u.ptr(),m_mu.ptr(), kappa, theta, phi);
+	   }
+	   break;
+	 case 2:
+	   if(kappa<1e-8)
+		 runidir(u.ptr(),theta,phi);
+	   else
+		 rVonMisesFisher(u.ptr(), m_mu.ptr(), kappa, phi);		// TODO: calculate theta from u
+	   break;
+}
 
-  inline double operator()() {  return rlnorm(mx,sdx); }
-};
-
-template<typename F >
-struct R_rndGen_t {
-  F rdist2;
-  double mx,sdx;
-
-  R_rndGen_t(double p,double q, const char* fname)
-    : mx(p), sdx(q)
-  {
-    if (!std::strcmp(fname, "rbeta" )) {
-        rdist2=&rbeta;
-    } else if(!std::strcmp(fname, "rlnorm")) {
-        rdist2=&rlnorm;
-    } else if(!std::strcmp(fname, "rgamma")) {
-        rdist2=&rgamma;
-    } else if(!std::strcmp(fname, "runif" )) {
-        rdist2=&rweibull;
-    } else if(!std::strcmp(fname, "const" )) {
-        rdist2=&rconst;
-    } else {
-        error("Undefined random generating function for radii distribution");
-    }
-
-  };
-
-  inline double operator()() { return rdist2(mx,sdx); }
-};
-
-
+*/
 
 
 /**
