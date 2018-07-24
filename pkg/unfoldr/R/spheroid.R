@@ -153,7 +153,7 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 simPoissonSystem <- function(theta, lam, size="const", shape="const", orientation="rbetaiso",
 								type=c("prolate","oblate","sphere","cylinder"), rjoint=NULL, box=list(c(0,1)),
 								 mu=c(0,0,1), dz=0, n=c(0,1,0), intersect=c("full","only","original"), 
-								  intern=FALSE, perfect=TRUE, pl=0, label="N")
+								  intern=FALSE, perfect=FALSE, pl=0, label="N")
 {
 	it <- pmatch(type,c("prolate","oblate","sphere","cylinder"))
 	if(length(it)==0 || is.na(it))

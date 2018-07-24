@@ -343,12 +343,14 @@ namespace STGM {
         const char *m_label;
 
         CSphere(double _x, double _y, double _z, double _r, int id = 0, const char *label = "N", int interior = 1)
-         : m_label(label), m_crack(0), m_id(id), m_center(CVector3d(_x,_y,_z)), m_r(_r), m_interior(interior)
+         : m_label(label), m_crack(0), m_id(id), m_center(CVector3d(_x,_y,_z)),
+		   m_r(_r), m_interior(interior)
         {
         }
 
         CSphere(const CVector3d &_center, const double &_r, const int id, const char *label = "N", int interior=1)
-         : m_label(label), m_crack(0), m_id(id), m_center(_center), m_r(_r), m_interior(interior)
+         : m_label(label), m_crack(0), m_id(id), m_center(_center),
+		   m_r(_r), m_interior(interior)
         {
         }
 

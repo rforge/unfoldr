@@ -452,21 +452,21 @@ namespace STGM {
   void CBox3::ConstructBoundingPlanes()
   {
     /** sorted order of normal vectors (planes) -  do not change! */
-    m_planes.push_back(CPlane(CVector3d(1,0,0),0)); // left
-    m_planes.push_back(CPlane(CVector3d(-1,0,0),m_size[0])); // right
-    m_planes.push_back(CPlane(CVector3d(0,1,0),0)); // front
-    m_planes.push_back(CPlane(CVector3d(0,-1,0),m_size[1])); // behind
-    m_planes.push_back(CPlane(CVector3d(0,0,1),0)); // bottom
-    m_planes.push_back(CPlane(CVector3d(0,0,-1),m_size[2])); // top
+	  m_planes.push_back(CPlane(STGM::CVector3d(1,0,0),m_low[0])); // left
+	  m_planes.push_back(CPlane(STGM::CVector3d(1,0,0),m_up[0]));  // right in x direction
+	  m_planes.push_back(CPlane(STGM::CVector3d(0,1,0),m_low[1])); // front
+	  m_planes.push_back(CPlane(STGM::CVector3d(0,1,0),m_up[1]));  // back in y direction
+	  m_planes.push_back(CPlane(STGM::CVector3d(0,0,1),m_low[2])); // bottom
+	  m_planes.push_back(CPlane(STGM::CVector3d(0,0,1),m_up[2]));  // top
   }
 
   void CBox3::ConstructBoxLateralPlanes()
   {
-      /** sorted order of normal vectors (planes) -  do not change! */
-      m_lateral_planes.push_back(CPlane(STGM::CVector3d(1,0,0),0)); // left
-      m_lateral_planes.push_back(CPlane(STGM::CVector3d(-1,0,0),m_size[0])); // right
-      m_lateral_planes.push_back(CPlane(STGM::CVector3d(0,1,0),0)); // front
-      m_lateral_planes.push_back(CPlane(STGM::CVector3d(0,-1,0),m_size[1])); // behind
+	  /** sorted order of normal vectors (planes) -  do not change! */
+	  m_lateral_planes.push_back(CPlane(STGM::CVector3d(1,0,0),m_low[0])); // left
+	  m_lateral_planes.push_back(CPlane(STGM::CVector3d(1,0,0),m_up[0]));  // right in x direction
+	  m_lateral_planes.push_back(CPlane(STGM::CVector3d(0,1,0),m_low[1])); // front
+	  m_lateral_planes.push_back(CPlane(STGM::CVector3d(0,1,0),m_up[1]));  // back in y direction
   }
 
   STGM::CEllipse2 CSpheroid::spheroidProjection() const {

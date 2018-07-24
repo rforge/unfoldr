@@ -121,15 +121,8 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 			{
 				const char *nms[] = {"S", "sp", ""};
 				PROTECT(R_ret = mkNamed(VECSXP, nms));
-
-				SEXP R_S = R_NilValue;
-				PROTECT(R_S = convert_R_Ellipsoids(sp));
-				SEXP R_tmp = R_NilValue;
-				PROTECT(R_tmp = convert_R_Ellipses(intersected, box));
-
-				SET_VECTOR_ELT(R_ret,0,R_S);
-				SET_VECTOR_ELT(R_ret,1,R_tmp);
-				UNPROTECT(2);
+				SET_VECTOR_ELT(R_ret,0,convert_R_Ellipsoids(sp));
+				SET_VECTOR_ELT(R_ret,1,convert_R_Ellipses(intersected, box));
 
 			} else {
 				PROTECT(R_ret = convert_R_Ellipses(intersected, box));
@@ -155,13 +148,8 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 			{
 				const char *nms[] = {"S", "sp", ""};
 				PROTECT(R_ret = mkNamed(VECSXP, nms));
-
-				SEXP R_tmp = R_NilValue, R_S = R_NilValue;
-				PROTECT(R_S = convert_R_Cylinders(sp));
-				PROTECT(R_tmp = convert_R_CylinderIntersections(intersected, box));
-				SET_VECTOR_ELT(R_ret,0,R_S);
-				SET_VECTOR_ELT(R_ret,1,R_tmp);
-				UNPROTECT(2);
+				SET_VECTOR_ELT(R_ret,0,convert_R_Cylinders(sp));
+				SET_VECTOR_ELT(R_ret,1,convert_R_CylinderIntersections(intersected, box));
 
 			} else {
 				PROTECT(R_ret = convert_R_CylinderIntersections(intersected, box));
@@ -177,6 +165,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 		PROTECT(R_args = VECTOR_ELT(R_param,0));			//  pass only `size`
 		STGM::CPoissonSystem<STGM::CSphere> sp(box,lam,maxis,type_str,perfect);
 		sp.simSystem( R_args, R_cond);
+		UNPROTECT(1);
 
 		if(!std::strcmp(profiles, "full") ||
 		   !std::strcmp(profiles, "only"))
@@ -188,16 +177,8 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 			{
 				const char *nms[] = {"S", "sp", ""};
 				PROTECT(R_ret = mkNamed(VECSXP, nms));
-
-				SEXP R_tmp = R_NilValue,
-					   R_S = R_NilValue;
-
-				PROTECT(R_S = convert_R_Spheres(sp));
-				PROTECT(R_tmp = convert_R_Circles(intersected, box));
-
-				SET_VECTOR_ELT(R_ret,0,R_S);
-				SET_VECTOR_ELT(R_ret,1,R_tmp);
-				UNPROTECT(2);
+				SET_VECTOR_ELT(R_ret,0,convert_R_Spheres(sp));
+				SET_VECTOR_ELT(R_ret,1,convert_R_Circles(intersected, box));
 
 			} else {
 				/* return full circle object */
@@ -207,8 +188,6 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 		} else {
 			PROTECT(R_ret = convert_R_Spheres(sp));
 	   }
-
-	   UNPROTECT(1);
 
 	} else {
 	   error(_("Unknown object type."));
@@ -520,7 +499,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    }
 	}
 
-	if(PL>10){
+	if(PL>0){
 	 Rprintf("Objects simulated: %d \n", m_objects.size());
 	}
 
@@ -548,11 +527,6 @@ void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char *la
        ++nTry;
      }
      m_objects.reserve(m_num);
-
-     double m1 = (m_box.m_size[0])+(m_box.m_low[0]);
-     double m2 = (m_box.m_size[1])+(m_box.m_low[1]);
-     double m3 = (m_box.m_size[2])+(m_box.m_low[2]);
-
      double *v=0, a=0, b=0, c=0, theta=0, phi=0;
 
      CVector3d u;
@@ -574,7 +548,10 @@ void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char *la
          v=REAL(getListElement(Reval,"u"));
          u[0]=v[0]; u[1]=v[1]; u[2]=v[2];
 
-         CVector3d center(runif(0.0,1.0)*m1,runif(0.0,1.0)*m2, runif(0.0,1.0)*m3);
+         CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+         		 	   	  runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+						  runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
          m_objects.push_back( CSpheroid(center,a,c,b,u,theta,phi,m_objects.size()+1,label) );
      }
 }
@@ -601,10 +578,10 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 	  }
 	  m_objects.reserve(m_num);
 
-	  if(PL>10)
+	  if(PL>0)
 	  {
 		   Rprintf("Spheroid simulation with `%s` (perfect=%d):  \n", type, perfect);
-		   Rprintf("Box volume: %f, lam: %f, number of spheres: %d \n", m_box.volume(), m_lam, m_num);
+		   Rprintf("Box volume: %f, lam: %f, number of spheroids: %d \n", m_box.volume(), m_lam, m_num);
 		   Rprintf("\t Set label: %s to character: \n",label);
 		   Rprintf("\n\n");
 	  }
@@ -636,10 +613,6 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 
       } else {
 
-    	  double m1 = (m_box.m_size[0])+(m_box.m_low[0]);
-    	  double m2 = (m_box.m_size[1])+(m_box.m_low[1]);
-    	  double m3 = (m_box.m_size[2])+(m_box.m_low[2]);
-
     	  for (size_t niter=0; niter<m_num; niter++)
     	  {
     		  rdist(s,b,c);
@@ -648,8 +621,10 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 
 			  // direction
 			  rdir(u,theta,phi);
+			  CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+			       		  	   runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+			       			   runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
 
-			  CVector3d center(runif(0.0,1.0)*m1, runif(0.0,1.0)*m2,runif(0.0,1.0)*m3);
 			  m_objects.push_back( CSpheroid(center,c,c,b,u,theta,phi,niter+1,label) );
 
     	  }
@@ -673,10 +648,7 @@ void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char *la
      }
      m_objects.reserve(m_num);
 
-     // set box constants
-     double m1 = m_box.m_size[0] +(m_box.m_center[0]-m_box.m_extent[0]),
-            m2 = m_box.m_size[1] +(m_box.m_center[1]-m_box.m_extent[1]),
-            m3 = m_box.m_size[2] +(m_box.m_center[2]-m_box.m_extent[2]);
+
 
      double *v=0,h=0,theta=0, phi=0,r=0;
 
@@ -698,7 +670,10 @@ void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char *la
          v=REAL(getListElement(Reval,"u"));
          u[0]=v[0]; u[1]=v[1];  u[2]=v[2];
 
-         CVector3d center(runif(0.0,1.0)*m1,runif(0.0,1.0)*m2, runif(0.0,1.0)*m3);
+         CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+              			  runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+              			  runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
          m_objects.push_back(CCylinder(center,u,h,r,theta,phi,niter+1,label) );
      }
 
@@ -717,10 +692,10 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 	}
 	m_objects.reserve(m_num);
 
-	if(PL>10)
+	if(PL>0)
 	{
 	   Rprintf("Cylidner simulation with `%s` (perfect=%d):  \n", type, perfect);
-	   Rprintf("Box volume: %f, lam: %f, number of spheres: %d \n", m_box.volume(), m_lam, m_num);
+	   Rprintf("Box volume: %f, lam: %f, number of cylindes: %d \n", m_box.volume(), m_lam, m_num);
 	   //Rprintf("\t Size parameters:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
 	   //if(perfect) {
 		// Rprintf("\t Cumulative sum of probabilities: %f, %f, %f, %f \n",rdist.p[0],rdist.p[1],rdist.p[2],rdist.p[3]);
@@ -756,10 +731,6 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 
     } else {
 
-    	  double m1 = (m_box.m_size[0])+(m_box.m_low[0]);
-    	  double m2 = (m_box.m_size[1])+(m_box.m_low[1]);
-    	  double m3 = (m_box.m_size[2])+(m_box.m_low[2]);
-
      	  for (size_t niter=0; niter<m_num; niter++)
      	  {
      		 rdist(s,h,r);				/* h is full length of cylinder including caps */
@@ -770,7 +741,10 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
      		 rdir(u,theta,phi);
 
 			 /* sample positions conditionally of radii distribution */
-			 CVector3d center(runif(0.0,1.0)*m1,runif(0.0,1.0)*m2,runif(0.0,1.0)*m3);
+     		 CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+     					   	  runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+     						  runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
 			 m_objects.push_back(CCylinder(center,u,h,r,theta,phi,niter+1,label) );
      	  }
     }
@@ -816,7 +790,7 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_args, SEXP R_cond) {
        } else {
     	   rndGen_t rdist(p1,p2,m_box.volume(),ftype);
     	   if(PL>0) {
-    		   Rprintf("\t Size parameters: mx=%f, sdx=%f \n", rdist.p1, rdist.p2);
+    		  Rprintf("\t Size parameters: mx=%f, sdx=%f \n", rdist.p1, rdist.p2);
     	   }
 
     	   simUnivar(rdist,label,ftype,perfect);
@@ -825,7 +799,7 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_args, SEXP R_cond) {
    }
 
    PutRNGstate();
-   if(PL>10){
+   if(PL>0){
 	  Rprintf("Done. Simulated %d spheres.\n", m_objects.size());
    }
 
@@ -845,7 +819,7 @@ void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label,  const char
   }
   m_objects.reserve(m_num);
 
-  if(PL>10)
+  if(PL>0)
   {
 	 Rprintf("Spheres simulation with `%s` (perfect=%d):  \n", type, perfect);
 	 Rprintf("Box volume: %f, lam: %f, number of spheres: %d \n", m_box.volume(), m_lam, m_num);
@@ -866,14 +840,14 @@ void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label,  const char
 
   } else {
 
-	  double m[3] = {m_box.m_size[0]+m_box.m_low[0],
-					 m_box.m_size[1]+m_box.m_low[1],
-					 m_box.m_size[2]+m_box.m_low[2]};
 
 	  /* loop over all */
 	  for (size_t niter=0;niter<m_num; niter++)
 	  {
-		  CVector3d center(runif(0.0,1.0)*m[0],runif(0.0,1.0)*m[1],runif(0.0,1.0)*m[2]);
+		  CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+						   runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+		  				   runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
 		  m_objects.push_back( CSphere(center, rsize(), m_objects.size()+1, label));
 	  }
 
@@ -999,34 +973,33 @@ SEXP convert_C2R_ellipses(STGM::Ellipses2 &ellipses) {
 }
 
 
-SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp) {
-  if(PL>10){
-	Rprintf("converting spheres ... \n");
-  }
-  STGM::Spheres &spheres = sp.refObjects();
-
+SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp)
+{
   SEXP R_ret = R_NilValue;
-  PROTECT(R_ret = allocVector(VECSXP, spheres.size()) );
+  STGM::Spheres &spheres = sp.refObjects();
+  size_t num = sp.size();
 
-  if(PL==10)
+  if(PL>0){
+  	Rprintf("Converting spheres ... \n");
+  }
+
+  if(PL == 10)
   {
 	  /* return radii only */
-	  size_t m_num = sp.size();
-	  if(PL>0) Rprintf("number of spheres: %d \n", m_num);
-	  PROTECT(R_ret = allocVector(REALSXP,m_num));
+	  PROTECT(R_ret = allocVector(REALSXP,num));
 	  double *discs = REAL(R_ret);
-	  for(size_t k=0; k<m_num; k++)
+	  for(size_t k=0; k<num; k++)
 		discs[k] = spheres[k].r();
 
   } else {
-
+	  PROTECT(R_ret = allocVector(VECSXP, num) );
 	  SEXP R_tmp, R_center;
 	  const char *nms[] = {"id", "center", "r", ""};
 
 	  STGM::CBox3 &box = sp.box();
 	  const STGM::LateralPlanes &planes = box.getLateralPlanes();
 
-	  for(size_t k=0;k<spheres.size();k++)
+	  for(size_t k=0;k<num;k++)
 	  {
 		STGM::CSphere &sphere = spheres[k];
 
@@ -1544,23 +1517,28 @@ STGM::Cylinders convert_C_Cylinders(SEXP R_cyls)
   return cylinders;
 }
 
-SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::CBox3 &box) {
+SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::CBox3 &box)
+{
   SEXP R_ret = R_NilValue;
+  size_t num = objects.size();
+  if(PL>0){
+	Rprintf("Converting %d discs. \n",num);
+  }
 
   if(PL==10)
   {
 	 /* return radii only */
-	 PROTECT(R_ret = allocVector(REALSXP,objects.size()));
-	 for(size_t k=0;k<objects.size();k++)
+	 PROTECT(R_ret = allocVector(REALSXP,num));
+	 for(size_t k=0;k<num;k++)
 	    REAL(R_ret)[k] = objects[k].getCircle().r();
 
   } else {
 
 	  SEXP R_tmp, R_center;
 	  const char *nms[] = {"id", "type", "center", "r", ""};
-	  PROTECT(R_ret = allocVector(VECSXP, objects.size()) );
+	  PROTECT(R_ret = allocVector(VECSXP, num) );
 
-	  for(size_t k=0;k<objects.size();k++)
+	  for(size_t k=0;k<num;k++)
 	  {
 		 STGM::CCircle3 &circle = objects[k].getCircle();
 		 PROTECT(R_tmp = mkNamed(VECSXP, nms));
@@ -1579,21 +1557,22 @@ SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::
 		 SET_VECTOR_ELT(R_ret,k,R_tmp);
 		 UNPROTECT(2);
 	   }
-
   }
 
-  SEXP R_plane = R_NilValue;
+  SEXP R_plane;
   STGM::CPlane &plane = objects[0].getPlane();
   PROTECT(R_plane = allocVector(REALSXP,3));
   REAL(R_plane)[0] = plane.n[0];
   REAL(R_plane)[1] = plane.n[1];
   REAL(R_plane)[2] = plane.n[2];
-  setAttrib(R_ret,R_plane,install("plane"));
+  setAttrib(R_ret,install("plane"),R_plane);
 
   // set intersection window
   int i=0, j=0, k=0;
   plane.getPlaneIdx(i,j,k);
-
+  if(PL>0){
+	 Rprintf("Getting plane indices: [%d %d %d] \n", i,j,k);
+  }
   SEXP R_win;
   PROTECT(R_win = allocVector(REALSXP,2));
   REAL(R_win)[0] = box.m_size[i];
@@ -1628,15 +1607,18 @@ STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n)
 SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp )
 {
   STGM::Cylinders &cyls = sp.refObjects();
-  if(PL>0) Rprintf("Convert...%d  cylinders.\n", cyls.size());
+  size_t num = cyls.size();
+  if(PL>0){
+   Rprintf("Convert %d cylinders.\n", num);
+  }
 
   SEXP R_ret = R_NilValue;
-  PROTECT(R_ret = allocVector(VECSXP, cyls.size()) );
+  PROTECT(R_ret = allocVector(VECSXP, num) );
 
   if(PL == 10) {
 	    const char *nms[] = {"id", "h", "r", "angles", ""};
 	    SEXP R_tmp, R_angles;
-	    for(size_t k=0;k<cyls.size();++k){
+	    for(size_t k=0;k<num;++k){
 	  	    PROTECT(R_tmp = mkNamed(VECSXP, nms));
 	  	    PROTECT(R_angles = allocVector(REALSXP,2));
 
@@ -1656,7 +1638,7 @@ SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp )
 	  // get lateral bounding planes
 	  STGM::CBox3 &box = sp.box();
 	  STGM::LateralPlanes &planes = box.getLateralPlanes();
-  	  for(size_t k=0;k<cyls.size();++k)
+  	  for(size_t k=0;k<num;++k)
 	 	 SET_VECTOR_ELT(R_ret,k,convert_R_Cylinder(cyls[k],planes,box));
   }
 
@@ -1667,19 +1649,19 @@ SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp )
 
 SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects, STGM::CBox3 &box)
 {
-  int  nLoopProtected=0, ncomps=16, ncompsCircle=4,inWindow=1;
+  int  nLoopProtected=0, ncomps=15, ncompsCircle=4;
   SEXP R_result, R_center, R_minor, R_major, R_ipt0, R_ipt1,
        R_mPoint0, R_mPoint1, R_height, R_ab, R_rcaps, R_psi,
 	   R_obj = R_NilValue, R_names = R_NilValue;
 
   int type  = 0;
-  PROTECT(R_result = allocVector(VECSXP, objects.size()) );
+  size_t num = objects.size();
+  PROTECT(R_result = allocVector(VECSXP, num) );
   //CWindow win(cylsys->getBox().m_size[0],cylsys->getBox().m_size[1]);
 
-  for(size_t i=0; i<objects.size(); ++i)
+  for(size_t i=0; i<num; ++i)
   {
-      type = (int) objects[i].getType();
-      //inWindow = (int) objects[i].getEllipse().isInWindow(win);
+      type = objects[i].getType();
 
       if(type == STGM::ELLIPSE ||
          type == STGM::ELLIPSE_ARC ||
@@ -1687,7 +1669,7 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
          type == STGM::CAP) {
 
           PROTECT(R_obj = allocVector(VECSXP, ncomps) ); ++nLoopProtected;
-          PROTECT(R_names = allocVector(STRSXP, ncomps));  ++nLoopProtected;
+          PROTECT(R_names = allocVector(STRSXP, ncomps));++nLoopProtected;
 
           PROTECT(R_center = allocVector(REALSXP, 3) );  ++nLoopProtected;
           PROTECT(R_minor = allocVector(REALSXP, 3) );   ++nLoopProtected;
@@ -1762,7 +1744,6 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
           SET_VECTOR_ELT(R_obj,12,R_psi    );
           SET_VECTOR_ELT(R_obj,13,R_rcaps  );
           SET_VECTOR_ELT(R_obj,14,ScalarInteger(objects[i].getSide()));
-          SET_VECTOR_ELT(R_obj,15,ScalarInteger(inWindow));
 
           SET_STRING_ELT(R_names, 2, mkChar("center"));
           SET_STRING_ELT(R_names, 3, mkChar("major"));
@@ -1777,7 +1758,6 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
           SET_STRING_ELT(R_names, 12, mkChar("psi"));
           SET_STRING_ELT(R_names, 13, mkChar("rcaps"));
           SET_STRING_ELT(R_names, 14, mkChar("pS"));
-          SET_STRING_ELT(R_names, 15, mkChar("inW"));
 
       } else if(type == STGM::DISC ){
           PROTECT(R_obj = allocVector(VECSXP, ncompsCircle) );   ++nLoopProtected;
@@ -1808,13 +1788,13 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
       nLoopProtected=0;
   }
 
-  SEXP R_plane = R_NilValue;
+  SEXP R_plane;
   STGM::CPlane & plane = objects[0].getPlane();
   PROTECT(R_plane = allocVector(REALSXP,3));
   REAL(R_plane)[0] = plane.n[0];
   REAL(R_plane)[1] = plane.n[1];
   REAL(R_plane)[2] = plane.n[2];
-  setAttrib(R_result,R_plane,install("plane"));
+  setAttrib(R_result,install("plane"),R_plane);
 
   // set intersection window
   int i=0, j=0, k=0;

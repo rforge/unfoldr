@@ -203,7 +203,7 @@ namespace STGM
       CEllipse3 & getEllipse () { return m_ellipse; };
       const CEllipse3 & getEllipse () const { return m_ellipse; };
 
-      int getType() const { return m_type; };
+      int getType() const { return (int) m_type; };
       int getSide() const { return m_side; };
 
       CPlane & getPlane() { return m_plane; }

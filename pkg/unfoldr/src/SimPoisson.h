@@ -263,11 +263,12 @@ struct rndSizeShape_t {
 /* only sphere radius  */
 struct rlnorm_exact_t {
 	double mx, sdx;
-	double mu, sdx2, p[4];
 	const char *size;
+	double mu, sdx2, p[4];
+
 
 	rlnorm_exact_t(double _mx, double _sdx, CBox3 &box, const char *_size) :
-		mx(_mx), sdx(_sdx), mu(0), size(_size)
+		mx(_mx), sdx(_sdx), size(_size), mu(0)
 	{
 		sdx2 = SQR(sdx);
 		// calculates `mu`
