@@ -4,9 +4,10 @@
 ###############################################################################
 
 library(rgl)
+library(plotrix)
 library(unfoldr)
 
-spheres <- function(spheres, box=NULL, draw.axis=FALSE, draw.box=TRUE,...) {
+spheres <- function(spheres, box=NULL, draw.axis=FALSE, ...) {
 	xyz <- apply(sapply(spheres, "[[", "center"),1,function(x) x)
 	sizes <- unlist(lapply(spheres,function(x) x$r))
 	spheres3d(xyz,radius=sizes,...)
@@ -15,61 +16,58 @@ spheres <- function(spheres, box=NULL, draw.axis=FALSE, draw.box=TRUE,...) {
 		axes3d(c('x','y','z'), pos=c(1,1,1), tick=FALSE)
 		#title3d('','','x','y','z')		
 	}
+	axes3d(edges = "bbox",labels=TRUE,tick=FALSE,box=TRUE,nticks=0,
+			expand=1.0,xlen=0,xunit=0,ylen=0,yunit=0,zlen=0,zunit=0)
 	
-	## draw box
-	if(draw.box & !is.null(box)) {
-		x <- box$xrange[2]; y <- box$yrange[2]; z <- box$zrange[2]
-		c3d.origin <- translate3d(scale3d(cube3d(col="darkgray", alpha=0.1),x/2,y/2,z/2),x/2,y/2,z/2)
-		shade3d(c3d.origin)
-		axes3d(edges = "bbox",labels=TRUE,tick=FALSE,box=TRUE,nticks=0,
-				expand=1.0,xlen=0,xunit=0,ylen=0,yunit=0,zlen=0,zunit=0)
-	}
 }
 
 col <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF") 
 
 ## beta distribution for radii
 lam <- 50
+## parameter beta distribution (radii)
 theta <- list("size"=list("shape1"=1,"shape2"=10))
+# simulation bounding box
+box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
 
-box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
-
-
-
-
-## return full spheres system
+## simulate and return full spheres system
 S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",pl=101)
 
-
-spheres(S$S,box,draw.box=TRUE,color=col)
-
 ## only intersections
-head(simPoissonSystem)
 sp <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",
 		intersect="only", pl=10)
 
-
-##**
-r <- 0.5
-X <- runif(100) * (5+2*r)+(-1)-r
-max(X)
-range(X)
-
-box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
+## only 3D system
 S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",
-		intersect="original", pl=101)
+		intersect="full", pl=101)
 
-notIn <- sapply(S,function(x) !attr(x,"interior"))
+# full system
+spheres(S$S,box,TRUE,color=col)
 
-
-mx <- do.call(rbind,lapply(S[notIn],function(x) x$center))
-apply(mx,2,min)
-
-spheres(S[notIn],box,TRUE,draw.box=TRUE,color=col)
-In <- sapply(S,function(x) attr(x,"interior"))
-spheres(S[In],box,draw.box=TRUE,color="gray")
-
-
+# check distribution
 length(S)
-summary(S)
+summary(sapply(S,"[[","r"))
 theta$size[[1]]/(theta$size[[1]]+theta$size[[2]])			# mean
+
+## interior spheres:
+## the ones which intersect one of the lateral planes (without top/bottom planes)
+## spheres with color intersect 
+notIn <- sapply(S$S,function(x) !attr(x,"interior"))
+spheres(S$S[notIn],box,TRUE,color=col)
+In <- sapply(S,function(x) attr(x,"interior"))
+spheres(S$S[In],box,color="gray")
+
+## draw intersections
+
+sp <- S$sp
+XYr <- t(sapply(sp,function(s) cbind(s$center[1],s$center[3],s$r)))
+# centers
+x <- XYr[,1]
+y <- XYr[,2]
+r <- XYr[,3]
+
+plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=c(-1,4),ylim=c(0,2))
+rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col="gray")
+for(i in 1:nrow(XYr))
+ draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black",lty=1,density=NULL,angle=45,lwd=1)
+
