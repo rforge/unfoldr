@@ -30,6 +30,14 @@ do {                                              \
       (M)[_i][_j] = REAL((R))[_i+DIM*_j];         \
 } while(0)
 
+#define SET_REAL_VECTOR(Rv, vec)  			\
+do {										\
+  int _i;		                            \
+  for(_i = 0; _i < LENGTH( (Rv) ); _i++) {	\
+    REAL((Rv))[_i] = (vec)[_i];				\
+  }											\
+} while(0)
+
 
 using namespace std;
 
@@ -67,13 +75,17 @@ STGM::Cylinders convert_C_Cylinders(SEXP R_cyls);
 SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes , STGM::CBox3 &box);
 SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp);
 SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects, STGM::CBox3 &box);
+void setWindow(SEXP R_win, STGM::CBox3 &box, STGM::CPlane &plane);
+
 
 namespace STGM {
 
-template<typename T>
-void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &intersected, SEXP R_cond);
+	template<typename T>
+	void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &intersected, SEXP R_cond);
 
 }
+
+
 
 /**
  * @brief Simulation of Poisson system
@@ -1152,23 +1164,14 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
   }
 
   // set intersecting plane normal vector
-  SEXP R_plane = R_NilValue;
-  STGM::CPlane &plane = objects[0].getPlane();
-
+  SEXP R_win, R_plane;
+  STGM::CPlane & plane = objects[0].getPlane();
   PROTECT(R_plane = allocVector(REALSXP,3));
-  REAL(R_plane)[0] = plane.n[0];
-  REAL(R_plane)[1] = plane.n[1];
-  REAL(R_plane)[2] = plane.n[2];
+  SET_REAL_VECTOR(R_plane, plane.n);
   setAttrib(R_ret,install("plane"),R_plane);
 
-  // set intersection window
-  int i=0, j=0, k=0;
-  plane.getPlaneIdx(i,j,k);
-
-  SEXP R_win;
-  PROTECT(R_win = allocVector(REALSXP,2));
-  REAL(R_win)[0] = box.m_size[i];
-  REAL(R_win)[1] = box.m_size[j];
+  PROTECT(R_win = allocVector(VECSXP,2));
+  setWindow(R_win,box,plane);
   setAttrib(R_ret,install("win"),R_win);
 
   SET_CLASS_NAME(R_ret,"ellipses");
@@ -1517,6 +1520,31 @@ STGM::Cylinders convert_C_Cylinders(SEXP R_cyls)
   return cylinders;
 }
 
+
+void setWindow(SEXP R_win, STGM::CBox3 &box, STGM::CPlane &plane)
+{
+	// set intersection window
+	int i=0, j=0;
+	plane.getPlaneIdx(i,j);
+	if(PL>0){
+	 Rprintf("Getting plane indices: [%d %d ] \n", i, j);
+	}
+	SEXP R_winX, R_winY;
+	PROTECT(R_winX = allocVector(REALSXP,2));
+	PROTECT(R_winY = allocVector(REALSXP,2));
+
+	REAL(R_winX)[0] = box.m_low[i];
+	REAL(R_winX)[1] = box.m_up[i];
+	REAL(R_winY)[0] = box.m_low[j];
+	REAL(R_winY)[1] = box.m_up[j];
+
+	SET_VECTOR_ELT(R_win,0,R_winX);
+	SET_VECTOR_ELT(R_win,1,R_winY);
+	UNPROTECT(2);
+}
+
+
+
 SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::CBox3 &box)
 {
   SEXP R_ret = R_NilValue;
@@ -1559,24 +1587,14 @@ SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::
 	   }
   }
 
-  SEXP R_plane;
+  SEXP R_win, R_plane;
   STGM::CPlane &plane = objects[0].getPlane();
   PROTECT(R_plane = allocVector(REALSXP,3));
-  REAL(R_plane)[0] = plane.n[0];
-  REAL(R_plane)[1] = plane.n[1];
-  REAL(R_plane)[2] = plane.n[2];
+  SET_REAL_VECTOR(R_plane, plane.n);
   setAttrib(R_ret,install("plane"),R_plane);
 
-  // set intersection window
-  int i=0, j=0, k=0;
-  plane.getPlaneIdx(i,j,k);
-  if(PL>0){
-	 Rprintf("Getting plane indices: [%d %d %d] \n", i,j,k);
-  }
-  SEXP R_win;
-  PROTECT(R_win = allocVector(REALSXP,2));
-  REAL(R_win)[0] = box.m_size[i];
-  REAL(R_win)[1] = box.m_size[j];
+  PROTECT(R_win = allocVector(VECSXP,2));
+  setWindow(R_win,box,plane);
   setAttrib(R_ret,install("win"),R_win);
 
   SET_CLASS_NAME(R_ret,"discs");
@@ -1788,26 +1806,18 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
       nLoopProtected=0;
   }
 
-  SEXP R_plane;
+  SEXP R_win, R_plane;
   STGM::CPlane & plane = objects[0].getPlane();
   PROTECT(R_plane = allocVector(REALSXP,3));
-  REAL(R_plane)[0] = plane.n[0];
-  REAL(R_plane)[1] = plane.n[1];
-  REAL(R_plane)[2] = plane.n[2];
+  SET_REAL_VECTOR(R_plane, plane.n);
   setAttrib(R_result,install("plane"),R_plane);
 
-  // set intersection window
-  int i=0, j=0, k=0;
-  plane.getPlaneIdx(i,j,k);
-
-  SEXP R_win;
-  PROTECT(R_win = allocVector(REALSXP,2));
-  REAL(R_win)[0] = box.m_size[i];
-  REAL(R_win)[1] = box.m_size[j];
+  PROTECT(R_win = allocVector(VECSXP,2));
+  setWindow(R_win,box,plane);
   setAttrib(R_result,install("win"),R_win);
 
   SET_CLASS_NAME(R_result,"cylsects");
-  UNPROTECT(2);
+  UNPROTECT(3);
   return R_result;
 }
 

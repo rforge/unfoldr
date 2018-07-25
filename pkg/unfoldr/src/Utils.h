@@ -81,29 +81,6 @@ struct R_eval_t<double> {
 };
 
 
-// TODO: check !
-/*
- switch(dtype) {
-	 case 0:
-	   runidir(u.ptr(),theta,phi); break;
-	 case 1:
-	   if(kappa<1e-8) {
-		 u = (runif(0.0,1.0)<0.5) ? m_mu : -m_mu;
-	   } else {
-		 rOhserSchladitz(u.ptr(),m_mu.ptr(), kappa, theta, phi);
-	   }
-	   break;
-	 case 2:
-	   if(kappa<1e-8)
-		 runidir(u.ptr(),theta,phi);
-	   else
-		 rVonMisesFisher(u.ptr(), m_mu.ptr(), kappa, phi);		// TODO: calculate theta from u
-	   break;
-}
-
-*/
-
-
 /**
  * \brief Show aruments of R function call
  *
