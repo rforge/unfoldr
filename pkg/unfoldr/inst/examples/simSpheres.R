@@ -1,4 +1,4 @@
-# TODO: Add comment
+# Comment: Simulate Poisson sphere system and intersect 
 # 
 # Author: bahama
 ###############################################################################
@@ -31,43 +31,41 @@ theta <- list("size"=list("shape1"=1,"shape2"=10))
 box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
 
 ## simulate and return full spheres system
-S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",pl=101)
+## intersect with XZ plane and return full list of intersection profiles
+S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",n=c(0,1,0),dz=-1.5,pl=101)
 
-## only intersections
-sp <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",
-		intersect="only", pl=10)
-
-## only 3D system
-S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",
-		intersect="full", pl=101)
-
-# full system
-spheres(S$S,box,TRUE,color=col)
-
-# check distribution
-length(S)
-summary(sapply(S,"[[","r"))
+# check resulting distribution
+length(S$S)
+summary(sapply(S$S,"[[","r"))
 theta$size[[1]]/(theta$size[[1]]+theta$size[[2]])			# mean
 
 ## interior spheres:
 ## the ones which intersect one of the lateral planes (without top/bottom planes)
-## spheres with color intersect 
+## showing spheres with color intersect 
 notIn <- sapply(S$S,function(x) !attr(x,"interior"))
 spheres(S$S[notIn],box,TRUE,color=col)
-In <- sapply(S,function(x) attr(x,"interior"))
+
+# not intersecting
+In <- sapply(S$S,function(x) attr(x,"interior"))
 spheres(S$S[In],box,color="gray")
 
-## draw intersections
+## ful sphere system
+open3d()
+spheres(S$S,box,TRUE,color=col)
+planes3d(0,-1,0,-1.5,col="darkgray",alpha=1)
 
+## draw intersections
 sp <- S$sp
 XYr <- t(sapply(sp,function(s) cbind(s$center[1],s$center[3],s$r)))
 # centers
 x <- XYr[,1]
 y <- XYr[,2]
 r <- XYr[,3]
+xlim <- c(-1,4)
+ylim <- c(0,2) #c(-1.5,3.5)
 
-plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=c(-1,4),ylim=c(0,2))
+plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=xlim,ylim=ylim)
 rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col="gray")
 for(i in 1:nrow(XYr))
- draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black",lty=1,density=NULL,angle=45,lwd=1)
+ draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black",lty=1,density=NULL,angle=0,lwd=1)
 
