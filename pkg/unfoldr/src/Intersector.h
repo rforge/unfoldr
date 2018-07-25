@@ -8,6 +8,8 @@
 #ifndef INTERSECTOR_H_
 #define INTERSECTOR_H_
 
+#define MEMZERO(p, n) std::memset( (p), 0, (size_t)(n) * sizeof(*p) )
+
 #include "GeometricPrimitives.h"
 
 namespace STGM
@@ -329,14 +331,12 @@ namespace STGM
 
        public:
 
-        CDigitizer(int *w, int nrow, int ncol, double delta) :
-          m_w(w), m_nrow(nrow), m_ncol(ncol), m_delta(delta),
+        CDigitizer(int *w, STGM::CVector2d &low, STGM::CVector<int,2> &nPix, double delta) :
+          m_w(w), m_nrow(nPix[0]), m_ncol(nPix[1]), m_delta(delta), m_low(low),
           x(STGM::CPoint2d(0,0)), y(STGM::CPoint2d(0,0))
         {
-          /** safer: initialize */
-          for(int i=0; i < nrow*ncol; i++)
-        	m_w[i]=0;
-
+          /* safer: initialize */
+          MEMZERO(m_w, m_nrow*m_ncol);
           m_nr = m_nrow-1;
           m_nc = m_ncol-1;
           m_d  = 0.5*m_delta-1e-6;
@@ -354,6 +354,7 @@ namespace STGM
            for(size_t k=0; k<objects.size();k++)
            {
                obj = objects[k].getObject();
+               obj->move(m_low);
 			   p = obj->getMinMaxPoints();
 
 			   x=p[0]; y=p[1];
@@ -383,7 +384,7 @@ namespace STGM
 
         int *m_w, m_nr, m_nc, m_nrow, m_ncol;
         double m_delta, m_d;
-
+        STGM::CVector2d m_low;
         STGM::CPoint2d x, y;
 
      };
@@ -392,21 +393,20 @@ namespace STGM
   	 template<typename T>
 	 void CDigitizer::operator ()(T &object)
 	 {
+  		object.move(m_low);
   		PointVector2d p = object.getMinMaxPoints();
-	    x=p[0]; y=p[1];
+	    x=p[0];											/* (x_min,x_max) */
+	    y=p[1];    										/* (y_min,y_max) */
 
 	    STGM::CBoundingRectangle br;
-	    br.m_ymin=std::max(0,(int)((y[0]+m_d)/m_delta)); // y-coordinate is related to row number
 	    br.m_xmin=std::max(0,(int)((x[0]+m_d)/m_delta)); // x-coordinate is related to col number
-	    br.m_ymax=std::min(m_nr,(int)((y[1]-m_d)/m_delta));
+	    br.m_ymin=std::max(0,(int)((y[0]+m_d)/m_delta)); // y-coordinate is related to row number
 	    br.m_xmax=std::min(m_nc,(int)((x[1]-m_d)/m_delta));
+	    br.m_ymax=std::min(m_nr,(int)((y[1]-m_d)/m_delta));
 
-	    for(int i=br.m_ymin;i<(br.m_ymax+1);i++)
-	    {
-		   for(int j=br.m_xmin;j<(br.m_xmax+1);j++)
-		   {
-			   /** change i and j for column/row major order */
-			   if(!m_w[i+j*m_nrow])
+	    for(int i=br.m_ymin;i<(br.m_ymax+1);i++) {
+		   for(int j=br.m_xmin;j<(br.m_xmax+1);j++) {
+			    if(!m_w[i+j*m_nrow])
 				 if(object.isInside((j+0.5)*m_delta,(i+0.5)*m_delta))
 					 m_w[i+j*m_nrow]=1;
 		   }

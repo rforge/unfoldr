@@ -56,10 +56,12 @@ namespace STGM {
       */
 
      CWindow(double a, double b)
-      : m_center(STGM::CVector2d(0.5*a,0.5*b)),
-        m_u(STGM::CVector2d(1.0,0.0)),
-        m_v(STGM::CVector2d(0.0,1.0)),
-        m_size(STGM::CPoint2d(a,b))
+      : m_size(STGM::CPoint2d(a,b)),
+		m_center(STGM::CVector2d(0.5*a,0.5*b)),
+		m_low(0,0),
+		m_up(a,b),
+		m_u(STGM::CVector2d(1.0,0.0)),
+        m_v(STGM::CVector2d(0.0,1.0))
      {
          m_axis[0] = &m_u;
          m_axis[1] = &m_v;
@@ -68,10 +70,12 @@ namespace STGM {
      }
 
      CWindow(STGM::CPoint2d p)
-	   : m_center(STGM::CVector2d(0.5*p[0],0.5*p[1])),
+       : m_size(p),
+		 m_center(STGM::CVector2d(0.5*p[0],0.5*p[1])),
+		 m_low(0,0),
+		 m_up(p[0],p[1]),
 		 m_u(STGM::CVector2d(1.0,0.0)),
-		 m_v(STGM::CVector2d(0.0,1.0)),
-		 m_size(p)
+		 m_v(STGM::CVector2d(0.0,1.0))
 	  {
 		  m_axis[0] = &m_u;
 		  m_axis[1] = &m_v;
@@ -79,6 +83,20 @@ namespace STGM {
 		  m_extent[1] = 0.5*p[1];
 	  }
 
+
+     CWindow(double xrange[2], double yrange[2])
+      :  m_size(STGM::CPoint2d(std::fabs(xrange[1]-xrange[0]),std::fabs(yrange[1]-yrange[0]))),
+		 m_center(STGM::CVector2d(xrange[1]-0.5*m_size[0],yrange[1]-0.5*m_size[1])),
+         m_low(xrange[0],yrange[0]),
+         m_up(xrange[1],yrange[1]),
+		 m_u(STGM::CVector2d(1.0,0.0)),
+		 m_v(STGM::CVector2d(0.0,1.0))
+     {
+    	 m_axis[0] = &m_u;
+    	 m_axis[1] = &m_v;
+    	 m_extent[0] = 0.5*m_size[0];
+    	 m_extent[1] = 0.5*m_size[1];
+     }
 
      /**
       * @brief Constructor
@@ -90,10 +108,12 @@ namespace STGM {
       */
 
      CWindow(double center[2], double a, double b )
-       : m_center(STGM::CVector2d(center[0],center[1])),
-         m_u(STGM::CVector2d(1.0,0.0)),
-         m_v(STGM::CVector2d(0.0,1.0)),
-         m_size(STGM::CPoint2d(a,b))
+       : m_size(STGM::CPoint2d(a,b)),
+		 m_center(STGM::CVector2d(center[0],center[1])),
+		 m_low(center[0]-0.5*a,center[1]-0.5*b),
+		 m_up(center[0]+0.5*a,center[1]+0.5*b),
+		 m_u(STGM::CVector2d(1.0,0.0)),
+         m_v(STGM::CVector2d(0.0,1.0))
      {
         m_axis[0] = &m_u;
         m_axis[1] = &m_v;
@@ -102,9 +122,11 @@ namespace STGM {
      }
 
      CWindow(const CWindow &other) :
-       m_center(other.m_center),
-       m_u(other.m_u), m_v(other.m_v),
-       m_size(other.m_size)
+    	 m_size(other.m_size),
+    	 m_center(other.m_center),
+		 m_low(other.m_low),
+		 m_up(other.m_up),
+		 m_u(other.m_u), m_v(other.m_v)
      {
        m_axis[0] = &m_u;
        m_axis[1] = &m_v;
@@ -125,10 +147,11 @@ namespace STGM {
 
      double PointInWindow(STGM::CVector2d point);
 
+     STGM::CPoint2d  m_size;
      STGM::CVector2d m_center;
+     STGM::CVector2d m_low, m_up;
      STGM::CVector2d m_u, m_v, *m_axis[2];
      double m_extent[2];
-     STGM::CPoint2d m_size;
 
    };
 
@@ -144,6 +167,9 @@ namespace STGM {
     virtual ~CGeometry() {};
     virtual bool isInWindow(CWindow &win) { return false; };
     virtual bool isInside(double x, double y) { return false; };
+
+    virtual void move(CVector2d &v) { return; }								/* move object in 2D */
+
     virtual PointVector2d getMinMaxPoints() { return PointVector2d(); }
   };
 
@@ -187,7 +213,8 @@ namespace STGM {
           c=n.dot(_p);
        }
 
-       CPlane (const CVector3d &_n, const double &_c = 0.0) : n(_n), c(_c) {}
+       CPlane (const CVector3d &_n, const double &_c = 0.0) : n(_n), c(_c)
+       {}
 
        inline double distanceTo ( const CVector3d &p) const {
          return n.dot(p)-c;
@@ -280,8 +307,13 @@ namespace STGM {
        setPlaneIdx();
      }
 
-     STGM::CPoint2d PointOnCircle(const double t) {
-       return STGM::CPoint2d( m_center[m_i]+m_radius*cos(t), m_center[m_j]+m_radius*sin(t) );
+     CPoint2d PointOnCircle(const double t) {
+       return CPoint2d( m_center[m_i]+m_radius*cos(t), m_center[m_j]+m_radius*sin(t) );
+     }
+
+     void move(CVector2d &v) {
+    	 m_center[m_i] -= v[0];
+    	 m_center[m_j] -= v[1];
      }
 
      /**
@@ -643,6 +675,7 @@ namespace STGM {
     double rot() const { return m_rot; }
     double area() const { return M_PI * m_a *m_b; }
 
+    STGM::CPoint2d &center() { return m_center;}
     const STGM::CPoint2d &center()  const { return m_center;}
 
     /**
@@ -1063,6 +1096,7 @@ namespace STGM {
        double c() const { return m_c;  }
        double b() const { return m_b;  }
 
+       CVector3d& u() { return m_u; }
        const CVector3d& u() const { return m_u; }
 
        double phi()   const { return m_phi; }

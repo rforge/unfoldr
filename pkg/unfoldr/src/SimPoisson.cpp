@@ -352,24 +352,32 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	 *  and corresponds to the intersecting plane  (normal vector) */
 	if(isNull(R_win))
 	  PROTECT(R_win = getAttrib(R_S, install("win"))); ++nprotect;
-	STGM::CWindow win(REAL(R_win));
-	int nPix[] = { (int) std::floor((win.m_size[0]/REAL(R_delta)[0])),
-			       (int) std::floor((win.m_size[1]/REAL(R_delta)[0]))};
+
+	PROTECT(R_delta = AS_NUMERIC(R_delta)); ++nprotect;
+	double delta = REAL(R_delta)[0];
+
+
+	STGM::CWindow win(REAL(VECTOR_ELT(R_win,0)),REAL(VECTOR_ELT(R_win,1)));
+	STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
+							  (int) std::floor(win.m_size[1]/delta));
 
 	if(PL>10){
-	 Rprintf("Digitize (resolution [%d, %d]), delta: %f \n",nPix[0], nPix[1], REAL(R_delta)[0]);
+	 Rprintf("Digitize: resolution (%d x %d), delta: %f \n",nPix[0],nPix[1], delta);
 	}
 
 	/* alloc return matrix */
 	SEXP R_w = R_NilValue;
 	PROTECT(R_w = allocMatrix(INTSXP,nPix[0],nPix[1])); ++nprotect;
 
-	// init digitizer
-	STGM::CDigitizer digitizer(INTEGER(R_w),nPix[0],nPix[1],REAL(R_delta)[0]);
+	/* init digitizer */
+	STGM::CDigitizer digitizer(INTEGER(R_w),win.m_low,nPix,delta);
 
 	SEXP R_obj;
 	int type = 0;
-	for(int k=0;k < LENGTH(R_S); k++)
+	size_t num = (size_t) LENGTH(R_S);
+	STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
+
+	for(size_t k=0; k < num ; k++)
 	{
 	   PROTECT(R_obj = VECTOR_ELT(R_S, k));
 	   type = INTEGER(VECTOR_ELT(R_obj, 1))[0];   			// intersection type
@@ -381,13 +389,12 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 
 	   } else if(type == STGM::DISC || type == STGM::CAP) {	// CCircle3 (disc) and caps (from spherocylinders)
 
-		   STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
-		   STGM::CVector3d ctr(REAL(VECTOR_ELT(R_S,2)));
-		   STGM::CCircle3 disc3(ctr,REAL(VECTOR_ELT(R_S,3))[0],n,k);
+		   STGM::CVector3d ctr(REAL(VECTOR_ELT(R_obj,2)));
+		   STGM::CCircle3 disc3(ctr,REAL(VECTOR_ELT(R_obj,3))[0],n,k);
 		   digitizer(disc3);
 
 	   } else {												// CEllipse3: other objects from intersected cylinders
-		   STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
+
 		   STGM::CEllipse3 ellipse3 = convert_C_Ellipse3(R_obj, n);
 		   digitizer(ellipse3);
 	   }
@@ -396,7 +403,6 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 
 	UNPROTECT(nprotect);
     return R_w;
-
 }
 
 
@@ -926,11 +932,11 @@ void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &i
 
 SEXP convert_C2R_ellipses(STGM::Ellipses2 &ellipses) {
   int nProtected=0, dim=2, ncomps=8;
-  int n = ellipses.size();
+  size_t num = ellipses.size();
 
   SEXP names, R_resultlist;
   PROTECT(names = allocVector(STRSXP, ncomps));   ++nProtected;
-  PROTECT(R_resultlist = allocVector(VECSXP,n));  ++nProtected;
+  PROTECT(R_resultlist = allocVector(VECSXP,num));  ++nProtected;
 
   SET_STRING_ELT(names, 0, mkChar("id"));
   SET_STRING_ELT(names, 1, mkChar("center"));
@@ -943,7 +949,7 @@ SEXP convert_C2R_ellipses(STGM::Ellipses2 &ellipses) {
 
   SEXP R_tmp,R_minor,R_major,R_A,R_center,R_ab;
 
-  for(int i = 0; i < n; i++) {
+  for(size_t i = 0; i < num; i++) {
       STGM::CEllipse2 & ellipse = ellipses[i];
       PROTECT(R_tmp = allocVector(VECSXP,ncomps));
       PROTECT(R_center = allocVector(REALSXP, dim));
@@ -952,14 +958,14 @@ SEXP convert_C2R_ellipses(STGM::Ellipses2 &ellipses) {
       PROTECT(R_major = allocVector(REALSXP, dim));
       PROTECT(R_A = allocMatrix(REALSXP, dim,dim));
 
-      REAL(R_center)[0] = ellipse.center()[0];
-      REAL(R_center)[1] = ellipse.center()[1];
+      STGM::CPoint2d &center = ellipse.center();
+      SET_REAL_VECTOR(R_center,center);
 
-      REAL(R_minor)[0] = ellipse.minorAxis()[0];
-      REAL(R_minor)[1] = ellipse.minorAxis()[1];
+      STGM::CPoint2d &minor = ellipse.minorAxis();
+      SET_REAL_VECTOR(R_minor,minor);
 
-      REAL(R_major)[0] = ellipse.majorAxis()[0];
-      REAL(R_major)[1] = ellipse.majorAxis()[1];
+      STGM::CPoint2d &major = ellipse.majorAxis();
+      SET_REAL_VECTOR(R_major,major);
 
       REAL(R_ab)[0] = ellipse.a();
       REAL(R_ab)[1] = ellipse.b();
@@ -1011,7 +1017,7 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp)
 	  STGM::CBox3 &box = sp.box();
 	  const STGM::LateralPlanes &planes = box.getLateralPlanes();
 
-	  for(size_t k=0;k<num;k++)
+	  for(size_t k = 0; k < num; k++)
 	  {
 		STGM::CSphere &sphere = spheres[k];
 
@@ -1027,10 +1033,8 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp)
 
 		PROTECT(R_tmp = mkNamed(VECSXP, nms));
 		PROTECT(R_center = allocVector(REALSXP, 3));
-
-		REAL(R_center)[0]=sphere.center()[0];
-		REAL(R_center)[1]=sphere.center()[1];
-		REAL(R_center)[2]=sphere.center()[2];
+		STGM::CVector3d &center = sphere.center();
+		SET_REAL_VECTOR(R_center,center);
 
 		SET_VECTOR_ELT(R_tmp,0,ScalarInteger(sphere.Id()));
 		SET_VECTOR_ELT(R_tmp,1,R_center);
@@ -1128,15 +1132,14 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		  PROTECT(R_minor = allocVector(REALSXP, 2));
 		  PROTECT(R_major = allocVector(REALSXP, 2));
 
-		  REAL(R_center)[0] = ellipse.center()[0];
-		  REAL(R_center)[1] = ellipse.center()[1];
+		  STGM::CPoint2d &center = ellipse.center();
+		  SET_REAL_VECTOR(R_center,center);
 
-		  REAL(R_minor)[0] = ellipse.minorAxis()[0];
- 		  REAL(R_minor)[1] = ellipse.minorAxis()[1];
+		  STGM::CPoint2d &minor = ellipse.minorAxis();
+		  SET_REAL_VECTOR(R_minor,minor);
 
- 		  REAL(R_major)[0] = ellipse.majorAxis()[0];
- 		  REAL(R_major)[1] = ellipse.majorAxis()[1];
-
+		  STGM::CPoint2d &major = ellipse.majorAxis();
+		  SET_REAL_VECTOR(R_major,major);
 
 		  REAL(R_ab)[0] = ellipse.a();    // major semi-axis (for both prolate/oblate)
 		  REAL(R_ab)[1] = ellipse.b();	  // minor semi-axis (for both prolate/oblate)
@@ -1199,10 +1202,10 @@ STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid)
 STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids)
 {
   STGM::Spheroids spheroids;
-  spheroids.reserve(LENGTH(R_spheroids));
+  size_t num = (size_t) LENGTH(R_spheroids);
+  spheroids.reserve(num);
 
-  for(int i=0; i < LENGTH(R_spheroids); i++)
-  {
+  for(size_t i=0; i < num; i++)  {
       spheroids.push_back( convert_C_Spheroid( VECTOR_ELT(R_spheroids,i) ) );
   }
 
@@ -1223,10 +1226,10 @@ STGM::CSphere convert_C_Sphere(SEXP R_sphere)
 STGM::Spheres convert_C_Spheres(SEXP R_spheres)
 {
   STGM::Spheres spheres;
-  spheres.reserve(LENGTH(R_spheres));
+  size_t num = (size_t) LENGTH(R_spheres);
+  spheres.reserve(num);
 
-  for(int i=0; i < LENGTH(R_spheres); i++)
-  {
+  for(size_t i=0; i < num; i++) {
       spheres.push_back( convert_C_Sphere( VECTOR_ELT(R_spheres,i) ) );
   }
 
@@ -1307,15 +1310,11 @@ SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp) {
          }
     }
 
-    const STGM::CVector3d &m_center = spheroid.center();
-    REAL(R_center)[0]=m_center[0];
-    REAL(R_center)[1]=m_center[1];
-    REAL(R_center)[2]=m_center[2];
+    STGM::CVector3d &center = spheroid.center();
+    SET_REAL_VECTOR(R_center,center);
 
-    const STGM::CVector3d &m_u = spheroid.u();
-    REAL(R_u)[0]=m_u[0];
-    REAL(R_u)[1]=m_u[1];
-    REAL(R_u)[2]=m_u[2];
+    STGM::CVector3d &u = spheroid.u();
+    SET_REAL_VECTOR(R_u,u);
 
     REAL(R_acb)[0]=spheroid.a();
     REAL(R_acb)[1]=spheroid.c();
@@ -1375,18 +1374,12 @@ SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes, STGM
   REAL(R_u)[0]=cyl.u()[0];
   REAL(R_u)[1]=cyl.u()[1];
   REAL(R_u)[2]=cyl.u()[2];
-
-  REAL(R_center)[0]=cyl.center()[0];
-  REAL(R_center)[1]=cyl.center()[1];
-  REAL(R_center)[2]=cyl.center()[2];
-
-  REAL(R_origin0)[0] = cyl.origin0()[0];
-  REAL(R_origin0)[1] = cyl.origin0()[1];
-  REAL(R_origin0)[2] = cyl.origin0()[2];
-
-  REAL(R_origin1)[0] = cyl.origin1()[0];
-  REAL(R_origin1)[1] = cyl.origin1()[1];
-  REAL(R_origin1)[2] = cyl.origin1()[2];
+  STGM::CVector3d &center = cyl.center();
+  SET_REAL_VECTOR(R_center,center);
+  STGM::CVector3d &origin0 = cyl.origin0();
+  SET_REAL_VECTOR(R_origin0,origin0);
+  STGM::CVector3d &origin1 = cyl.origin1();
+  SET_REAL_VECTOR(R_origin1,origin1);
 
   REAL(R_angles)[0]=cyl.theta();
   REAL(R_angles)[1]=cyl.phi();
@@ -1569,12 +1562,10 @@ SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::
 	  for(size_t k=0;k<num;k++)
 	  {
 		 STGM::CCircle3 &circle = objects[k].getCircle();
+		 STGM::CVector3d &center = circle.center();
 		 PROTECT(R_tmp = mkNamed(VECSXP, nms));
 		 PROTECT(R_center = allocVector(REALSXP, 3));
-
-		 REAL(R_center)[0]=circle.center()[0];
-		 REAL(R_center)[1]=circle.center()[1];
-		 REAL(R_center)[2]=circle.center()[2];
+		 SET_REAL_VECTOR(R_center, center);
 
 		 /* type is needed here, though quite redundant, because of digitization */
 		 SET_VECTOR_ELT(R_tmp,0,ScalarInteger(circle.Id()));
