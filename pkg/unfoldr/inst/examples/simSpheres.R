@@ -83,7 +83,6 @@ r <- XYr[,3]
 xlim <- c(-1,4)
 ylim <- c(-1.5,3.5) 
 
-
 dev.new()
 plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=xlim,ylim=ylim)
 for(i in 1:nrow(XYr))
@@ -118,5 +117,38 @@ spheres(S[1:2000],box,TRUE,TRUE,color=col)
 mean(log(sapply(S,"[[","r")))
 sd(log(sapply(S,"[[","r")))
 
+
+#######################################################
+## planar section
+#######################################################
+
+# planar section of exact simulated `rlnorm` sphere system:
+# returns diameters for those section profiles
+# which have their centers inside the intersection window
+sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
+hist(sp)
+summary(sp)
+mean(log(sp/2))
+sd(log(sp/2))
+
+#######################################################
+## unfolding
+#######################################################
+ret <- unfold(sp,nclass=25)
+
+## Point process intensity
+cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\n")
+
+## original diameters
+r3d <- unlist(lapply(S,function(x) 2*x$r))
+rest3d <- unlist(lapply(2:(length(ret$breaks)),
+				function(i) rep(ret$breaks[i],sum(ret$N_V[i-1]))))
+
+op <- par(mfrow = c(1, 2))
+hist(r3d[r3d<=max(ret$breaks)], breaks=ret$breaks, main="Radius 3d",
+		freq=FALSE, col="gray",xlab="r")
+hist(rest3d, breaks=ret$breaks,main="Radius estimated",
+		freq=FALSE, col="gray", xlab="r")
+par(op)
 
 
