@@ -400,7 +400,6 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	   UNPROTECT(1);
 	}
 
-	Rprintf("unprotected %d \n",nprotect);
 	UNPROTECT(nprotect);
     return R_w;
 }
