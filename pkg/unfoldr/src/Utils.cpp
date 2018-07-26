@@ -48,11 +48,14 @@ SEXP showArgs(SEXP args) {
 /* get a single call to an R function */
 SEXP getCall(SEXP R_fname, SEXP R_args, SEXP R_rho) {
   SEXP RCallBack = R_NilValue;
-  PROTECT(RCallBack = allocVector(LANGSXP, length(R_args)+1 ));
+  PROTECT(RCallBack = allocVector(LANGSXP, LENGTH(R_args)+1 ));
   SETCAR( RCallBack, findFun(install(CHAR(STRING_ELT(R_fname, 0))),R_rho ));
 
   SEXP p = CDR(RCallBack);
   SEXP names = getAttrib(R_args, R_NamesSymbol);
+
+  /* debugging */
+  //Rf_PrintValue(R_args);
 
   for (int i=0; p!=R_NilValue; p=CDR(p),i++) {
     SETCAR(p,VECTOR_ELT(R_args,i));

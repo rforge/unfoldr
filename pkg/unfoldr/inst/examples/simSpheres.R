@@ -31,9 +31,9 @@ spheres <- function(spheres, box=NULL, draw.box=FALSE, draw.axis=FALSE, ...) {
 
 col <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF") 
 
-#################################################
+#################################################################
 ## `beta` distribution for radii
-#################################################
+#################################################################
 
 lam <- 50
 ## parameter beta distribution (radii)
@@ -98,18 +98,18 @@ dim(W)
 dev.new()
 image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 
-######################################################
+#################################################################
 ## Exact simulation of spheres with log normal radii
-######################################################
+#################################################################
 
-lam <- 25 #100
+lam <- 100
 ## parameter rlnorm distribution (radii)
 theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
 # simulation bounding box
 box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
 ## simulate only 3D system
 S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
-		intersect="original", perfect=TRUE,pl=101)
+		intersect="original", perfect=TRUE, pl=101)
 ## show
 open3d()
 spheres(S[1:2000],box,TRUE,TRUE,color=col)
@@ -119,9 +119,9 @@ mean(log(sapply(S,"[[","r")))
 sd(log(sapply(S,"[[","r")))
 
 
-#######################################################
+#################################################################
 ## Planar section
-#######################################################
+#################################################################
 
 # planar section of exact simulated `rlnorm` sphere system:
 # returns diameters for those section profiles
@@ -133,9 +133,9 @@ mean(log(sp/2))
 sd(log(sp/2))
 
 
-#######################################################
+#################################################################
 ## General intersection, all objects (inter=FALSE)
-#######################################################
+#################################################################
 
 SP <- intersectSystem(S, 2.5, n=c(0,0,1), intern=FALSE, pl=1)
 
@@ -165,9 +165,10 @@ dev.new()
 image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 
 
-#######################################################
+#################################################################
 ## Unfolding
-#######################################################
+#################################################################
+
 ret <- unfold(sp,nclass=25)
 
 ## Point process intensity
@@ -189,10 +190,24 @@ par(op)
 #################################################################
 ## Update intersection: find objects which intersect bounding box
 #################################################################
+
 idx <- updateIntersections(S)
 sum(!idx)							# objects intersecting
 id <- which( idx != 1)				
 open3d()
 spheres(S[id],box,TRUE,TRUE,color=col)
 
+#################################################################
+## user-defined simulation function
+#################################################################
 
+lam <- 50
+theta <- list("p1"=-2.5,"p2"=0.5)
+myfun <- function(p1,p2) c("r"=rlnorm(1,p1,p2))
+box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
+
+head(simPoissonSystem)
+S <- simPoissonSystem(theta,lam,rjoint=myfun,box=box,type="spheres",pl=101)
+r <- sapply(S,"[[","r")
+mean(log(r))
+sd(log(r))

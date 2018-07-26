@@ -172,11 +172,8 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 	} else if(!std::strcmp(type_str, "spheres" )) {
 
-		SEXP R_args;
-		PROTECT(R_args = VECTOR_ELT(R_param,0));			//  pass only `size`
 		STGM::CPoissonSystem<STGM::CSphere> sp(box,lam,maxis,type_str,perfect);
-		sp.simSystem( R_args, R_cond);
-		UNPROTECT(1);
+		sp.simSystem( R_param, R_cond);
 
 		if(!std::strcmp(profiles, "full") ||
 		   !std::strcmp(profiles, "only"))
@@ -343,7 +340,7 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	int nprotect = 0;
 	SEXP R_S = R_NilValue;
 	PROTECT(R_S = getVar(R_var,R_env)); ++nprotect;			// section profiles
-	const char *name = GET_OBJECT_CLASS(R_S);
+	//const char *name = GET_OBJECT_CLASS(R_S);
 
 	/*  get the window if not provided:
 	 *  this has the correct dimension of the original box
@@ -362,11 +359,11 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	 Rprintf("Digitize: resolution (%d x %d), delta: %f \n",nPix[0],nPix[1], delta);
 	}
 
-	/* alloc return matrix */
+	/* alloc binary return  matrix */
 	SEXP R_w = R_NilValue;
 	PROTECT(R_w = allocMatrix(INTSXP,nPix[0],nPix[1])); ++nprotect;
 
-	/* init digitizer */
+	/* init digitizer, pass lower left corner in order to move to objects relative to [0,0] */
 	STGM::CDigitizer digitizer(INTEGER(R_w),win.m_low,nPix,delta);
 
 	SEXP R_obj;
@@ -766,13 +763,11 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 
 }
 
-void CPoissonSystem<CSphere>::simSystem(SEXP R_args, SEXP R_cond) {
-  SEXP R_fname, R_label;
-  PROTECT(R_fname = getListElement( R_cond, "rdist"));
-  PROTECT(R_label = getListElement( R_cond, "label"));
+void CPoissonSystem<CSphere>::simSystem(SEXP R_param, SEXP R_cond) {
+   SEXP R_fname, R_label;
+   PROTECT(R_fname = getListElement( R_cond, "rdist"));
+   PROTECT(R_label = getListElement( R_cond, "label"));
 
-  /* radii distribution */
-   const char *ftype = CHAR(STRING_ELT(VECTOR_ELT(R_fname,0), 0));
    const char *label = translateChar(asChar(R_label));
    int perfect = INTEGER(getListElement( R_cond, "perfect" ))[0];
 
@@ -781,16 +776,20 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_args, SEXP R_cond) {
    {
 	   SEXP R_call, R_rho;
 	   PROTECT(R_rho = getListElement( R_cond, "rho" ));
-	   PROTECT(R_call = getCall(R_fname,R_args,R_rho));
+	   PROTECT(R_call = getCall(R_fname,R_param,R_rho));
 	   R_eval_t<double> reval(R_call,R_rho,m_box.volume());					/* specialization */
 
+	   const char *ftype = CHAR(STRING_ELT(R_fname,0));
 	   simUnivar<R_eval_t<double> >(reval,label,ftype,perfect);
 	   UNPROTECT(2);
 
    } else {
 
-	   double p1 = REAL_ARG_LIST(R_args,0);
-       double p2 = REAL_ARG_LIST(R_args,1);
+	   double p1 = REAL_ARG_LIST( VECTOR_ELT(R_param, 0), 0);
+       double p2 = REAL_ARG_LIST( VECTOR_ELT(R_param, 0), 1);
+
+       /* radii distribution */
+       const char *ftype = CHAR(STRING_ELT(VECTOR_ELT(R_fname,0), 0));
 
        if(perfect) {
     	   rlnorm_exact_t rdist(p1,p2,m_box,ftype);

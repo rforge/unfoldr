@@ -153,7 +153,7 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' @export
 simPoissonSystem <- function(theta, lam, size="const", shape="const", orientation="rbetaiso",
 								type=c("prolate","oblate","spheres","cylinders"), rjoint=NULL, box=list(c(0,1)),
-								 mu=c(0,0,1), dz=0, n=c(0,1,0), intersect=c("full","only","original"), 
+								 mu=c(0,0,1), dz=0, n=c(0,1,0), intersect=c("original","full","only"), 
 								  intern=FALSE, perfect=FALSE, pl=0, label="N")
 {
 	it <- pmatch(type,c("prolate","oblate","spheres","cylinders"))
@@ -178,29 +178,34 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 	cond <-
 	 if(!is.null(rjoint))
 	 {
-		if(!exists(rjoint, mode="function"))
+		if(!is.function(rjoint))
 		 stop("Unknown multivariate distribution function.")
 		#largs <- theta[-(which(it==1))]
 		if(!is.list(theta) || length(theta) == 0L)
 		 stop("Expected 'theta' as list of named arguments matching exactly with formal arguments of function `rjoint`.")
 				
 		it <- match(names(theta),names(formals(rjoint)))
-		if(length(it)==0 || anyNA(it))
-			stop(paste("Arguments must match formal arguments of function ",rjoint,sep=""))
+		funname <- as.character(substitute(rjoint))
+		if(length(it) == 0L || anyNA(it))
+			stop(paste("Arguments must match formal arguments of function `",funname,"`.",sep=""))
 
 		# check function
-		funret <- try(do.call(rjoint,theta))
-		if(!is.list(funret))
-		  stop("Expected a list as return type in user defined function.")
+		funret <- try(do.call(rjoint,theta))		
 		if(inherits(funret,"try-error"))
-		  stop(paste("Error in user defined function ",rjoint,".",sep=""))
+		  stop(paste("Error in user defined function `",funname,"`.",sep=""))
 		
 	    fargs <- 
-		  if(type %in% c("prolate","oblate")) {
-			  c("a","b","c","u","shape","theta","phi")			
-		  } else if(type %in% c("cylinder")) {
-			  c("h","r","u","theta","phi")		
-		  } else if(type %in% c("sphere")) {
+		  if(type %in% c("prolate","oblate")) {			  
+			  if(!is.list(funret))
+		  	     stop("Expected a list as return type in user defined function.")
+			  c("a","b","c","u","shape","theta","phi")
+		  } else if(type %in% c("cylinders")) {
+			  if(!is.list(funret))
+			     stop("Expected a list as return type in user defined function.")
+			  c("h","r","u","theta","phi")		  
+		  } else if(type %in% c("spheres")) {
+			  if(!is.numeric(funret))
+				  stop("Expected a numeric vector as return type in user defined function.")
 			  c("r") 
 		  } else { stop("Undefined type!")}
   
@@ -208,7 +213,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 		 stop("Argument names of return value list does not match required arguments.")
 	    }
 
-		list("type"=type,"rdist"=rjoint,"box"=box,
+		list("type"=type,"rdist"=funname,"box"=box,
 			 "lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
 			 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),
 			 "perfect"=as.integer(perfect), "intersect"=intersect)
@@ -276,7 +281,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 			  "dz"=dz, "nsect"=n, "intern"=as.integer(intern),"label"=label,
 			  "perfect"=as.integer(perfect), "intersect"=intersect)
 	}
-	
+		 
 	structure(.Call(C_PoissonSystem, theta, cond),
 		"mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)	
 }
