@@ -417,9 +417,10 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 		SEXP R_call, R_rho;
 		PROTECT(R_rho  = getListElement( R_cond,"rho" ) );
 		PROTECT(R_call = getCall( R_fname, R_args, R_rho)  );
+		const char *ftype = CHAR(STRING_ELT(R_fname,0));
 
 		// simulate
-		simJoint(R_call, R_rho, label);
+		simJoint(R_call, R_rho, ftype, label);
 		UNPROTECT(2);
 
 	} else {
@@ -517,7 +518,6 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 
 	PutRNGstate();
 	UNPROTECT(2);
-	return;
 }
 
 
@@ -530,7 +530,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
  *
  * */
 template<>
-void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char *label) {
+void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char* type, const char *label) {
      int nTry=0;
      double mu = m_box.volume();
 
@@ -651,7 +651,7 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
  */
 
 template<>
-void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char *label) {
+void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char* type, const char *label) {
      int nTry=0;
      double mu = m_box.volume();
      while(m_num==0 && nTry<MAX_ITER) {
@@ -659,9 +659,6 @@ void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char *la
        ++nTry;
      }
      m_objects.reserve(m_num);
-
-
-
      double *v=0,h=0,theta=0, phi=0,r=0;
 
      CVector3d u;
@@ -771,16 +768,21 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_param, SEXP R_cond) {
    const char *label = translateChar(asChar(R_label));
    int perfect = INTEGER(getListElement( R_cond, "perfect" ))[0];
 
-   GetRNGstate();
+
    if(TYPEOF(R_fname) != VECSXP)
    {
 	   SEXP R_call, R_rho;
 	   PROTECT(R_rho = getListElement( R_cond, "rho" ));
 	   PROTECT(R_call = getCall(R_fname,R_param,R_rho));
-	   R_eval_t<double> reval(R_call,R_rho,m_box.volume());					/* specialization */
 
+	   //R_eval_t<double> reval(R_call,R_rho,m_box.volume());					/* specialization */
 	   const char *ftype = CHAR(STRING_ELT(R_fname,0));
-	   simUnivar<R_eval_t<double> >(reval,label,ftype,perfect);
+
+	   GetRNGstate();
+	   //simUnivar<R_eval_t<double> >(reval,label,ftype,perfect);
+	   simJoint(R_call, R_rho, ftype, label);
+
+	   PutRNGstate();
 	   UNPROTECT(2);
 
    } else {
@@ -791,6 +793,7 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_param, SEXP R_cond) {
        /* radii distribution */
        const char *ftype = CHAR(STRING_ELT(VECTOR_ELT(R_fname,0), 0));
 
+       GetRNGstate();
        if(perfect) {
     	   rlnorm_exact_t rdist(p1,p2,m_box,ftype);
 
@@ -809,17 +812,50 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_param, SEXP R_cond) {
 
     	   simUnivar(rdist,label,ftype,perfect);
        }
+       PutRNGstate();
 
    }
 
-   PutRNGstate();
    if(PL>0){
 	  Rprintf("Done. Simulated %d spheres.\n", m_objects.size());
    }
-
    UNPROTECT(2);
-   return;
 }
+
+
+
+void CPoissonSystem<CSphere>::simJoint(SEXP R_call, SEXP R_rho, const char* type, const char *label)
+{
+	 int info=0, nTry=0;
+	 double mu = m_box.volume();
+	 while(m_num==0 && nTry<MAX_ITER) {
+	   m_num = rpois(mu*m_lam);
+	   ++nTry;
+	 }
+	 m_objects.reserve(m_num);
+
+	 if(PL>0){
+		 Rprintf("Spheres simulation by `%s`  \n", type);
+		 Rprintf("Box volume: %f, lam: %f, number of spheres: %d \n", m_box.volume(), m_lam, m_num);
+	 }
+
+	 SEXP Rval = R_NilValue;
+	 for (size_t niter=0; niter<m_num; niter++)
+	 {
+		 Rval = R_tryEval(R_call,R_rho,&info);
+		 if(info != 0)
+			 error(_("simJoint(): `try` error in user defined distribution function."));
+
+		 CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+							 runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+							 runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
+		 m_objects.push_back( CSphere(center, REAL(Rval)[0], m_objects.size()+1, label));
+	  }
+
+}
+
+
 
 template< typename F>
 void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label,  const char *type, int perfect)
@@ -839,14 +875,19 @@ void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label,  const char
 	 Rprintf("Box volume: %f, lam: %f, number of spheres: %d \n", m_box.volume(), m_lam, m_num);
   }
 
+  double r = 0.0;
+
   if(perfect) {
-	  double r = 0.0;
-	  for (size_t niter=0;niter<m_num; niter++)
+
+	  Rprintf("perfect \n");
+	  for (size_t niter=0; niter<m_num; niter++)
 	  {
 			r = rsize();
+
 			CVector3d center(runif(0.0,1.0)*(m_box.m_size[0]+2*r)+(m_box.m_low[0]-r),
 							 runif(0.0,1.0)*(m_box.m_size[1]+2*r)+(m_box.m_low[1]-r),
 							 runif(0.0,1.0)*(m_box.m_size[2]+2*r)+(m_box.m_low[2]-r));
+
 
 			m_objects.push_back( CSphere(center, r, m_objects.size()+1, label));
 	  }
@@ -854,15 +895,15 @@ void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label,  const char
 
   } else {
 
-
-	  /* loop over all */
-	  for (size_t niter=0;niter<m_num; niter++)
+	  for (size_t niter=0; niter<m_num; niter++)
 	  {
-		  CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
-						   runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
-		  				   runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+			r = rsize();
 
-		  m_objects.push_back( CSphere(center, rsize(), m_objects.size()+1, label));
+			CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
+							 runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
+							 runif(0.0,1.0)*(m_box.m_size[2])+(m_box.m_low[2]));
+
+			m_objects.push_back( CSphere(center, r, m_objects.size()+1, label));
 	  }
 
   }

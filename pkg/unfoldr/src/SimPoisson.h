@@ -77,7 +77,7 @@ class CPoissonSystem
 
   void simSystem(SEXP R_param, SEXP R_cond);
 
-  void simJoint(SEXP R_call, SEXP R_rho, const char *label);
+  void simJoint(SEXP R_call, SEXP R_rho, const char* type, const char *label);
 
   template<class T1, class DIR>
   void simBivariate(T1 &rdist, DIR &rdir, const char *label, const char *type, int perfect);
@@ -144,6 +144,8 @@ public:
 
   template<typename F>
   void simUnivar(F &size, const char *label, const char *type, int perfect);
+
+  void simJoint(SEXP R_call, SEXP R_rho, const char *type, const char *label);
 
   void IntersectWithPlane(Intersectors<CSphere>::Type &objects, CPlane &plane, int intern);
 

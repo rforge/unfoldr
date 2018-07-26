@@ -46,7 +46,8 @@ box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
 ## intersect with XZ plane and return full list of intersection profiles
 
 ## section plane xy
-S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="spheres",n=c(0,0,1),dz=0,pl=101)
+S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="spheres",
+		intersect="full",n=c(0,0,1),dz=0,pl=101)
 
 # check resulting distribution
 length(S$S)
@@ -203,11 +204,14 @@ spheres(S[id],box,TRUE,TRUE,color=col)
 
 lam <- 50
 theta <- list("p1"=-2.5,"p2"=0.5)
-myfun <- function(p1,p2) c("r"=rlnorm(1,p1,p2))
-box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
+myfun <- function(p1,p2) { c("r"=rlnorm(1,p1,p2)) }
 
-head(simPoissonSystem)
-S <- simPoissonSystem(theta,lam,rjoint=myfun,box=box,type="spheres",pl=101)
+box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+
+S <- simPoissonSystem(theta,lam,rjoint=myfun,box=box,type="spheres",pl=1)
 r <- sapply(S,"[[","r")
 mean(log(r))
 sd(log(r))
+
+open3d()
+spheres(S,box,TRUE,TRUE,color=col)

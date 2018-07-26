@@ -380,7 +380,7 @@ namespace STGM {
         {
         }
 
-        CSphere(const CVector3d &_center, const double &_r, const int id, const char *label = "N", int interior=1)
+        CSphere(const CVector3d &_center, const double _r, const int id, const char *label = "N", int interior=1)
          : m_label(label), m_crack(0), m_id(id), m_center(_center),
 		   m_r(_r), m_interior(interior)
         {
