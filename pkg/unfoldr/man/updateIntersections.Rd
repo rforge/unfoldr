@@ -10,7 +10,8 @@ updateIntersections(S)
 \item{S}{list of spheres, spheroids or cylinders, see \code{\link{simPoissonSystem}}}
 }
 \value{
-binary integer vector of length equal to the length of \code{S}
+binary integer vector of length equal to the length of \code{S}.
+			    THe coding is \code{0} for not interior and \code{1} for interior
 }
 \description{
 Check itersections of either spheres, spheroids or cylinders with the bounding (simulation) box

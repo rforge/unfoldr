@@ -102,7 +102,7 @@ image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 ## Exact simulation of spheres with log normal radii
 ######################################################
 
-lam <- 100
+lam <- 25 #100
 ## parameter rlnorm distribution (radii)
 theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
 # simulation bounding box
@@ -184,5 +184,15 @@ hist(r3d[r3d<=max(ret$breaks)], breaks=ret$breaks, main="Radius 3D",
 hist(rest3d, breaks=ret$breaks,main="Radius estimated",
 		freq=FALSE, col="gray", xlab="r")
 par(op)
+
+
+#################################################################
+## Update intersection: find objects which intersect bounding box
+#################################################################
+idx <- updateIntersections(S)
+sum(!idx)							# objects intersecting
+id <- which( idx != 1)				
+open3d()
+spheres(S[id],box,TRUE,TRUE,color=col)
 
 

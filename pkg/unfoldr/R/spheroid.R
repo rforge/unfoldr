@@ -30,7 +30,8 @@
 #'
 #' @param S 	list of spheres, spheroids or cylinders, see \code{\link{simPoissonSystem}}
 #'  
-#' @return 		binary integer vector of length equal to the length of \code{S} 
+#' @return 		binary integer vector of length equal to the length of \code{S}.
+#' 			    THe coding is \code{0} for not interior and \code{1} for interior 
 #'  
 #' @author M. Baaske
 #' 

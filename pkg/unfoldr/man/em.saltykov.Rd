@@ -29,11 +29,9 @@ library(unfoldr)
 lam <- 10
 theta <- list("size"=list("shape1"=2,"shape2"=4))
 
-debug(simPoissonSystem)
-S <- simPoissonSystem(theta,lam,size="rbeta",box=list(c(0,5)),type="sphere",pl=1)
-
-class(S)
-length(S)
+#debug(simPoissonSystem)
+box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",pl=101)
 
 # planar vertical section
 sp <- planarSection(S,d=2.5)
@@ -43,7 +41,7 @@ sp <- planarSection(S,d=2.5)
 ## sp0[1:10]
 
 ## _TODO_ diameter or radii for unfolding (see Wicksel)?
-ret <- unfold(sp,nclass=25)
+ret <- unfold(S$sp,nclass=25)
  
 ## Point process intensity
 cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\\n")
@@ -59,6 +57,9 @@ hist(r3d[r3d<=max(ret$breaks)], breaks=ret$breaks, main="Radius 3d",
 hist(rest3d, breaks=ret$breaks,main="Radius estimated",
      freq=FALSE, col="gray", xlab="r")
 par(op)
+
+
+
 }
 \references{
 Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000

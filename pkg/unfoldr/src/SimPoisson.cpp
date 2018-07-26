@@ -75,8 +75,10 @@ STGM::Cylinders convert_C_Cylinders(SEXP R_cyls);
 SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes , STGM::CBox3 &box);
 SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp);
 SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects, STGM::CBox3 &box);
-void setWindow(SEXP R_win, STGM::CBox3 &box, STGM::CPlane &plane);
 
+/* auxiliary functions */
+STGM::CBox3 setBox(SEXP R_box);
+void setWindow(SEXP R_win, STGM::CBox3 &box, STGM::CPlane &plane);
 
 namespace STGM {
 
@@ -103,9 +105,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 	SEXP R_box = R_NilValue;
 	PROTECT( R_box  = getListElement( R_cond, "box"));
-	double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
-	double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
-	double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
+	STGM::CBox3 box = setBox(R_box);
 	UNPROTECT(1);
 
 	// set print level
@@ -114,7 +114,6 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 	double lam = NUMERIC_POINTER(getListElement( R_cond, "lam"))[0];
 
 	/* set up spheroid system */
-	STGM::CBox3 box(boxX,boxY,boxZ);
 	STGM::CVector3d maxis(REAL(AS_NUMERIC(getListElement( R_cond, "mu"))));
 
 	if( !std::strcmp(type_str, "prolate" ) ||
@@ -144,7 +143,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 			PROTECT(R_ret = convert_R_Ellipsoids(sp) );
 		}
 
-	} else if(!std::strcmp(type_str, "cylinder" )) {
+	} else if(!std::strcmp(type_str, "cylinders" )) {
 
 		/* init */
 		STGM::CPoissonSystem<STGM::CCylinder> sp(box,lam,maxis,type_str,perfect);
@@ -171,7 +170,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 			PROTECT(R_ret = convert_R_Cylinders(sp));
 		}
 
-	} else if(!std::strcmp(type_str, "sphere" )) {
+	} else if(!std::strcmp(type_str, "spheres" )) {
 
 		SEXP R_args;
 		PROTECT(R_args = VECTOR_ELT(R_param,0));			//  pass only `size`
@@ -217,14 +216,9 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
   /* read all from attributes */
   SEXP R_box = R_NilValue;
   PROTECT(R_box = getAttrib(R_S, install("box")));
-  if(isNull(R_box))
-    error(_("Undefined simulation box."));
-  double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
-  double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
-  double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
+  STGM::CBox3 box = setBox(R_box);
   UNPROTECT(1);
 
-  STGM::CBox3 box(boxX,boxY,boxZ);
   STGM::CVector3d maxis(REAL(AS_NUMERIC(getAttrib(R_S,install("R_mu")))));
 
   double lam = REAL(AS_NUMERIC(getAttrib(R_S,install("lam"))))[0];
@@ -279,25 +273,29 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
 
 }
 
+STGM::CBox3 setBox(SEXP R_box) {
+	if(isNull(R_box))
+	    error(_("Undefined simulation box."));
+	double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
+	double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
+	double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
+
+	return STGM::CBox3(boxX,boxY,boxZ);
+}
+
 /**
  * Test whether simulation box is intersected
  */
 SEXP UpdateIntersections(SEXP R_var, SEXP R_env)
 {
-
     SEXP R_S = R_NilValue;
     PROTECT(R_S = getVar(R_var,R_env));
 
     SEXP R_box = R_NilValue;
     PROTECT(R_box = getAttrib(R_S, install("box")));
-    if(isNull(R_box))
-      error(_("Undefined simulation box."));
-    double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
-    double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
-    double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
+    STGM::CBox3 box = setBox(R_box);
     UNPROTECT(1);
 
-    STGM::CBox3 box(boxX,boxY,boxZ);
     const std::vector<STGM::CPlane> &planes = box.getPlanes();
 
     SEXP R_ret = R_NilValue;
