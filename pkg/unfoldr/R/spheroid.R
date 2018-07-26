@@ -644,7 +644,7 @@ drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 #' @export
 planarSection <- function(S, d, intern=FALSE, pl=0) {
 	stopifnot(is.logical(intern))
-	if(!(c("sphere") %in% class(S) ))
+	if(!(c("spheres") %in% class(S) ))
 		stop("Expected spheres as list argument.")
 	
 	sp <- .Call(C_IntersectPoissonSystem,
@@ -654,7 +654,7 @@ planarSection <- function(S, d, intern=FALSE, pl=0) {
 	
 	if(is.list(sp))								# full list of section profiles
 		return (sapply(sp,function(x) 2.0*x$r))		
-	else return (2*sp)							# only radii are returned
+	else return (2*sp)							# only diameters are returned
 }
 
 #' Binning numeric values
