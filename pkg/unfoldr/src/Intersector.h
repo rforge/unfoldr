@@ -332,7 +332,7 @@ namespace STGM
        public:
 
         CDigitizer(int *w, STGM::CVector2d &low, STGM::CVector<int,2> &nPix, double delta) :
-          m_w(w), m_nrow(nPix[0]), m_ncol(nPix[1]), m_delta(delta), m_low(low),
+          m_w(w), m_nrow(nPix[1]), m_ncol(nPix[0]), m_delta(delta), m_low(low),
           x(STGM::CPoint2d(0,0)), y(STGM::CPoint2d(0,0))
         {
           /* safer: initialize */
@@ -393,24 +393,26 @@ namespace STGM
   	 template<typename T>
 	 void CDigitizer::operator ()(T &object)
 	 {
-  		object.move(m_low);
+  		object.move(m_low);								   /* move center point relative to [0,0] */
   		PointVector2d p = object.getMinMaxPoints();
-	    x=p[0];											/* (x_min,x_max) */
-	    y=p[1];    										/* (y_min,y_max) */
+	    x=p[0];											   /* (x_min,x_max) */
+	    y=p[1];    										   /* (y_min,y_max) */
 
 	    STGM::CBoundingRectangle br;
-	    br.m_xmin=std::max(0,(int)((x[0]+m_d)/m_delta)); // x-coordinate is related to col number
-	    br.m_ymin=std::max(0,(int)((y[0]+m_d)/m_delta)); // y-coordinate is related to row number
+	    br.m_xmin=std::max(0,(int)((x[0]+m_d)/m_delta));   /* x-coordinate is related to col number */
+	    br.m_ymin=std::max(0,(int)((y[0]+m_d)/m_delta));   /* y-coordinate is related to row number */
 	    br.m_xmax=std::min(m_nc,(int)((x[1]-m_d)/m_delta));
 	    br.m_ymax=std::min(m_nr,(int)((y[1]-m_d)/m_delta));
 
-	    for(int i=br.m_ymin;i<(br.m_ymax+1);i++) {
+		for(int i=br.m_ymin;i<(br.m_ymax+1);i++) {
 		   for(int j=br.m_xmin;j<(br.m_xmax+1);j++) {
-			    if(!m_w[i+j*m_nrow])
+				if(!m_w[j+i*m_ncol])									/* interchange i and j ...*/
 				 if(object.isInside((j+0.5)*m_delta,(i+0.5)*m_delta))
-					 m_w[i+j*m_nrow]=1;
+					 m_w[j+i*m_ncol]=1;									/* ... and here for transposed image */
+
 		   }
-	    }
+		}
+
 
 	 }
 

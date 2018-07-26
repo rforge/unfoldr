@@ -350,14 +350,13 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	/*  get the window if not provided:
 	 *  this has the correct dimension of the original box
 	 *  and corresponds to the intersecting plane  (normal vector) */
-	if(isNull(R_win))
-	  PROTECT(R_win = getAttrib(R_S, install("win"))); ++nprotect;
+	if(isNull(R_win)){
+	 PROTECT(R_win = getAttrib(R_S, install("win"))); ++nprotect;
+	}
+	STGM::CWindow win(REAL(VECTOR_ELT(R_win,0)),REAL(VECTOR_ELT(R_win,1)));
 
 	PROTECT(R_delta = AS_NUMERIC(R_delta)); ++nprotect;
 	double delta = REAL(R_delta)[0];
-
-
-	STGM::CWindow win(REAL(VECTOR_ELT(R_win,0)),REAL(VECTOR_ELT(R_win,1)));
 	STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
 							  (int) std::floor(win.m_size[1]/delta));
 
@@ -401,6 +400,7 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	   UNPROTECT(1);
 	}
 
+	Rprintf("unprotected %d \n",nprotect);
 	UNPROTECT(nprotect);
     return R_w;
 }
@@ -958,13 +958,13 @@ SEXP convert_C2R_ellipses(STGM::Ellipses2 &ellipses) {
       PROTECT(R_major = allocVector(REALSXP, dim));
       PROTECT(R_A = allocMatrix(REALSXP, dim,dim));
 
-      STGM::CPoint2d &center = ellipse.center();
+      STGM::CVector2d &center = ellipse.center();
       SET_REAL_VECTOR(R_center,center);
 
-      STGM::CPoint2d &minor = ellipse.minorAxis();
+      STGM::CVector2d &minor = ellipse.minorAxis();
       SET_REAL_VECTOR(R_minor,minor);
 
-      STGM::CPoint2d &major = ellipse.majorAxis();
+      STGM::CVector2d &major = ellipse.majorAxis();
       SET_REAL_VECTOR(R_major,major);
 
       REAL(R_ab)[0] = ellipse.a();
@@ -1057,9 +1057,9 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp)
 
 STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 {
-   STGM::CPoint2d ctr(REAL(VECTOR_ELT(R_E,2)));
-   STGM::CPoint2d minorA(REAL(VECTOR_ELT(R_E,5)));
-   STGM::CPoint2d majorA(REAL(VECTOR_ELT(R_E,6)));
+   STGM::CVector2d ctr(REAL(VECTOR_ELT(R_E,2)));
+   STGM::CVector2d minorA(REAL(VECTOR_ELT(R_E,5)));
+   STGM::CVector2d majorA(REAL(VECTOR_ELT(R_E,6)));
 
    STGM::CMatrix2d A(REAL(VECTOR_ELT(R_E,3)));
    double *ab = REAL(VECTOR_ELT(R_E,4));
@@ -1132,13 +1132,13 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		  PROTECT(R_minor = allocVector(REALSXP, 2));
 		  PROTECT(R_major = allocVector(REALSXP, 2));
 
-		  STGM::CPoint2d &center = ellipse.center();
+		  STGM::CVector2d &center = ellipse.center();
 		  SET_REAL_VECTOR(R_center,center);
 
-		  STGM::CPoint2d &minor = ellipse.minorAxis();
+		  STGM::CVector2d &minor = ellipse.minorAxis();
 		  SET_REAL_VECTOR(R_minor,minor);
 
-		  STGM::CPoint2d &major = ellipse.majorAxis();
+		  STGM::CVector2d &major = ellipse.majorAxis();
 		  SET_REAL_VECTOR(R_major,major);
 
 		  REAL(R_ab)[0] = ellipse.a();    // major semi-axis (for both prolate/oblate)

@@ -168,7 +168,7 @@ namespace STGM {
     virtual bool isInWindow(CWindow &win) { return false; };
     virtual bool isInside(double x, double y) { return false; };
 
-    virtual void move(CVector2d &v) { return; }								/* move object in 2D */
+    virtual void move(CVector2d &v) { return; }								/* move 2D object relative to window [0,0] */
 
     virtual PointVector2d getMinMaxPoints() { return PointVector2d(); }
   };
@@ -453,7 +453,7 @@ namespace STGM {
   public:
 
     CEllipse2() :
-      m_center(STGM::CPoint2d()), m_a(0), m_b(0),  m_phi(0),  m_rot(0), m_id(0), m_type(10)
+      m_center(STGM::CVector2d()), m_a(0), m_b(0),  m_phi(0),  m_rot(0), m_id(0), m_type(10)
     {
     };
 
@@ -466,7 +466,7 @@ namespace STGM {
      * @param center
      * @param id
      */
-    CEllipse2(STGM::CMatrix2d &A, STGM::CPoint2d &center, int id, double rot = 0) :
+    CEllipse2(STGM::CMatrix2d &A, STGM::CVector2d &center, int id, double rot = 0) :
        m_center(center), m_A(A), m_a(0), m_b(0), m_phi(0), m_rot(rot), m_id(id),  m_type(10)
     {
           int n = 2, err = 0;
@@ -513,11 +513,11 @@ namespace STGM {
 				m_a = 1.0/sqrt(evalf[0]);
           }
 
-    };
+    }
 
     /* no re-computation of matrix A */
-    CEllipse2(STGM::CPoint2d &center, STGM::CMatrix2d &A, STGM::CPoint2d &major,
-    		   STGM::CPoint2d &minor, double a,  double b, double phi, int id, double rot = 0) :
+    CEllipse2(STGM::CVector2d &center, STGM::CMatrix2d &A, STGM::CVector2d &major,
+    		   STGM::CVector2d &minor, double a,  double b, double phi, int id, double rot = 0) :
 		 m_center(center),
 		 m_A(A),
 		 m_a(a),
@@ -529,10 +529,10 @@ namespace STGM {
 		 m_majorAxis(major),
 		 m_minorAxis(minor)
 
-	{;}
+	{}
 
 
-    CEllipse2(STGM::CPoint2d &center, STGM::CPoint2d &major, STGM::CPoint2d &minor,
+    CEllipse2(STGM::CVector2d &center, STGM::CVector2d &major, STGM::CVector2d &minor,
                double a,  double b, int id, double rot = 0) :
          m_center(center),
 		 m_a(a),
@@ -633,6 +633,8 @@ namespace STGM {
       return p;
     };
 
+    void move(CVector2d &v) {  m_center -= v; }
+
 
     bool isInside(double x, double y)  {
      double d1 = cos(m_phi)*(x-m_center[0]) + sin(m_phi)*(y-m_center[1]);
@@ -675,8 +677,8 @@ namespace STGM {
     double rot() const { return m_rot; }
     double area() const { return M_PI * m_a *m_b; }
 
-    STGM::CPoint2d &center() { return m_center;}
-    const STGM::CPoint2d &center()  const { return m_center;}
+    STGM::CVector2d &center() { return m_center;}
+    const STGM::CVector2d &center()  const { return m_center;}
 
     /**
      * @return Ellipse matrix
@@ -728,24 +730,24 @@ namespace STGM {
 
     /** only test if center is within window */
     inline bool isInWindow(STGM::CWindow &win) {
-      if( win.PointInWindow( STGM::CVector2d(m_center[0],m_center[1])) == 0)
+      if( win.PointInWindow(m_center) == 0)
        return true;
      return false;
     }
 
-    STGM::CPoint2d &majorAxis()  { return m_majorAxis; }
-    const STGM::CPoint2d &majorAxis()  const { return m_majorAxis;}
+    STGM::CVector2d &majorAxis()  { return m_majorAxis; }
+    const STGM::CVector2d &majorAxis()  const { return m_majorAxis;}
 
-    STGM::CPoint2d &minorAxis()  { return m_minorAxis;}
-    const STGM::CPoint2d &minorAxis()  const { return m_minorAxis;}
+    STGM::CVector2d &minorAxis()  { return m_minorAxis;}
+    const STGM::CVector2d &minorAxis()  const { return m_minorAxis;}
 
   private:
-    STGM::CPoint2d m_center;
+    STGM::CVector2d m_center;
     CMatrix2d m_A;
     double m_a, m_b, m_phi, m_rot;
     int m_id, m_type;
     CBoundingRectangle m_br;
-    STGM::CPoint2d m_majorAxis, m_minorAxis;
+    STGM::CVector2d m_majorAxis, m_minorAxis;
   };
 
 
@@ -881,6 +883,15 @@ namespace STGM {
         x2 = m_center[m_i] + m_a*cos(t+M_PI)*cos(m_phi)-m_b*sin(t+M_PI)*sin(m_phi);
 
         return ( x1<x2 ? STGM::CPoint2d(x1,x2) : STGM::CPoint2d(x2,x1)  );
+     }
+
+     void move(CVector2d &v) {
+    	 m_center[m_i] -= v[0];
+    	 m_center[m_j] -= v[1];
+    	 if(m_type > 7) {
+    		 m_circle1.move(v);
+    		 m_circle2.move(v);
+    	 }
      }
 
      bool isInsideEllipse(double x, double y) {

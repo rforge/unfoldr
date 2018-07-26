@@ -62,7 +62,7 @@ namespace STGM
         //condition for intersection
         if( tmp <= 1 )
         {
-            CPoint2d m_new;
+            CVector2d m_new;
             CMatrix2d A_new;
             m_new[0]=m[i]+m[k]*s[0];
             m_new[1]=m[j]+m[k]*s[1];

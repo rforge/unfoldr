@@ -27,14 +27,14 @@ col <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF")
 lam <- 50
 ## parameter beta distribution (radii)
 theta <- list("size"=list("shape1"=1,"shape2"=10))
+
 # simulation bounding box
-#box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
-box <- list("xrange"=c(-1,4),"yrange"=c(0,5),"zrange"=c(0,5))
+box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
 
 ## simulate and return full spheres system
 ## intersect with XZ plane and return full list of intersection profiles
-#S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",n=c(0,1,0),dz=-1.5,pl=101)
-S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",n=c(0,1,0),dz=0,pl=101)
+S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",n=c(0,1,0),dz=-1.5,pl=101)
+
 
 # check resulting distribution
 length(S$S)
@@ -58,25 +58,31 @@ planes3d(0,-1,0,-1.5,col="darkgray",alpha=1)
 
 ## draw intersections
 sp <- S$sp
+id <- sapply(sp,"[[","id") 
+open3d()
+spheres(S$S[id],box,TRUE,color=col)
+planes3d(0,-1,0,-1.5,col="darkgray",alpha=1)
+
 XYr <- t(sapply(sp,function(s) cbind(s$center[1],s$center[3],s$r)))
 # centers
 x <- XYr[,1]
 y <- XYr[,2]
 r <- XYr[,3]
 xlim <- c(-1,4)
-ylim <- c(0,5)
+ylim <- c(0,2)
+
 
 dev.new()
 plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=xlim,ylim=ylim)
-rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col="gray")
 for(i in 1:nrow(XYr))
- draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black",lty=1,density=NULL,angle=0,lwd=1)
+ draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black")
 
 ## digitize inersections
 sp <- S$sp
 win <- attr(sp,"win")
 
-W <- digitizeProfiles(sp, delta=0.01)
-sum(W)
+W <- digitizeProfiles(sp, delta=0.01, win=win)
+dim(W)
+
 dev.new()
-image(W)
+image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
