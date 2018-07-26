@@ -32,7 +32,7 @@ spheres <- function(spheres, box=NULL, draw.box=FALSE, draw.axis=FALSE, ...) {
 col <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF") 
 
 #################################################
-## beta distribution for radii
+## `beta` distribution for radii
 #################################################
 
 lam <- 50
@@ -46,7 +46,7 @@ box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
 ## intersect with XZ plane and return full list of intersection profiles
 
 ## section plane xy
-S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",n=c(0,0,1),dz=0,pl=101)
+S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="spheres",n=c(0,0,1),dz=0,pl=101)
 
 # check resulting distribution
 length(S$S)
@@ -57,22 +57,22 @@ theta$size[[1]]/(theta$size[[1]]+theta$size[[2]])			# mean
 ## the ones which intersect one of the lateral planes (without top/bottom planes)
 ## showing spheres with color intersect 
 notIn <- sapply(S$S,function(x) !attr(x,"interior"))
-spheres(S$S[notIn],box,TRUE,color=col)
+spheres(S$S[notIn],box,FALSE,TRUE,color=col)
 
 # not intersecting
 In <- sapply(S$S,function(x) attr(x,"interior"))
 spheres(S$S[In],box,color="gray")
 
 ## ful sphere system
-#open3d()
-#spheres(S$S,box,TRUE,color=col)
-#planes3d(0,0,1,0,col="darkgray",alpha=1)
+# open3d()
+# spheres(S$S,box,FALSE,TRUE,color=col)
+# planes3d(0,0,1,0,col="darkgray",alpha=1)
 
 ## draw intersections
 sp <- S$sp
 id <- sapply(sp,"[[","id") 
 open3d()
-spheres(S$S[id],box,TRUE,color=col)
+spheres(S$S[id],box,FALSE,TRUE,color=col)
 planes3d(0,0,1,0,col="darkgray",alpha=1)
 
 XYr <- t(sapply(sp,function(s) cbind(s$center[1],s$center[2],s$r)))
@@ -99,7 +99,7 @@ dev.new()
 image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 
 ######################################################
-## exact simulation of spheres with log normal radii
+## Exact simulation of spheres with log normal radii
 ######################################################
 
 lam <- 100
@@ -108,9 +108,10 @@ theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
 # simulation bounding box
 box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
 ## simulate only 3D system
-S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="sphere",
+S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
 		intersect="original", perfect=TRUE,pl=101)
 ## show
+open3d()
 spheres(S[1:2000],box,TRUE,TRUE,color=col)
 
 ## check!
@@ -119,7 +120,7 @@ sd(log(sapply(S,"[[","r")))
 
 
 #######################################################
-## planar section
+## Planar section
 #######################################################
 
 # planar section of exact simulated `rlnorm` sphere system:
@@ -131,8 +132,41 @@ summary(sp)
 mean(log(sp/2))
 sd(log(sp/2))
 
+
 #######################################################
-## unfolding
+## General intersection, all objects (inter=FALSE)
+#######################################################
+
+SP <- intersectSystem(S, 2.5, n=c(0,0,1), intern=FALSE, pl=1)
+
+## show in 3D
+id <- sapply(SP,"[[","id") 
+open3d()
+spheres(S[id],box,TRUE,color=col)
+planes3d(0,0,-1,2.5,col="black",alpha=1)
+
+## 2D sections
+XYr <- t(sapply(SP,function(s) cbind(s$center[1],s$center[2],s$r)))
+# centers
+x <- XYr[,1]
+y <- XYr[,2]
+r <- XYr[,3]
+xlim <- box$xrange
+ylim <- box$yrange 
+
+dev.new()
+plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=xlim,ylim=ylim)
+for(i in 1:nrow(XYr))
+	draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black")
+
+# digitize
+W <- digitizeProfiles(SP, delta=0.01)
+dev.new()
+image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
+
+
+#######################################################
+## Unfolding
 #######################################################
 ret <- unfold(sp,nclass=25)
 
@@ -145,7 +179,7 @@ rest3d <- unlist(lapply(2:(length(ret$breaks)),
 				function(i) rep(ret$breaks[i],sum(ret$N_V[i-1]))))
 
 op <- par(mfrow = c(1, 2))
-hist(r3d[r3d<=max(ret$breaks)], breaks=ret$breaks, main="Radius 3d",
+hist(r3d[r3d<=max(ret$breaks)], breaks=ret$breaks, main="Radius 3D",
 		freq=FALSE, col="gray",xlab="r")
 hist(rest3d, breaks=ret$breaks,main="Radius estimated",
 		freq=FALSE, col="gray", xlab="r")
