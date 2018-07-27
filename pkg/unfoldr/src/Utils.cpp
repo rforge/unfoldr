@@ -55,7 +55,7 @@ SEXP getCall(SEXP R_fname, SEXP R_args, SEXP R_rho) {
   SEXP names = getAttrib(R_args, R_NamesSymbol);
 
   /* debugging */
-  Rf_PrintValue(R_args);
+  //Rf_PrintValue(R_args);
 
   for (int i=0; p!=R_NilValue; p=CDR(p),i++) {
     SETCAR(p,VECTOR_ELT(R_args,i));

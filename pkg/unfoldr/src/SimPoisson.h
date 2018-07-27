@@ -212,8 +212,6 @@ struct rVonMisesFisher_t
 
 };
 
-
-
 struct rndGen_t {
   double p1, p2;
   rdist2_t rdist;
@@ -250,13 +248,12 @@ struct rndSizeShape_t {
 		  	  	   double _mu, const char *size, const char *shape)
 
     :  rsize(rndGen_t(p1,p2,_mu,size)), rshape(rndGen_t(s1,s2,_mu,shape)), mu(_mu)
-  {
-  };
+  {};
 
   void operator()(double &s, double &b, double &c) {
 	 b = rsize();
-	 c = rshape();
-	 s = c/b;
+	 s = rshape();
+	 c = b*s;
   }
 
 };
@@ -268,12 +265,11 @@ struct rlnorm_exact_t {
 	const char *size;
 	double mu, sdx2, p[4];
 
-
 	rlnorm_exact_t(double _mx, double _sdx, CBox3 &box, const char *_size) :
 		mx(_mx), sdx(_sdx), size(_size), mu(0)
 	{
 		sdx2 = SQR(sdx);
-		// calculates `mu`
+		/* calculates `mu` for exact simulation */
 		cum_prob_k(mx,sdx2,box.m_up[0],box.m_up[1],box.m_up[2],p,&mu);
 	}
 
