@@ -488,8 +488,8 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    	 rbinorm_exact_t rdist(mx,my,sdx,sdy,rho,m_box,ftype_size);
 
 	    	 if(PL>0) {
-	    	  Rprintf("\t Cumulative sum of probabilities: %f, %f, %f, %f \n",rdist.p[0],rdist.p[1],rdist.p[2],rdist.p[3]);
-	    	  Rprintf("\t Parameters:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
+	    		 Rprintf("\t Parameters:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
+	    		 Rprintf("\t Cumulative sum of probabilities: %f, %f, %f, %f \n",rdist.p[0],rdist.p[1],rdist.p[2],rdist.p[3]);
 	    	 }
 
 	    	 GetRNGstate();
@@ -638,7 +638,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				if(PL>0) {
 					Rprintf("\t Size parameters: %f, %f \n",rdist.rsize.p1,rdist.rsize.p2);
 					Rprintf("\t Shape parameters: %f, %f \n",rdist.rshape.p1,rdist.rshape.p2);
-				}
+			    }
 
 				GetRNGstate();
 				if(!std::strcmp(ftype_dir, "runifdir" ))
@@ -754,9 +754,13 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 
 	  if(PL>0)
 	  {
-		   Rprintf("Spheroid simulation with `%s` (perfect=%d):  \n", type, perfect);
-		   Rprintf("Parameter `mu`: %f, lam: %f, number of spheroids: %d \n", mu, m_lam, m_num);
-		   Rprintf("\t Set label: %s to character: \n",label);
+		   Rprintf("\n");
+		   Rprintf("Spheroid simulation with `%s` (perfect=%d): \n", type, perfect);
+		   if(perfect)
+			   Rprintf("\t Mean number: %f (exact simulation: %f) \n", m_lam, mu);
+		   else Rprintf("\t Mean number: %f (non-exact simulation: %f) \n", m_lam, mu);
+		   Rprintf("Number of spheroids: %d \n", m_num);
+		   Rprintf("Set label: %s to character: \n",label);
 		   Rprintf("\n\n");
 	  }
 
@@ -862,9 +866,13 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 
 	if(PL>0)
 	{
-	   Rprintf("Cylidner simulation with `%s` (perfect=%d):  \n", type, perfect);
-	   Rprintf("Parameter `mu`: %f, lam: %f, number of cylindes: %d \n", mu, m_lam, m_num);
-	   Rprintf("\t Set label: %s to character: \n",label);
+	   Rprintf("\n");
+	   Rprintf("Cylinder simulation with `%s` (perfect=%d): \n", type, perfect);
+	   if(perfect)
+		   Rprintf("\t Mean number: %f (exact simulation: %f) \n", m_lam, mu);
+	   else Rprintf("\t Mean number: %f (non-exact simulation: %f) \n", m_lam, mu);
+	   Rprintf("Number of cylinders: %d \n", m_num);
+	   Rprintf("Set label: %s to character: \n",label);
 	   Rprintf("\n\n");
 	}
 
@@ -934,7 +942,6 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_param, SEXP R_cond) {
 	   const char *ftype = CHAR(STRING_ELT(R_fname,0));
 
 	   GetRNGstate();
-	   //simUnivar<R_eval_t<double> >(reval,label,ftype,perfect);
 	   simJoint(R_call, R_rho, ftype, label);
 
 	   PutRNGstate();
