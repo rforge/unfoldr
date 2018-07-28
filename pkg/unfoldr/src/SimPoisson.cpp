@@ -502,7 +502,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				SEXP R_tmp = getListElement( R_args, "orientation" );
 				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
 				  error(_("Argument `orientation` must have length equal to one."));
-				double kappa = asReal(VECTOR_ELT(R_tmp ,0));
+				double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
 
 				if(!std::strcmp( ftype_dir, "rbetaiso" )) {
 
@@ -543,7 +543,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				SEXP R_tmp = getListElement( R_args, "orientation" );
 				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
 				  error(_("Argument `orientation` must have length equal to one."));
-				double kappa = asReal(VECTOR_ELT(R_tmp ,0));
+				double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
 
 				if(!std::strcmp( ftype_dir, "rbetaiso" )) {
 
@@ -575,15 +575,15 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    	SEXP R_tmp = getListElement( R_args, "size" );
 	       	if(isNull(R_tmp) || LENGTH(R_tmp) == 0)
 	    	 error(_("Parameters for `size` cannot have length zero."));
-	    	double p1 = asReal(VECTOR_ELT( R_tmp ,0));
-	    	double p2 = (LENGTH(R_tmp) > 1 ? asReal(VECTOR_ELT( R_tmp,1)) : 0.0);
+	    	double p1 = REAL(VECTOR_ELT( R_tmp ,0))[0];
+	    	double p2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);
 
 	    	// shape
 	    	R_tmp = getListElement( R_args, "shape" );
 			if(isNull(R_tmp) || LENGTH(R_tmp) == 0)
 			 error(_("Parameters for `shape` cannot have length zero."));
-			double s1 = asReal(VECTOR_ELT( R_tmp ,0));
-			double s2 = (LENGTH(R_tmp) > 1 ? asReal(VECTOR_ELT( R_tmp,1)) : 0.0);
+			double s1 = REAL(VECTOR_ELT( R_tmp ,0))[0];
+			double s2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);
 
 	    	rndSizeShape_t rdist(p1,p2,s1,s2,m_box.volume(),ftype_size,ftype_shape);
 
@@ -605,7 +605,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				R_tmp = getListElement( R_args, "orientation" );
 				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
 				  error(_("Argument `orientation` must have length equal to one."));
-				double kappa = asReal(VECTOR_ELT(R_tmp ,0));
+				double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
 
 				if(!std::strcmp( ftype_dir, "rbetaiso" )) {
 
