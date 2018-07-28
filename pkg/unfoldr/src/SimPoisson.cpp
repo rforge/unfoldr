@@ -1276,7 +1276,7 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 		   	   	   	   	  A,								// matrix A
 						  majorA,							// semi-major
 						  minorA,							// semi-minor
-						  ab[0],ab[1],						// a,b
+						  ab[0],ab[1],						// a,b (semi-major, semi-minor length)
 						  REAL(VECTOR_ELT(R_E,7))[0],		// phi
 						  INTEGER(VECTOR_ELT(R_E,0))[0],	// id
 						  rot);								// rot
