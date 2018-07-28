@@ -71,7 +71,9 @@ namespace STGM
             A_new[1][0]= A[j][i] / (1-tmp);
             A_new[1][1]= A[j][j] / (1-tmp);
 
-            /** store ellipse */
+            /**Store ellipse:
+             * (Add M_PI_2 to be conform with x axis (phi==0) in R graphics)
+             * otherwise relative to m_u as the main direction */
             m_ellipse = CEllipse2(A_new,m_new,m_spheroid.Id());
 
             return true;

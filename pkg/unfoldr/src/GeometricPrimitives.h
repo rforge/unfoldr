@@ -469,8 +469,11 @@ namespace STGM {
     CEllipse2(STGM::CMatrix2d &A, STGM::CVector2d &center, int id, double rot = 0) :
        m_center(center), m_A(A), m_a(0), m_b(0), m_phi(0), m_rot(rot), m_id(id),  m_type(10)
     {
-          int n = 2, err = 0;
+          int n = 2,
+           info = 0;
+
           double B[4];
+
           B[0] = m_A[0][0];
           B[1] = m_A[1][0];
           B[2] = m_A[0][1];
@@ -479,7 +482,7 @@ namespace STGM {
           double evalf[2] = {0,0};
 
           /** eigenvalue decomposition */
-          real_eval(B,&n,evalf,&err);
+          real_eval(B,&n,evalf,&info);
           //Rprintf("B: %f %f %f %f \n", B[0],B[1],B[2],B[3]);
 
           m_majorAxis[0] = B[0];
@@ -487,10 +490,12 @@ namespace STGM {
           m_minorAxis[0] = B[2];
           m_minorAxis[1] = B[3];
 
-          if(err) {
-        	Rf_error("Eigenvalue decomposition (LAPACK routine) failed in `ellipse2` constructor.");
+          if(info != 0)
+          {
+        	error("Eigenvalue decomposition (LAPACK routine) failed in `ellipse2` constructor.");
           } else {
-				/* phi is relative to x axis */
+
+        	    /* phi is relative to x axis */
 				// double cos_phi = B[0];
 				// double sin_phi = B[1];
 
@@ -498,7 +503,8 @@ namespace STGM {
 				double cos_phi = B[1];
 				double sin_phi = B[3];
 
-				m_phi = acos(cos_phi);     // angle in the intersecting plane
+				m_phi = acos(cos_phi);     					/* angle in the intersecting plane */
+
 				if( (cos_phi<0 && sin_phi<0) || (cos_phi<0 && sin_phi>=0)) {
 					m_phi = atan(sin_phi/cos_phi)+M_PI;
 				} else if(cos_phi>0 && sin_phi<0) {

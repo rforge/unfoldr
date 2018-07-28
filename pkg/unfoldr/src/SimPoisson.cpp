@@ -99,22 +99,30 @@ namespace STGM {
  * @return
  */
 SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
+	int nprotect = 0;
 	SEXP R_ret = R_NilValue;
 	const char* type_str = CHAR( STRING_ELT( getListElement( R_cond, "type" ), 0 ));
 	const char* profiles = CHAR( STRING_ELT( getListElement( R_cond, "intersect"), 0 ));
 
 	SEXP R_box = R_NilValue;
-	PROTECT( R_box  = getListElement( R_cond, "box"));
+	PROTECT( R_box  = getListElement( R_cond, "box"));	++nprotect;
 	STGM::CBox3 box = setBox(R_box);
-	UNPROTECT(1);
 
 	// set print level
 	PL = INTEGER(AS_INTEGER(getListElement( R_cond,"pl")))[0];
-	int perfect = INTEGER_POINTER(getListElement( R_cond,"perfect"))[0];
-	double lam = NUMERIC_POINTER(getListElement( R_cond, "lam"))[0];
+
+	SEXP R_exact;
+	PROTECT(R_exact = AS_INTEGER(getListElement( R_cond,"perfect"))); ++nprotect;
+	int perfect = INTEGER(R_exact)[0];
+
+	SEXP R_lam;
+	PROTECT(R_lam = AS_NUMERIC(getListElement( R_cond, "lam"))); ++nprotect;
+	double lam = REAL(R_lam)[0];
 
 	/* set up spheroid system */
-	STGM::CVector3d maxis(REAL(AS_NUMERIC(getListElement( R_cond, "mu"))));
+	SEXP R_mu;
+	PROTECT(R_mu = AS_NUMERIC(getListElement( R_cond, "mu"))); ++nprotect;
+	STGM::CVector3d maxis(REAL(R_mu));
 
 	if( !std::strcmp(type_str, "prolate" ) ||
 		!std::strcmp(type_str, "oblate" ))
@@ -133,6 +141,11 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				const char *nms[] = {"S", "sp", ""};
 				PROTECT(R_ret = mkNamed(VECSXP, nms));
 				SET_VECTOR_ELT(R_ret,0,convert_R_Ellipsoids(sp));
+				setAttrib( VECTOR_ELT(R_ret,0), install("mu"), R_mu);
+				setAttrib( VECTOR_ELT(R_ret,0), install("lam"), R_lam);
+				setAttrib( VECTOR_ELT(R_ret,0), install("box"), R_box);
+				setAttrib( VECTOR_ELT(R_ret,0), install("perfect"), R_exact);
+				/* intersection */
 				SET_VECTOR_ELT(R_ret,1,convert_R_Ellipses(intersected, box));
 
 			} else {
@@ -141,6 +154,10 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 		} else if(!std::strcmp(profiles, "original" )) {
 			PROTECT(R_ret = convert_R_Ellipsoids(sp) );
+			setAttrib( R_ret, install("mu"), R_mu);
+			setAttrib( R_ret, install("lam"), R_lam);
+			setAttrib( R_ret, install("box"), R_box);
+			setAttrib( R_ret, install("perfect"), R_exact);
 		}
 
 	} else if(!std::strcmp(type_str, "cylinders" )) {
@@ -160,6 +177,11 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				const char *nms[] = {"S", "sp", ""};
 				PROTECT(R_ret = mkNamed(VECSXP, nms));
 				SET_VECTOR_ELT(R_ret,0,convert_R_Cylinders(sp));
+				setAttrib( VECTOR_ELT(R_ret,0), install("mu"), R_mu);
+				setAttrib( VECTOR_ELT(R_ret,0), install("lam"), R_lam);
+				setAttrib( VECTOR_ELT(R_ret,0), install("box"), R_box);
+				setAttrib( VECTOR_ELT(R_ret,0), install("perfect"), R_exact);
+
 				SET_VECTOR_ELT(R_ret,1,convert_R_CylinderIntersections(intersected, box));
 
 			} else {
@@ -168,6 +190,11 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 		}  else if(!std::strcmp(profiles, "original" )) {
 			PROTECT(R_ret = convert_R_Cylinders(sp));
+			setAttrib( R_ret, install("mu"), R_mu);
+			setAttrib( R_ret, install("lam"), R_lam);
+			setAttrib( R_ret, install("box"), R_box);
+			setAttrib( R_ret, install("perfect"), R_exact);
+
 		}
 
 	} else if(!std::strcmp(type_str, "spheres" )) {
@@ -186,6 +213,11 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				const char *nms[] = {"S", "sp", ""};
 				PROTECT(R_ret = mkNamed(VECSXP, nms));
 				SET_VECTOR_ELT(R_ret,0,convert_R_Spheres(sp));
+				setAttrib( VECTOR_ELT(R_ret,0), install("mu"), R_mu);
+				setAttrib( VECTOR_ELT(R_ret,0), install("lam"), R_lam);
+				setAttrib( VECTOR_ELT(R_ret,0), install("box"), R_box);
+				setAttrib( VECTOR_ELT(R_ret,0), install("perfect"), R_exact);
+
 				SET_VECTOR_ELT(R_ret,1,convert_R_Circles(intersected, box));
 
 			} else {
@@ -195,13 +227,17 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 		} else {
 			PROTECT(R_ret = convert_R_Spheres(sp));
+			setAttrib( R_ret, install("mu"), R_mu);
+			setAttrib( R_ret, install("lam"), R_lam);
+			setAttrib( R_ret, install("box"), R_box);
+			setAttrib( R_ret, install("perfect"), R_exact);
 	   }
 
 	} else {
 	   error(_("Unknown object type."));
 	}
 
-	UNPROTECT(1);
+	UNPROTECT(nprotect+1);
     return R_ret;
 }
 
@@ -216,7 +252,7 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
   STGM::CBox3 box = setBox(R_box);
   UNPROTECT(1);
 
-  STGM::CVector3d maxis(REAL(AS_NUMERIC(getAttrib(R_S,install("R_mu")))));
+  STGM::CVector3d maxis(REAL(AS_NUMERIC(getAttrib(R_S,install("mu")))));
 
   double lam = REAL(AS_NUMERIC(getAttrib(R_S,install("lam"))))[0];
   int perfect = INTEGER(AS_INTEGER(getAttrib(R_S,install("perfect"))))[0];
@@ -271,8 +307,9 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
 }
 
 STGM::CBox3 setBox(SEXP R_box) {
-	if(isNull(R_box))
-	    error(_("Undefined simulation box."));
+	if(isNull(R_box)){
+		error(_("Undefined simulation box."));
+	}
 	double *boxX = NUMERIC_POINTER( getListElement( R_box, "xrange"));
 	double *boxY = NUMERIC_POINTER( getListElement( R_box, "yrange"));
 	double *boxZ = NUMERIC_POINTER( getListElement( R_box, "zrange"));
@@ -1290,16 +1327,17 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 
 STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid)
 {
-  SEXP R_ab, R_angles;
-  PROTECT( R_ab     = AS_NUMERIC( getListElement( R_spheroid, "acb")));
-  PROTECT( R_angles = AS_NUMERIC( getListElement( R_spheroid, "angles")));
+  STGM::CVector3d ctr(REAL(AS_NUMERIC( VECTOR_ELT( R_spheroid, 1))));
+  STGM::CVector3d   u(REAL(AS_NUMERIC( VECTOR_ELT( R_spheroid, 2))));
 
-  STGM::CVector3d ctr(REAL(AS_NUMERIC( getListElement( R_spheroid, "center"))));
-  STGM::CVector3d u(REAL(AS_NUMERIC( getListElement( R_spheroid, "u"))));
-
+  SEXP R_acb, R_angles;
+  PROTECT( R_acb     = AS_NUMERIC( VECTOR_ELT( R_spheroid, 3)));
+  PROTECT( R_angles = AS_NUMERIC( VECTOR_ELT( R_spheroid, 4)));
   UNPROTECT(2);
-  return STGM::CSpheroid(ctr,REAL(R_ab)[0],REAL(R_ab)[1],REAL(R_ab)[2],u,
-			  REAL(R_angles)[0],REAL(R_angles)[1],INTEGER(AS_INTEGER( getListElement( R_spheroid, "id")))[0],
+
+  return STGM::CSpheroid(ctr,REAL(R_acb)[0],REAL(R_acb)[1],REAL(R_acb)[2],u,
+			  REAL(R_angles)[0],REAL(R_angles)[1],
+			  INTEGER(AS_INTEGER( getListElement( R_spheroid, "id")))[0],
 			  translateChar(asChar(getAttrib(R_spheroid, install("label")))),
 			  INTEGER(getAttrib(R_spheroid, install("interior")))[0]);
 }

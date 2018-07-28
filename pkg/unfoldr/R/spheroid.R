@@ -7,11 +7,12 @@
 # 
 ###############################################################################
 
-# angle in the section plane relative to z axis in 3D
+## angle in the section plane relative to z axis in 3D
 .getAngle <- function(phi) {
-	# this is slower!
+	## this is slower!
 	# return (abs(asin(sin(s))))
-	if(phi<=pi/2 ) phi
+	
+	if(phi<=pi/2) { phi }
 	else {
 		if( phi <= pi) pi-phi
 		else if(phi<1.5*pi) phi %% pi
@@ -282,8 +283,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 			  "perfect"=as.integer(perfect), "intersect"=intersect)
 	}
 		 
-	structure(.Call(C_PoissonSystem, theta, cond),
-		"mu"= mu, "lam"=lam, "box" = box, "perfect"=perfect)	
+	.Call(C_PoissonSystem, theta, cond)	
 }
 
 #' Calculate coefficients for unfolding
@@ -405,7 +405,7 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 #' @export
 intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
 	if(!(class(S) %in% c("prolate","oblate","spheres","cylinders")))
-	  stop("Unknown class of obects.")
+	  stop("Unknown object class.")
     stopifnot(is.numeric(d))
 	stopifnot(is.logical(intern))
 	if(sum(n)>1)
@@ -599,6 +599,7 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 	ind <- which(n==0)
 	.pointsOnEllipse <- function(E,t) {
+		E$phi <- E$phi + 0.5*pi
 		xt <- E$center[1] + E$ab[1]*cos(t)*cos(E$phi)-E$ab[2]*sin(t)*sin(E$phi)
 		zt <- E$center[2] + E$ab[1]*cos(t)*sin(E$phi)+E$ab[2]*sin(t)*cos(E$phi)
 		yt <- rep(0,length(t))
