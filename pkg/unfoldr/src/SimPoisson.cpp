@@ -488,8 +488,9 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    	 rbinorm_exact_t rdist(mx,my,sdx,sdy,rho,m_box,ftype_size);
 
 	    	 if(PL>0) {
-	    		 Rprintf("\t Parameters:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
-	    		 Rprintf("\t Cumulative sum of probabilities: %f, %f, %f, %f \n",rdist.p[0],rdist.p[1],rdist.p[2],rdist.p[3]);
+	    		 Rprintf("\n");
+	    		 Rprintf("Size/Shape:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
+	    		 Rprintf("Cumulative sum of probabilities: %f, %f, %f, %f \n",rdist.p[0],rdist.p[1],rdist.p[2],rdist.p[3]);
 	    	 }
 
 	    	 GetRNGstate();
@@ -530,7 +531,8 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 			 rbinorm_t rdist(mx,my,sdx,sdy,rho,m_box,ftype_size);
 
 			 if(PL>0) {
-			   Rprintf("\t Parameters:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
+			   Rprintf("\n");
+			   Rprintf("Size/Shape:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
 			 }
 
 	    	 GetRNGstate();
@@ -568,7 +570,6 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 
 	    } else {
 
-
 	    	/*  -Univariate distributions for size and shape,
 	    	 *  -orientation distribution independent of size/shape
 	    	 *  -always non perfect simulation, even for `rlnorm`
@@ -588,15 +589,16 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 			double s1 = REAL(VECTOR_ELT( R_tmp ,0))[0];
 			double s2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);
 
-			if( !std::strcmp( ftype_size, "rlnorm")) {
+			if( isPerfect && !std::strcmp( ftype_size, "rlnorm")) {
 
 				rlnorm_exact_t rsize(p1,p2,m_box,ftype_size);
 				rndGen_t rshape(s1,s2, ftype_shape);
 				rndUnivar_t<rlnorm_exact_t> rdist(rsize,rshape);
 
 				if(PL>0) {
-				  Rprintf("\t Parameters:  mx=%f, sdx=%f \n",rsize.mx,rsize.sdx);
-				  Rprintf("\t Shape parameters: %f, %f \n",rshape.p1,rshape.p2);
+				  Rprintf("\n");
+				  Rprintf("Size:  %f, %f \n",rsize.mx,rsize.sdx);
+				  Rprintf("Shape: %f, %f \n",rshape.p1,rshape.p2);
 				}
 
 				GetRNGstate();
@@ -636,8 +638,9 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				rndUnivar_t<rndGen_t> rdist(rsize,rshape);
 
 				if(PL>0) {
-					Rprintf("\t Size parameters: %f, %f \n",rdist.rsize.p1,rdist.rsize.p2);
-					Rprintf("\t Shape parameters: %f, %f \n",rdist.rshape.p1,rdist.rshape.p2);
+					Rprintf("\n");
+					Rprintf("Size:  %f, %f \n",rdist.rsize.p1,rdist.rsize.p2);
+					Rprintf("Shape: %f, %f \n",rdist.rshape.p1,rdist.rshape.p2);
 			    }
 
 				GetRNGstate();
@@ -674,7 +677,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	}
 
 	if(PL>0){
-	 Rprintf("Objects simulated: %d \n", m_objects.size());
+	 Rprintf("Done. Simulated %d objects. \n", m_objects.size());
 	}
 
 	UNPROTECT(2);
@@ -757,10 +760,10 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 		   Rprintf("\n");
 		   Rprintf("Spheroid simulation with `%s` (perfect=%d): \n", type, perfect);
 		   if(perfect)
-			   Rprintf("\t Mean number: %f (exact simulation: %f) \n", m_lam, mu);
-		   else Rprintf("\t Mean number: %f (non-exact simulation: %f) \n", m_lam, mu);
+			   Rprintf("Mean number: %f (exact simulation: %f) \n", m_lam, mu);
+		   else Rprintf("Mean number: %f (Box volume %f) \n", m_lam, mu);
 		   Rprintf("Number of spheroids: %d \n", m_num);
-		   Rprintf("Set label: %s to character: \n",label);
+		   Rprintf("Set label '%s'. \n",label);
 		   Rprintf("\n\n");
 	  }
 
@@ -869,11 +872,11 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 	   Rprintf("\n");
 	   Rprintf("Cylinder simulation with `%s` (perfect=%d): \n", type, perfect);
 	   if(perfect)
-		   Rprintf("\t Mean number: %f (exact simulation: %f) \n", m_lam, mu);
-	   else Rprintf("\t Mean number: %f (non-exact simulation: %f) \n", m_lam, mu);
+		   Rprintf("Mean number: %f (exact simulation: %f) \n", m_lam, mu);
+	   else Rprintf("Mean number: %f (Box volume %f) \n", m_lam, mu);
 	   Rprintf("Number of cylinders: %d \n", m_num);
-	   Rprintf("Set label: %s to character: \n",label);
-	   Rprintf("\n\n");
+	   Rprintf("Set label '%s'. \n",label);
+	   Rprintf("\n");
 	}
 
     CVector3d u;
@@ -1018,7 +1021,7 @@ void CPoissonSystem<CSphere>::simJoint(SEXP R_call, SEXP R_rho, const char* type
 
 
 template< typename F>
-void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label,  const char *type, int perfect)
+void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label, const char *type, int perfect)
 {
   /* get Poisson parameter */
   int nTry=0;
@@ -1031,8 +1034,13 @@ void CPoissonSystem<CSphere>::simUnivar(F &rsize, const char *label,  const char
 
   if(PL>0)
   {
+	 Rprintf("\n");
 	 Rprintf("Spheres simulation with `%s` (perfect=%d):  \n", type, perfect);
-	 Rprintf("Box volume: %f, lam: %f, number of spheres: %d \n", m_box.volume(), m_lam, m_num);
+	 if(perfect)
+	    Rprintf("Mean number: %f (exact simulation: %f) \n", m_lam, mu);
+	 else Rprintf("Mean number: %f (Box volume %f) \n", m_lam, mu);
+	 Rprintf("Set label '%s'. \n",label);
+	 Rprintf("\n");
   }
 
   double r = 0.0;
@@ -1254,12 +1262,16 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp)
 STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 {
    STGM::CVector2d ctr(REAL(VECTOR_ELT(R_E,2)));
+   STGM::CMatrix2d A(REAL(VECTOR_ELT(R_E,3)));
+
+   return STGM::CEllipse2(A,ctr,INTEGER(VECTOR_ELT(R_E,0))[0],REAL(VECTOR_ELT(R_E,9))[0]);
+
+   /* Alternatively but slower to initialize 2D ellipse:
+   /// certainly a bug: needs to add pi/2 to phi for correct rotation of ellipses
+   double rot = REAL(VECTOR_ELT(R_E,9))[0] + M_PI_2;
+   double *ab = REAL(VECTOR_ELT(R_E,4));
    STGM::CVector2d minorA(REAL(VECTOR_ELT(R_E,5)));
    STGM::CVector2d majorA(REAL(VECTOR_ELT(R_E,6)));
-
-   STGM::CMatrix2d A(REAL(VECTOR_ELT(R_E,3)));
-   double *ab = REAL(VECTOR_ELT(R_E,4));
-
    return STGM::CEllipse2(ctr,								// center
 		   	   	   	   	  A,								// matrix A
 						  majorA,							// semi-major
@@ -1267,7 +1279,9 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 						  ab[0],ab[1],						// a,b
 						  REAL(VECTOR_ELT(R_E,7))[0],		// phi
 						  INTEGER(VECTOR_ELT(R_E,0))[0],	// id
-						  REAL(VECTOR_ELT(R_E,9))[0]);		// rot
+						  rot);								// rot
+  */
+
 }
 
 
@@ -1285,9 +1299,9 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
   SEXP R_ret = R_NilValue;
   PROTECT(R_ret = allocVector(VECSXP, objects.size()) );
 
-  if( PL == 10) {
-	/* short version of ellipse list */
-	SEXP R_tmp=R_NilValue;
+  if( PL == 10)  									/* short version of ellipse list */
+  {
+	SEXP R_tmp = R_NilValue;
 	const char *nms[] = {"A", "C", "S", "phi", ""};
 
 	double phi = 0.0;
@@ -1311,9 +1325,8 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		UNPROTECT(1);
 	}
 
-  } else {
+  } else {											/* full version of ellipse list */
 
-	  /* full version of ellipse list */
 	  SEXP R_tmp, R_center, R_minor, R_major, R_ab, R_A;
 	  const char *nms[] = {"id", "type", "center", "A", "ab", "minor", "major", "phi", "S", "rot", ""};
 
