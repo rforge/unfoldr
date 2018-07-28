@@ -215,9 +215,9 @@ struct rVonMisesFisher_t
 struct rndGen_t {
   double p1, p2;
   rdist2_t rdist;
-  double mu;
+  double mu;							/* dummy: box volume */
 
-  rndGen_t(double _p1, double _p2, double _mu, const char* ftype)
+  rndGen_t(double _p1, double _p2, const char* ftype, double _mu = 0)
     : p1(_p1), p2(_p2), mu(_mu)
   {
     if (!std::strcmp(ftype, "rbeta" )) {
@@ -240,15 +240,43 @@ struct rndGen_t {
 
 };
 
-struct rndSizeShape_t {
-  rndGen_t rsize, rshape;
+//template<class Tsize>
+//struct rndUnivar_t {
+//  typedef Tsize rndSize_t;
+//
+//  rndSize_t rsize;
+//  rndGen_t rshape;
+//  double mu;
+//
+//  rndUnivar_t(double p1, double p2, double s1, double s2,
+//		  	  	   STGM::CBox3 &box, const char *size, const char *shape)
+//
+//    :  rsize(rndSize_t(p1,p2,box,size)), rshape(rndGen_t(s1,s2,box,shape)), mu(0)
+//  {};
+//
+//  void operator()(double &s, double &b, double &c) {
+//	 b = rsize();
+//	 s = rshape();
+//	 c = b*s;
+//  }
+//
+//};
+
+
+template<class Tsize>
+struct rndUnivar_t {
+  typedef Tsize rndSize_t;
+
+  rndSize_t rsize;
+  rndGen_t rshape;
   double mu;
 
-  rndSizeShape_t(double p1, double p2, double s1, double s2,
-		  	  	   double _mu, const char *size, const char *shape)
-
-    :  rsize(rndGen_t(p1,p2,_mu,size)), rshape(rndGen_t(s1,s2,_mu,shape)), mu(_mu)
-  {};
+  rndUnivar_t(Tsize &_rsize, rndGen_t &_rshape)
+    :  rsize(_rsize),
+	   rshape(_rshape)
+  {
+	  mu = rsize.mu;
+  };
 
   void operator()(double &s, double &b, double &c) {
 	 b = rsize();
@@ -257,7 +285,6 @@ struct rndSizeShape_t {
   }
 
 };
-
 
 /* only sphere radius  */
 struct rlnorm_exact_t {
@@ -311,9 +338,9 @@ struct rbinorm_t {
 	const char *size;
 	double mu;
 
-	rbinorm_t(double _mx, double _my, double _sdx, double _sdy, double _rho, double _mu, const char *_size)
+	rbinorm_t(double _mx, double _my, double _sdx, double _sdy, double _rho, STGM::CBox3 &box, const char *_size)
 		: mx(_mx), my(_my), sdx(_sdx), sdy(_sdy), rho(_rho),
-		  x(0), y(0), size(_size), mu(_mu)
+		  x(0), y(0), size(_size), mu(box.volume())
 	{
 	};
 

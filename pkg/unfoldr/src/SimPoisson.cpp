@@ -471,20 +471,22 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 
 	    if( !std::strcmp( ftype_size, "rbinorm"))
 	    {
-	    	 // size parameters
-	    	 SEXP R_tmp = VECTOR_ELT( R_args, 0);
-	    	 if(isNull(R_tmp) || LENGTH(R_tmp) != 5)
-	    		error(_("Number of arguments required for bivariate normal is invalid."));
-	    	 double mx  = REAL(getListElement( R_tmp, "mx"))[0];
-	    	 double my  = REAL(getListElement( R_tmp, "my"))[0];
-	    	 double sdx = REAL(getListElement( R_tmp, "sdx"))[0];
-	    	 double sdy = REAL(getListElement( R_tmp, "sdy"))[0];
-	    	 double rho = REAL(getListElement( R_tmp, "rho"))[0];
+
+	      // size parameters
+	      SEXP R_tmp = VECTOR_ELT( R_args, 0);
+	      if(isNull(R_tmp) || LENGTH(R_tmp) != 5)
+	    	error(_("Number of arguments required for bivariate normal is invalid."));
+	      double mx  = REAL(getListElement( R_tmp, "mx"))[0];
+	      double my  = REAL(getListElement( R_tmp, "my"))[0];
+	      double sdx = REAL(getListElement( R_tmp, "sdx"))[0];
+	      double sdy = REAL(getListElement( R_tmp, "sdy"))[0];
+	      double rho = REAL(getListElement( R_tmp, "rho"))[0];
 
 	      if(isPerfect) {
 
 	    	 /// size
 	    	 rbinorm_exact_t rdist(mx,my,sdx,sdy,rho,m_box,ftype_size);
+
 	    	 if(PL>0) {
 	    	  Rprintf("\t Cumulative sum of probabilities: %f, %f, %f, %f \n",rdist.p[0],rdist.p[1],rdist.p[2],rdist.p[3]);
 	    	  Rprintf("\t Parameters:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
@@ -500,7 +502,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 
 				// direction parameters
 				SEXP R_tmp = getListElement( R_args, "orientation" );
-				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
+				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)									/* only one parameter required */
 				  error(_("Argument `orientation` must have length equal to one."));
 				double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
 
@@ -519,14 +521,14 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				}
 
 			}
-
 		    PutRNGstate();
 
-	      }  else  { /* end isPerfect */
+	      }  else { /* end isPerfect */
 
 	    	 /// size
 	    	 isPerfect = 0;
-			 rbinorm_t rdist(mx,my,sdx,sdy,rho,m_box.volume(),ftype_size);
+			 rbinorm_t rdist(mx,my,sdx,sdy,rho,m_box,ftype_size);
+
 			 if(PL>0) {
 			   Rprintf("\t Parameters:  mx=%f, sdx=%f, my=%f, sdy=%f, rho=%f \n",rdist.mx,rdist.sdx,rdist.my,rdist.sdy,rdist.rho);
 			 }
@@ -566,6 +568,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 
 	    } else {
 
+
 	    	/*  -Univariate distributions for size and shape,
 	    	 *  -orientation distribution independent of size/shape
 	    	 *  -always non perfect simulation, even for `rlnorm`
@@ -576,7 +579,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	       	if(isNull(R_tmp) || LENGTH(R_tmp) == 0)
 	    	 error(_("Parameters for `size` cannot have length zero."));
 	    	double p1 = REAL(VECTOR_ELT( R_tmp ,0))[0];
-	    	double p2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);
+	    	double p2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);	  /* could be constant then only one parameter */
 
 	    	// shape
 	    	R_tmp = getListElement( R_args, "shape" );
@@ -585,45 +588,88 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 			double s1 = REAL(VECTOR_ELT( R_tmp ,0))[0];
 			double s2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);
 
-	    	rndSizeShape_t rdist(p1,p2,s1,s2,m_box.volume(),ftype_size,ftype_shape);
+			if( !std::strcmp( ftype_size, "rlnorm")) {
 
-	    	if(PL>0) {
-	    		Rprintf("\t Size parameters: %f, %f \n",rdist.rsize.p1,rdist.rsize.p2);
-	    		Rprintf("\t Shape parameters: %f, %f \n",rdist.rshape.p1,rdist.rshape.p2);
-	      	}
+				rlnorm_exact_t rsize(p1,p2,m_box,ftype_size);
+				rndGen_t rshape(s1,s2, ftype_shape);
+				rndUnivar_t<rlnorm_exact_t> rdist(rsize,rshape);
 
-	    	GetRNGstate();
-	    	if(!std::strcmp(ftype_dir, "runifdir" ))
-	    	{
+				if(PL>0) {
+				  Rprintf("\t Parameters:  mx=%f, sdx=%f \n",rsize.mx,rsize.sdx);
+				  Rprintf("\t Shape parameters: %f, %f \n",rshape.p1,rshape.p2);
+				}
 
-	    		runidir_t rdirect;
-				simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
-
-			} else {
-
-				// direction parameters
-				R_tmp = getListElement( R_args, "orientation" );
-				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
-				  error(_("Argument `orientation` must have length equal to one."));
-				double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
-
-				if(!std::strcmp( ftype_dir, "rbetaiso" )) {
-
-					rbetaiso_t rdirect(m_mu,kappa);
-					simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
-
-				} else if(!std::strcmp( ftype_dir, "rvMisesFisher")) {
-
-					rVonMisesFisher_t rdirect(m_mu,kappa);
+				GetRNGstate();
+				if(!std::strcmp(ftype_dir, "runifdir" ))
+				{
+					runidir_t rdirect;
 					simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
 
 				} else {
-				   error(_("Direction distribution type is not supported."));
+
+					// direction parameters
+					R_tmp = getListElement( R_args, "orientation" );
+					if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
+					  error(_("Argument `orientation` must have length equal to one."));
+					double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
+
+					if(!std::strcmp( ftype_dir, "rbetaiso" )) {
+
+						rbetaiso_t rdirect(m_mu,kappa);
+						simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
+
+					} else if(!std::strcmp( ftype_dir, "rvMisesFisher")) {
+
+						rVonMisesFisher_t rdirect(m_mu,kappa);
+						simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
+
+					} else {
+					   error(_("Direction distribution type is not supported."));
+					}
+				}
+				PutRNGstate();
+
+			} else  {
+
+				rndGen_t rsize(p1,p2,ftype_size,m_box.volume());
+				rndGen_t rshape(s1,s2, ftype_shape);
+				rndUnivar_t<rndGen_t> rdist(rsize,rshape);
+
+				if(PL>0) {
+					Rprintf("\t Size parameters: %f, %f \n",rdist.rsize.p1,rdist.rsize.p2);
+					Rprintf("\t Shape parameters: %f, %f \n",rdist.rshape.p1,rdist.rshape.p2);
 				}
 
-			}
+				GetRNGstate();
+				if(!std::strcmp(ftype_dir, "runifdir" ))
+				{
+					runidir_t rdirect;
+					simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
 
-	    	PutRNGstate();
+				} else {
+
+					// direction parameters
+					R_tmp = getListElement( R_args, "orientation" );
+					if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
+					  error(_("Argument `orientation` must have length equal to one."));
+					double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
+
+					if(!std::strcmp( ftype_dir, "rbetaiso" )) {
+
+						rbetaiso_t rdirect(m_mu,kappa);
+						simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
+
+					} else if(!std::strcmp( ftype_dir, "rvMisesFisher")) {
+
+						rVonMisesFisher_t rdirect(m_mu,kappa);
+						simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
+
+					} else {
+					   error(_("Direction distribution type is not supported."));
+					}
+				}
+				PutRNGstate();
+			}
 	    }
 	}
 
@@ -914,7 +960,7 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_param, SEXP R_cond) {
     	   simUnivar(rdist,label,ftype,perfect);
 
        } else {
-    	   rndGen_t rdist(p1,p2,m_box.volume(),ftype);
+    	   rndGen_t rdist(p1,p2,ftype,m_box.volume());
     	   if(PL>0) {
     		  Rprintf("\t Size parameters: mx=%f, sdx=%f \n", rdist.p1, rdist.p2);
     	   }
