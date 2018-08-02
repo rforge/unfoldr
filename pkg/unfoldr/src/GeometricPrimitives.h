@@ -469,20 +469,17 @@ namespace STGM {
     CEllipse2(STGM::CMatrix2d &A, STGM::CVector2d &center, int id, double rot = 0) :
        m_center(center), m_A(A), m_a(0), m_b(0), m_phi(0), m_rot(rot), m_id(id),  m_type(10)
     {
-          int n = 2,
-           info = 0;
+          int n = 2, info = 0;
 
           double B[4];
-
           B[0] = m_A[0][0];
           B[1] = m_A[1][0];
           B[2] = m_A[0][1];
           B[3] = m_A[1][1];
 
-          double evalf[2] = {0,0};
-
           /** eigenvalue decomposition */
-          real_eval(B,&n,evalf,&info);
+          double eval[2] = {0,0};
+          real_eval(B,&n,eval,&info);
           //Rprintf("B: %f %f %f %f \n", B[0],B[1],B[2],B[3]);
 
           m_majorAxis[0] = B[0];
@@ -490,33 +487,32 @@ namespace STGM {
           m_minorAxis[0] = B[2];
           m_minorAxis[1] = B[3];
 
-          if(info != 0)
-          {
-        	error("Eigenvalue decomposition (LAPACK routine) failed in `ellipse2` constructor.");
+          if(info != 0) {
+        	  error("Eigenvalue decomposition (LAPACK routine) failed in `ellipse2` constructor.");
           } else {
 
-        	    /* phi is relative to x axis */
-				// double cos_phi = B[0];
-				// double sin_phi = B[1];
+           	/* phi is angle in intersecting plane
+           	 * always relative to ´x´ axis */
+        	double cos_phi = B[0];
+        	double sin_phi = B[1];
 
-				/* phi is relative to z axis */
-				double cos_phi = B[1];
-				double sin_phi = B[3];
+            /** relative to z axis */
+			//double cos_phi = B[1];
+			//double sin_phi = B[3];
 
-				m_phi = acos(cos_phi);     					/* angle in the intersecting plane */
+			if( (cos_phi<0 && sin_phi<0) ||
+				(cos_phi<0 && sin_phi>=0))
+			{
+			  m_phi = atan(sin_phi/cos_phi)+M_PI;
+			} else if(cos_phi>0 && sin_phi<0) {
+			  m_phi = atan(sin_phi/cos_phi)+2*M_PI;
+			} else {
+			  m_phi = acos(cos_phi);
+			}
 
-				if( (cos_phi<0 && sin_phi<0) || (cos_phi<0 && sin_phi>=0)) {
-					m_phi = atan(sin_phi/cos_phi)+M_PI;
-				} else if(cos_phi>0 && sin_phi<0) {
-					m_phi = atan(sin_phi/cos_phi)+2*M_PI;
-				}
-
-			   /* add offset angle because of 3D rgl image,
-				* Here phi does not match with matrix A.
-				* Leave out otherwise */
-				m_phi += m_rot;
-				m_b = 1.0/sqrt(evalf[1]);
-				m_a = 1.0/sqrt(evalf[0]);
+		  	/* axes lengths */
+			m_b = 1.0/sqrt(eval[1]);
+			m_a = 1.0/sqrt(eval[0]);
           }
 
     }
@@ -557,34 +553,32 @@ namespace STGM {
     void ComputeMatrix()
     {
           STGM::CMatrix2d B;
-          B[0][0] = m_minorAxis[0];
-          B[1][0] = m_minorAxis[1];
-          B[0][1] = m_majorAxis[0];
-          B[1][1] = m_majorAxis[1];
+          B[0][0] = m_majorAxis[0];
+          B[1][0] = m_majorAxis[1];
+          B[0][1] = m_minorAxis[0];
+          B[1][1] = m_minorAxis[1];
 
-          // compute A
+          /** compute A */
           m_A[0][0] = 1.0 / SQR(m_a);
 	      m_A[1][1] = 1.0 / SQR(m_b);
-	  	  m_A = m_A * B;
+
+	      m_A = m_A * B;
 		  B.Transpose();
 		  m_A = B * m_A;
 
-          double cos_phi = m_minorAxis[0];
-          double sin_phi = m_minorAxis[1];
+		  /* angle in the intersecting plane is relative to ´x´ axis: */
+          double cos_phi = m_majorAxis[0];
+          double sin_phi = m_majorAxis[1];
 
-          /* angle in the intersecting plane is relative to z axis */
-          m_phi = acos(cos_phi) ;
-          if( (cos_phi<0 && sin_phi<0) || (cos_phi<0 && sin_phi>=0)) {
+          if( (cos_phi<0 && sin_phi<0) ||
+        	  (cos_phi<0 && sin_phi>=0)) {
               m_phi = atan(sin_phi/cos_phi)+M_PI;
           } else if(cos_phi>0 && sin_phi<0) {
               m_phi = atan(sin_phi/cos_phi)+2.0*M_PI;
+          } else {
+        	  m_phi = acos(cos_phi);
           }
-          /* add offset angle because of 3d rgl image,
-           * Here phi does not match with matrix A.
-           * Leave out otherwise */
-          m_phi += m_rot;
-     }
-
+	}
 
     /**
      * @brief Set dx/dt=0 and dy/dt=0 -> reorder for t values

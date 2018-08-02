@@ -131,33 +131,72 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 		sp.simSystem(R_param,R_cond);
 
 		if(!std::strcmp(profiles, "full") ||
-		   !std::strcmp(profiles, "only"))
+		   !std::strcmp(profiles, "only") ||
+		   !std::strcmp(profiles, "digi"))
 		{
 			STGM::Intersectors<STGM::CSpheroid>::Type intersected;
 			STGM::IntersectWithPlane<STGM::CSpheroid>(sp, intersected, R_cond);
 
 			if(!std::strcmp(profiles, "full"))
 			{
-				const char *nms[] = {"S", "sp", ""};
+				const char *nms[] = {"S", "sp", "W", ""};
 				PROTECT(R_ret = mkNamed(VECSXP, nms));
 				SET_VECTOR_ELT(R_ret,0,convert_R_Ellipsoids(sp));
 				setAttrib( VECTOR_ELT(R_ret,0), install("mu"), R_mu);
 				setAttrib( VECTOR_ELT(R_ret,0), install("lam"), R_lam);
 				setAttrib( VECTOR_ELT(R_ret,0), install("box"), R_box);
 				setAttrib( VECTOR_ELT(R_ret,0), install("perfect"), R_exact);
+
 				/* intersection */
 				SET_VECTOR_ELT(R_ret,1,convert_R_Ellipses(intersected, box));
 
-			} else {
+				/* digitization */
+				STGM::CPlane & plane = intersected[0].getPlane();
+				int i=0, j=0;
+				plane.getPlaneIdx(i,j);
+				STGM::CWindow win(box.m_size[i],box.m_size[j]);
+
+				double delta = REAL(AS_NUMERIC(getListElement( R_cond, "delta")))[0];
+				STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
+										  (int) std::floor(win.m_size[1]/delta));
+
+				SEXP R_tmp;
+				PROTECT(R_tmp = allocMatrix(INTSXP,nPix[0],nPix[1]));
+				STGM::CDigitizer digitizer(INTEGER(R_tmp),win.m_low,nPix,delta);
+				digitizer.start<STGM::CSpheroid>(intersected);
+
+				SET_VECTOR_ELT(R_ret,2,R_tmp);
+				UNPROTECT(1);
+
+			}  else if(!std::strcmp(profiles, "digi" )) {			/* only digitized image */
+
+				STGM::CPlane & plane = intersected[0].getPlane();
+				int i=0, j=0;
+				plane.getPlaneIdx(i,j);
+				STGM::CWindow win(box.m_size[i],box.m_size[j]);
+
+				double delta = REAL(AS_NUMERIC(getListElement( R_cond, "delta")))[0];
+				STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
+							  		      (int) std::floor(win.m_size[1]/delta));
+
+				PROTECT(R_ret = allocMatrix(INTSXP,nPix[0],nPix[1]));
+				STGM::CDigitizer digitizer(INTEGER(R_ret),win.m_low,nPix,delta);
+				digitizer.start<STGM::CSpheroid>(intersected);
+
+			}
+
+			else {
 				PROTECT(R_ret = convert_R_Ellipses(intersected, box));
 			}
 
 		} else if(!std::strcmp(profiles, "original" )) {
+
 			PROTECT(R_ret = convert_R_Ellipsoids(sp) );
 			setAttrib( R_ret, install("mu"), R_mu);
 			setAttrib( R_ret, install("lam"), R_lam);
 			setAttrib( R_ret, install("box"), R_box);
 			setAttrib( R_ret, install("perfect"), R_exact);
+
 		}
 
 	} else if(!std::strcmp(type_str, "cylinders" )) {
@@ -517,6 +556,11 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 					rVonMisesFisher_t rdirect(m_mu,kappa);
 					simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
 
+				} else if(!std::strcmp( ftype_dir, "const")) {
+
+					constdir_t rdirect(kappa);
+					simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
+
 				} else {
 				   error(_("Direction distribution type is not supported."));
 				}
@@ -560,8 +604,8 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 					simBivariate(rdist,rdirect,label,ftype_size,isPerfect);
 
 				} else {
-				   error(_("Direction distribution type is not supported."));
-				}
+					error(_("Direction distribution type is not supported."));
+			 	}
 
 			}
 
@@ -1288,9 +1332,7 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 /**
  * @brief Convert ellipses to R objects
  * 		  Need angle between [0,2pi] for
- * 		  intersection plane relative to z axis
- * 		  but rgl uses relative to x axis!!
- * 		  For plotting: phi = phi + pi/2
+ * 		  plotting.
  *
  * @param objects Intersection object
  * @return R ellipses
@@ -1304,7 +1346,6 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 	SEXP R_tmp = R_NilValue;
 	const char *nms[] = {"A", "C", "S", "phi", ""};
 
-	double phi = 0.0;
 	for(size_t k=0; k<objects.size(); ++k)
 	{
 		STGM::CEllipse2 &ellipse = objects[k].getEllipse();
@@ -1312,15 +1353,7 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		SET_VECTOR_ELT(R_tmp,0,ScalarReal(ellipse.a()));                  // major semi-axis (for both prolate/oblate)
 		SET_VECTOR_ELT(R_tmp,1,ScalarReal(ellipse.b()));                  // minor semi-axis (for both prolate/oblate)
 		SET_VECTOR_ELT(R_tmp,2,ScalarReal(ellipse.b()/ellipse.a()));      // shape
-
-		phi = ellipse.phi();
-		if(phi > M_PI_2) {
-		   if(phi <= M_PI) phi = M_PI-phi;
-		   else if(phi < 1.5*M_PI) phi = std::fmod(phi,M_PI);
-		   else phi = 2.0*M_PI-phi;
-		}
-
-		SET_VECTOR_ELT(R_tmp,3,ScalarReal(phi));
+		SET_VECTOR_ELT(R_tmp,3,ScalarReal(ellipse.phi()));		      // relative to ´x´ axis
 		SET_VECTOR_ELT(R_ret,k,R_tmp);
 		UNPROTECT(1);
 	}
@@ -1355,7 +1388,7 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 
 		  for (int i = 0; i < 2; i++)
 			for (int j = 0; j < 2; j++)
-			  REAL(R_A)[i + 2 *j] = ellipse.MatrixA()[i][j];
+			  REAL(R_A)[i + 2*j] = ellipse.MatrixA()[i][j];
 
 		  SET_VECTOR_ELT(R_tmp,0,ScalarInteger(ellipse.Id()));
 		  SET_VECTOR_ELT(R_tmp,1,ScalarInteger(STGM::ELLIPSE_2D));

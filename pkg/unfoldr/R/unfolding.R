@@ -171,7 +171,7 @@ binning3d <- function(size,angle,shape,breaks,check=TRUE,na.rm = TRUE) {
 		if(any(breaks$size<0))
 			stop("Breaks vector 'size' must have non-negative values.")
 		if(min(breaks$angle)<0 || max(breaks$angle)>pi/2)
-			stop(paste("Breaks vector 'angle' must have values between zero and ",pi/2,sep=""))
+			stop(paste("Breaks vector 'angle' must have values between zero and ",quote(pi/2),sep=""))
 		if(min(breaks$shape)<0 || max(breaks$shape)>1)
 			stop("Breaks vector 'shape' must have values between 0 and 1.")
 	}

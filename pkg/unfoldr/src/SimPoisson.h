@@ -170,6 +170,23 @@ private:
 };
 
 
+/* constant angle */
+struct constdir_t
+{
+   double theta;
+   constdir_t(double _theta) : theta(_theta) {}
+
+   void operator()(CVector3d &u, double &_theta, double &_phi)
+   {
+	   _theta = theta;
+	   _phi = 2.0*M_PI*runif(0.0,1.0);
+	   u[0] = cos(_phi)*sin(_theta);
+	   u[1] = sin(_phi)*sin(_theta);
+	   u[2] = cos(_theta);
+   }
+};
+
+
 struct runidir_t
 {
    void operator()(CVector3d &u, double &theta, double &phi) { runidir(u.ptr(),theta,phi); }

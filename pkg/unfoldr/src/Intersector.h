@@ -355,9 +355,11 @@ namespace STGM
            {
                obj = objects[k].getObject();
                obj->move(m_low);
-			   p = obj->getMinMaxPoints();
 
-			   x=p[0]; y=p[1];
+               p = obj->getMinMaxPoints();
+			   x = p[0];
+			   y = p[1];
+
 			   br.m_ymin=std::max(0,(int)((y[0]+m_d)/m_delta)); // y-coordinate is related to row number
 			   br.m_xmin=std::max(0,(int)((x[0]+m_d)/m_delta)); // x-coordinate is related to col number
 			   br.m_ymax=std::min(m_nr,(int)((y[1]-m_d)/m_delta));
@@ -368,9 +370,12 @@ namespace STGM
 				   for(int j=br.m_xmin;j<(br.m_xmax+1);j++)
 				   {
 					   /** change i and j for column/row major order */
-					   if(!m_w[i+j*m_nrow])
+					   //if(!m_w[i+j*m_nrow])
+					   // if(obj->isInside((j+0.5)*m_delta,(i+0.5)*m_delta))
+					   //	 m_w[i+j*m_nrow]=1;
+					   if(!m_w[j+i*m_ncol])
 						 if(obj->isInside((j+0.5)*m_delta,(i+0.5)*m_delta))
-							 m_w[i+j*m_nrow]=1;
+							 m_w[j+i*m_ncol]=1;
 				   }
 			   }
            }
@@ -404,12 +409,13 @@ namespace STGM
 	    br.m_xmax=std::min(m_nc,(int)((x[1]-m_d)/m_delta));
 	    br.m_ymax=std::min(m_nr,(int)((y[1]-m_d)/m_delta));
 
-		for(int i=br.m_ymin;i<(br.m_ymax+1);i++) {
-		   for(int j=br.m_xmin;j<(br.m_xmax+1);j++) {
-				if(!m_w[j+i*m_ncol])									/* interchange i and j ...*/
+		for(int i=br.m_ymin;i<(br.m_ymax+1);i++)
+		{
+		   for(int j=br.m_xmin;j<(br.m_xmax+1);j++)
+		   {
+			   if(!m_w[j+i*m_ncol])									/* interchange i and j ...*/
 				 if(object.isInside((j+0.5)*m_delta,(i+0.5)*m_delta))
 					 m_w[j+i*m_ncol]=1;									/* ... and here for transposed image */
-
 		   }
 		}
 

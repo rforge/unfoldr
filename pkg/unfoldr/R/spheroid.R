@@ -10,8 +10,7 @@
 ## angle in the section plane relative to z axis in 3D
 .getAngle <- function(phi) {
 	## this is slower!
-	# return (abs(asin(sin(s))))
-	
+	# return (abs(asin(sin(s))))	
 	if(phi<=pi/2) { phi }
 	else {
 		if( phi <= pi) pi-phi
@@ -56,7 +55,7 @@ updateIntersections <- function(S) {
 #' the shape factor \code{S} between \eqn{(0,1]} and the orientation angle is named \code{alpha}.
 #'
 #' @param size	  matrix of axes lengths
-#' @param angle   orientation angle of spheroids, see details
+#' @param angle   orientation angle of spheroids (see details)
 #' @param type    name of spheroid type, either "\code{prolate}" or "\code{oblate}"
 #'
 #' @return 		  section profiles object, either of class "\code{prolate}" or "\code{oblate}"
@@ -71,12 +70,13 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 		stop("'size' must have non-negative values.")
 	if(anyNA(angle) || !is.numeric(angle) || any(angle<0))
 		stop(paste("'angle' must have values between zero and ",quote(pi/2),sep=""))
+	## angle alpha should match the main orientation axis 
 	if(max(angle)>pi/2)
-	 angle <- sapply(angle,.getAngle)	
-	
+	 angle <- sapply(angle,.getAngle)
+    	
     structure(list("A"=if(type=="prolate") size[,2] else size[,1],
 				   "S"=size[,2]/size[,1],
-				   "alpha"=angle),
+				   "alpha"=0.5*pi-angle),							
 		   class=type)
 }
 
@@ -132,6 +132,7 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' @param n		   normal vector of intersting plane
 #' @param intersect use "\code{full}" to return the simulated system together with section profiles as two lists, choose "\code{only}" for section
 #' 					 profiles only and "\code{original}" for the 3D system only
+#' @param delta	   digitization resolution
 #' @param intern   logical, \code{intern=FALSE} (default), whether to return only section profiles with centers inside the simulation window
 #' @param perfect  logical, \code{perfect=TRUE} (default) simulate perfect
 #' @param pl  	   integer, print level and return value type, see details
@@ -153,9 +154,10 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' @rdname simPoissonSystem
 #' @export
 simPoissonSystem <- function(theta, lam, size="const", shape="const", orientation="rbetaiso",
-								type=c("prolate","oblate","spheres","cylinders"), rjoint=NULL, box=list(c(0,1)),
-								 mu=c(0,0,1), dz=0, n=c(0,1,0), intersect=c("original","full","only"), 
-								  intern=FALSE, perfect=FALSE, pl=0, label="N")
+								type=c("prolate","oblate","spheres","cylinders"), rjoint=NULL,
+								  box=list(c(0,1)), mu=c(0,0,1), dz=0, n=c(0,1,0),
+								  intersect=c("original","full","only","digi"), 
+								    delta=0.01, intern=FALSE, perfect=FALSE, pl=0, label="N")
 {
 	it <- pmatch(type,c("prolate","oblate","spheres","cylinders"))
 	if(length(it)==0 || is.na(it))
@@ -171,7 +173,10 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
   	else if(length(box)!=3)
 	  stop("Simulation box has wrong dimensions.")
     names(box) <- c("xrange","yrange","zrange")
-
+	
+	# digitization (resolution) factor
+	stopifnot(is.numeric(delta))
+	
 	# spheroid type
 	type <- match.arg(type)
 	intersect <- match.arg(intersect)
@@ -216,7 +221,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 
 		list("type"=type,"rdist"=funname,"box"=box,
 			 "lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
-			 "dz"=dz, "nsect"=n, "intern"=as.integer(intern),
+			 "dz"=dz, "nsect"=n, "delta"=delta,"intern"=as.integer(intern),
 			 "perfect"=as.integer(perfect), "intersect"=intersect)
 			
 	} else  {
@@ -270,17 +275,18 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 			stop(paste("Undefined `", size, "` distribution function."))
 		 }
 		 
-		 it <- pmatch(orientation,c("runifdir","rbetaiso","rvMisesFisher"))
+		 it <- pmatch(orientation,c("runifdir","rbetaiso","rvMisesFisher","const"))
 		 if(is.na(it) && !exists(orientation, mode="function"))
 			 stop("Undefined distribution function for the orientation/direction.")	 
+		 
 		 if(!is.list(theta$orientation) || length(theta$orientation) == 0L)
 			 theta$orientation <- list("kappa"=1)
 		 
 		 list("type"=type, "lam"=lam,
 			  "rdist"=list("size"=size, "shape"=shape, "orientation"=orientation),
-			  "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,
-			  "dz"=dz, "nsect"=n, "intern"=as.integer(intern),"label"=label,
-			  "perfect"=as.integer(perfect), "intersect"=intersect)
+			  "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv, "dz"=dz, "nsect"=n, "delta"=delta,
+			  "intern"=as.integer(intern),"label"=label, "perfect"=as.integer(perfect),
+			  "intersect"=intersect)
 	}
 		 
 	.Call(C_PoissonSystem, theta, cond)	
@@ -373,11 +379,17 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 			sapply(ss,"[[",2)
 		 else sapply(ss,"[[",1)
 	
-    structure(
-	    list("A"=A,
-			 "S"=sapply(ss,"[[",3),
-		 "alpha"=sapply(ss,"[[",4)),
-	  class=class(S)
+    ## angle ´alpha´ in the intersecting plane
+	## is always between [0,pi/2] and relative to
+	## z axis in 3D
+	alpha <- sapply(ss,"[[",4)
+	if(max(alpha)>pi/2)
+	 alpha <- sapply(alpha,.getAngle)		# alpha in [0,pi/2]
+		
+	structure( list("A"=A,
+					"S"=sapply(ss,"[[",3),
+					"alpha"=0.5*pi-alpha),	# relative to z axis in 3D
+			class=class(S)
 	)
 }
 
@@ -436,7 +448,8 @@ intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
 #' @author M. Baaske
 #' @rdname spheroids3d
 #' @export
-spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE, bg.col="white", clipping=FALSE, ...)
+spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE,
+		           bg.col="white", clipping=FALSE, ...)
 {
 	if (!requireNamespace("rgl", quietly=TRUE))
 	 stop("Please install 'rgl' package from CRAN repositories before running this function.")
@@ -748,7 +761,7 @@ coefficientMatrixSpheres <- function(bin) {
 #' @param maxIt		maximum number of iterations used
 #' @return 			vector of count data of absolute frequenties of sphere diameters
 #'
-#' @example inst/examples/sphere.R
+#' @example inst/examples/simSpheres.R
 #'
 #' @references
 #' Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
