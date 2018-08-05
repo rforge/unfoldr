@@ -222,24 +222,25 @@ setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp"))
 		"shape"=unlist(lapply(0:nclass[3],function(i) (i/nclass[3])^kap))))
 }
 
-#' Original parameters
+#' Get 3D characteristics of spheroids
 #'
-#' Extract the original 3d size-shape-orientation parameters
+#' Extract the original 3D size-shape-orientation characteristics
 #'
-#' The function simply extracts the parameters for the original 3d spheroid system
-#' either for oblate or prolate spheroids and returns a list which consists of sizes
-#' \code{a}, the orientation angles \code{Theta} and the shape parameters \code{s}.
+#' The function simply extracts the characteristics of a 3D spheroid system
+#' either as oblate or prolate type and returns a list which consists of entries
+#' named 'a' (semi-major axis length), 's' (shape factor) and polar angle 'Theta'.
 #'
-#' @param S list of spheroids
-#' @return  list
+#' @param   S list of spheroids
+#' @return  a list of spheroids` 3D characteristics
+#'  
 #' @author M. Baaske
 #' @rdname parameters3d
 #' @export
 parameters3d <- function(S) {
 	idx <- if(class(S)=="prolate") c(1,3) else c(3,1)  			# changed index from 2 to 3 for major semi-axis
-	list("a"=unlist(lapply(S,function(x) x$ab[1])),
+	list("a"=unlist(lapply(S,function(x) x$acb[1])),
 		 "Theta"=unlist(lapply(S,function(x) .getAngle(x$angles[1]))),
-		 "s"=unlist(lapply(S,function(x) x$ab[idx[1]]/x$ab[idx[2]])))
+		 "s"=unlist(lapply(S,function(x) x$acb[idx[1]]/x$acb[idx[2]])))
 		 
 }
 

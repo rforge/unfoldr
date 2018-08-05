@@ -328,10 +328,11 @@ class CMatrix2d {
   ~CMatrix2d() {}
 
   CMatrix2d(const double *a) {
-    data[0][0] = a[0];
-    data[1][0] = a[1];
-    data[0][1] = a[2];
-    data[1][1] = a[3];
+    /**  from R column-major to C row-major */
+	data[0][0] = a[0];
+	data[0][1] = a[1];
+	data[1][0] = a[2];
+	data[1][1] = a[3];
   }
 
   double *operator[](int i) { return data[i]; }
@@ -350,16 +351,16 @@ class CMatrix2d {
 };
 
 inline const CMatrix2d operator*(const CMatrix2d &a, const CMatrix2d &b) {
-    CMatrix2d c;
+    CMatrix2d m;
     for (int i = 0; i < 2; ++i) {
       for (int j = 0; j < 2; ++j) {
-        c[i][j] = 0.0;
+        m[i][j] = 0.0;
         for (int k = 0; k < 2; ++k) {
-          c[i][j] += a[i][k] * b[k][j];
+          m[i][j] += a[i][k] * b[k][j];
         }
       }
     }
-    return c;
+    return m;
 }
 
 

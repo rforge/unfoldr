@@ -183,9 +183,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				STGM::CDigitizer digitizer(INTEGER(R_ret),win.m_low,nPix,delta);
 				digitizer.start<STGM::CSpheroid>(intersected);
 
-			}
-
-			else {
+			} else {
 				PROTECT(R_ret = convert_R_Ellipses(intersected, box));
 			}
 
@@ -289,12 +287,25 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
   SEXP R_box = R_NilValue;
   PROTECT(R_box = getAttrib(R_S, install("box")));
   STGM::CBox3 box = setBox(R_box);
-  UNPROTECT(1);
 
-  STGM::CVector3d maxis(REAL(AS_NUMERIC(getAttrib(R_S,install("mu")))));
+  SEXP R_mu = R_NilValue;
+  PROTECT(R_mu = getAttrib(R_S,install("mu")));
+  if(isNull(R_mu))
+	error(_("`mu` main direction must be provided as an attribute."));
+  STGM::CVector3d maxis(REAL(AS_NUMERIC(R_mu)));
 
-  double lam = REAL(AS_NUMERIC(getAttrib(R_S,install("lam"))))[0];
-  int perfect = INTEGER(AS_INTEGER(getAttrib(R_S,install("perfect"))))[0];
+  SEXP R_lam = R_NilValue;
+  PROTECT(R_lam = getAttrib(R_S,install("lam")));
+  if(isNull(R_lam))
+    error(_("`lam` must be provided as an attribute."));
+  double lam = REAL(AS_NUMERIC(R_lam))[0];
+
+  SEXP R_perfect = R_NilValue;
+  PROTECT(R_perfect = getAttrib(R_S,install("perfect")));
+  if(isNull(R_perfect))
+     error(_("`perfect` must be provided as an attribute."));
+  int perfect = INTEGER(AS_INTEGER(R_perfect))[0];
+  UNPROTECT(4);
 
   /* return value */
   SEXP R_ret = R_NilValue;
@@ -485,7 +496,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	PROTECT(R_fname = getListElement( R_cond, "rdist"));
 	PROTECT(R_label = getListElement( R_cond, "label"));
 
-	int isPerfect = INTEGER(getListElement( R_cond, "perfect" ))[0];
+	int isPerfect = INTEGER(AS_INTEGER(getListElement( R_cond, "perfect" )))[0];
 	const char *label = translateChar(asChar(R_label));
 
 	if(TYPEOF(R_fname) != VECSXP)							/* user-defined simulation function */
@@ -757,7 +768,6 @@ void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
          PROTECT(Reval = R_tryEval(R_call,R_rho,&info));
          if(info != 0)
            error(_("simJoint(): R `try` error in user defined distribution function."));
-
 
          a=REAL(getListElement(Reval,"a"))[0];			// 2nd. semi-minor
          b=REAL(getListElement(Reval,"b"))[0];			// 		semi-major
@@ -1178,67 +1188,6 @@ void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &i
 
 //--- converter functions ---
 
-SEXP convert_C2R_ellipses(STGM::Ellipses2 &ellipses) {
-  int nProtected=0, dim=2, ncomps=8;
-  size_t num = ellipses.size();
-
-  SEXP names, R_resultlist;
-  PROTECT(names = allocVector(STRSXP, ncomps));   ++nProtected;
-  PROTECT(R_resultlist = allocVector(VECSXP,num));  ++nProtected;
-
-  SET_STRING_ELT(names, 0, mkChar("id"));
-  SET_STRING_ELT(names, 1, mkChar("center"));
-  SET_STRING_ELT(names, 2, mkChar("ab"));
-  SET_STRING_ELT(names, 3, mkChar("minor"));
-  SET_STRING_ELT(names, 4, mkChar("major"));
-  SET_STRING_ELT(names, 5, mkChar("A"));
-  SET_STRING_ELT(names, 6, mkChar("phi"));
-  SET_STRING_ELT(names, 7, mkChar("rot"));
-
-  SEXP R_tmp,R_minor,R_major,R_A,R_center,R_ab;
-
-  for(size_t i = 0; i < num; i++) {
-      STGM::CEllipse2 & ellipse = ellipses[i];
-      PROTECT(R_tmp = allocVector(VECSXP,ncomps));
-      PROTECT(R_center = allocVector(REALSXP, dim));
-      PROTECT(R_ab = allocVector(REALSXP, dim));
-      PROTECT(R_minor = allocVector(REALSXP, dim));
-      PROTECT(R_major = allocVector(REALSXP, dim));
-      PROTECT(R_A = allocMatrix(REALSXP, dim,dim));
-
-      STGM::CVector2d &center = ellipse.center();
-      SET_REAL_VECTOR(R_center,center);
-
-      STGM::CVector2d &minor = ellipse.minorAxis();
-      SET_REAL_VECTOR(R_minor,minor);
-
-      STGM::CVector2d &major = ellipse.majorAxis();
-      SET_REAL_VECTOR(R_major,major);
-
-      REAL(R_ab)[0] = ellipse.a();
-      REAL(R_ab)[1] = ellipse.b();
-
-      COPY_C2R_MATRIX(ellipse.MatrixA(),R_A,dim);
-
-      setAttrib(R_tmp, R_NamesSymbol, names);
-      SET_VECTOR_ELT(R_tmp,0,ScalarInteger(ellipse.Id()));
-      SET_VECTOR_ELT(R_tmp,1,R_center);
-      SET_VECTOR_ELT(R_tmp,2,R_ab);
-      SET_VECTOR_ELT(R_tmp,3,R_minor);
-      SET_VECTOR_ELT(R_tmp,4,R_major);
-      SET_VECTOR_ELT(R_tmp,5,R_A);
-      SET_VECTOR_ELT(R_tmp,6,ScalarReal(ellipse.phi()));
-      SET_VECTOR_ELT(R_tmp,7,ScalarReal(ellipse.rot()));
-
-      SET_VECTOR_ELT(R_resultlist,i,R_tmp);
-      UNPROTECT(6);
-  }
-
-  UNPROTECT(nProtected);
-  return R_resultlist;
-}
-
-
 SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp)
 {
   SEXP R_ret = R_NilValue;
@@ -1310,22 +1259,24 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 
    return STGM::CEllipse2(A,ctr,INTEGER(VECTOR_ELT(R_E,0))[0],REAL(VECTOR_ELT(R_E,9))[0]);
 
-   /* Alternatively but slower to initialize 2D ellipse:
-   /// certainly a bug: needs to add pi/2 to phi for correct rotation of ellipses
-   double rot = REAL(VECTOR_ELT(R_E,9))[0] + M_PI_2;
+   /** Alternatively initialize 2D ellipse */
+
+   /*
+   double rot = REAL(VECTOR_ELT(R_E,9))[0];
    double *ab = REAL(VECTOR_ELT(R_E,4));
    STGM::CVector2d minorA(REAL(VECTOR_ELT(R_E,5)));
    STGM::CVector2d majorA(REAL(VECTOR_ELT(R_E,6)));
+
    return STGM::CEllipse2(ctr,								// center
-		   	   	   	   	  A,								// matrix A
+   		   	   	   	   	  A,								// matrix A
 						  majorA,							// semi-major
 						  minorA,							// semi-minor
 						  ab[0],ab[1],						// a,b (semi-major, semi-minor length)
 						  REAL(VECTOR_ELT(R_E,7))[0],		// phi
 						  INTEGER(VECTOR_ELT(R_E,0))[0],	// id
 						  rot);								// rot
-  */
 
+   */
 }
 
 
@@ -1353,7 +1304,7 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		SET_VECTOR_ELT(R_tmp,0,ScalarReal(ellipse.a()));                  // major semi-axis (for both prolate/oblate)
 		SET_VECTOR_ELT(R_tmp,1,ScalarReal(ellipse.b()));                  // minor semi-axis (for both prolate/oblate)
 		SET_VECTOR_ELT(R_tmp,2,ScalarReal(ellipse.b()/ellipse.a()));      // shape
-		SET_VECTOR_ELT(R_tmp,3,ScalarReal(ellipse.phi()));		      // relative to ´x´ axis
+		SET_VECTOR_ELT(R_tmp,3,ScalarReal(ellipse.phi()));		          // relative to ´x´ axis
 		SET_VECTOR_ELT(R_ret,k,R_tmp);
 		UNPROTECT(1);
 	}
@@ -1386,9 +1337,8 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		  REAL(R_ab)[0] = ellipse.a();    // major semi-axis (for both prolate/oblate)
 		  REAL(R_ab)[1] = ellipse.b();	  // minor semi-axis (for both prolate/oblate)
 
-		  for (int i = 0; i < 2; i++)
-			for (int j = 0; j < 2; j++)
-			  REAL(R_A)[i + 2*j] = ellipse.MatrixA()[i][j];
+		  const STGM::CMatrix2d &A = ellipse.MatrixA();
+		  COPY_C2R_MATRIX(A,R_A,2);
 
 		  SET_VECTOR_ELT(R_tmp,0,ScalarInteger(ellipse.Id()));
 		  SET_VECTOR_ELT(R_tmp,1,ScalarInteger(STGM::ELLIPSE_2D));

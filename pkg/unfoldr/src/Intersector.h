@@ -344,6 +344,9 @@ namespace STGM
 
         virtual ~CDigitizer() {};
 
+        /**
+         * Iterate over all types of intersections:
+         */
         template<typename T>
         void start(typename Intersectors<T>::Type &objects)
         {
@@ -395,6 +398,7 @@ namespace STGM
      };
 
 
+  	 /** digitize a single intersected object */
   	 template<typename T>
 	 void CDigitizer::operator ()(T &object)
 	 {
@@ -413,26 +417,13 @@ namespace STGM
 		{
 		   for(int j=br.m_xmin;j<(br.m_xmax+1);j++)
 		   {
-			   if(!m_w[j+i*m_ncol])									/* interchange i and j ...*/
+			   if(!m_w[j+i*m_ncol])									    /* interchange i and j ...*/
 				 if(object.isInside((j+0.5)*m_delta,(i+0.5)*m_delta))
-					 m_w[j+i*m_ncol]=1;									/* ... and here for transposed image */
+					 m_w[j+i*m_ncol]=1;									/* ... for transposed image */
 		   }
 		}
 
 	 }
-
-
-  	 /*
-  	  * Used for ...
-  	  */
-     template<class T>
-     void digitize(typename STGM::Intersectors<T>::Type &objects, int *w, int *nPix, double delta)
-     {
-       STGM::CDigitizer digitizer(w,nPix[0],nPix[1],delta);
-       digitizer.start(objects);
-     }
-
-
 
 } /* namespace STGM */
 

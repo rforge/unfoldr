@@ -370,7 +370,7 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	if( sum(n)>1 )
 	  stop("Normal vector is like c(0,1,0). ")
 	
-    ss <- Call(C_IntersectPoissonSystem,
+    ss <- .Call(C_IntersectPoissonSystem,
 		 		 as.character(substitute(S)),
 		  		 list("nsect"=n,"dz"=d,"intern"=intern,"pl"=10),
 		  		 .GlobalEnv)
@@ -386,7 +386,7 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	if(max(alpha)>pi/2)
 	 alpha <- sapply(alpha,.getAngle)		# alpha in [0,pi/2]
 		
-	structure( list("A"=A,
+	structure(list("A"=A,
 					"S"=sapply(ss,"[[",3),
 					"alpha"=0.5*pi-alpha),	# relative to z axis in 3D
 			class=class(S)
