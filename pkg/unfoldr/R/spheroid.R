@@ -387,8 +387,8 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	 alpha <- sapply(alpha,.getAngle)		# alpha in [0,pi/2]
 		
 	structure(list("A"=A,
-					"S"=sapply(ss,"[[",3),
-					"alpha"=0.5*pi-alpha),	# relative to z axis in 3D
+				   "S"=sapply(ss,"[[",3),
+				   "alpha"=0.5*pi-alpha),	# relative to z axis in 3D
 			class=class(S)
 	)
 }

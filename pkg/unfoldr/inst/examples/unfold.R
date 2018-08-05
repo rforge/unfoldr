@@ -9,7 +9,7 @@ lam <- 2500
 
 ## simulation parameters
 theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
-		      "shape"=list(0.5),"orientation"=list("kappa"=1.5))
+		      "shape"=list(0.5),"orientation"=list("kappa"=2))
 ## simualtion
 set.seed(1234)
 
@@ -32,14 +32,14 @@ paramEst <- parameterEstimates(ret$N_V,ret$breaks)
 # pdf("spheroidHist.pdf",width = 8, height = 10)
 op <- par(mfrow = c(3, 2))
 hist(param3d$a[param3d$a<max(ret$breaks$size)],
- main=expression(paste("3D Histogram ", a)),
- breaks=ret$breaks$size,col="gray",right=FALSE,freq=FALSE,xlab="a",ylim=c(0,25))
+ main=expression(paste("3D Histogram ", c)),
+ breaks=ret$breaks$size,col="gray",right=FALSE,freq=FALSE,xlab="c",ylim=c(0,25))
 
 hist(paramEst$a,
- main=expression(paste("Estimated histogram ",hat(a))),
+ main=expression(paste("Estimated histogram ",hat(c))),
  breaks=ret$breaks$size,
  right=FALSE,freq=FALSE,col="gray",
- xlab=expression(hat(a)),ylim=c(0,25))
+ xlab=expression(hat(c)),ylim=c(0,25))
 
 hist(param3d$Theta[param3d$Theta<max(ret$breaks$angle)],
  main=expression(paste("3D Histogram ", theta)),
