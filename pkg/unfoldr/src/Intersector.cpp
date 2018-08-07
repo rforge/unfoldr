@@ -79,7 +79,7 @@ namespace STGM
             return true;
        }
 
-      return false;
+       return false;
   }
 
 
@@ -130,54 +130,63 @@ namespace STGM
            STGM::CVector3d w(cross(m_cylinder.u(),STGM::CVector3d(cross(plane.n,m_cylinder.u()))));
            w.Normalize();
 
-           if ( (SQR(a/plane.n.dot(w))-SQR(a)) < SQR(m_cylinder.r())) {
-              m_type = NON_EMPTY;
+           if ( (SQR(a/plane.n.dot(w))-SQR(a)) < SQR(m_cylinder.r()))
+           {
+
+        	  m_type = NON_EMPTY;
               return true;
+
            } else {
+
                  if( fabs(plane.distanceTo(m_cylinder.origin1())) <= m_cylinder.r() || fabs(sDist) <= m_cylinder.r() ) {
                     m_type = NON_EMPTY;
                     return true;
                  }
+
                  return false;
            }
 
        } else {
-         // parallel
+
+    	 // parallel
          if( fabs(sDist) <= m_cylinder.r()) {
             m_type = NON_EMPTY;
             return true;
          }
+
          return false;
+
        }
    }
 
 
   bool Intersector<STGM::CCylinder>::FindIntersection()
-   {
+  {
      double cosTheta = m_cylinder.u().dot(m_plane.n);
      double absCosTheta = fabs(cosTheta);
 
      if (absCosTheta > 0.0)
      {
-         // The cylinder axis intersects the plane in a unique point.
+         /** The cylinder axis intersects the plane in a unique point. */
          if (absCosTheta < 1.0)
          {
-             m_type=FindIntersectionType();
-             return true;
+             setIntersectionType();  	// sets m_type and  m_side
 
          } else {
              int id = 1;
              m_type = DISC;
-             m_circle1 = STGM::CCircle3(m_cylinder.center(),m_cylinder.r(),m_plane.n,id );
-             return true;
+             m_circle1 = STGM::CCircle3(m_cylinder.center(),m_cylinder.r(),m_plane.n,id);
+
          }
 
-      // cylinder parallel to plane
+      /** cylinder parallel to plane */
       } else {
-          //-> nothing ???
+    	  m_type = EMPTY;
+          Rf_warning("Cylinder is parallel to plane.");
       }
-      return false;
-   }
+
+      return (m_type > 0 );
+  }
 
   double Intersector<STGM::CCylinder>::GetEllipseSegment(STGM::CVector3d m_center, const STGM::CVector3d &ipt)
   {
@@ -191,6 +200,7 @@ namespace STGM
                   /(m_ellipse.m_a*cos(m_cylinder.phi())+m_ellipse.m_a*SQR(sin(m_cylinder.phi()))/cos(m_cylinder.phi())));
   }
 
+
   CCircle3 Intersector<STGM::CCylinder>::GetCircle(STGM::CVector3d &spherecenter, double sDist) {
     STGM::CVector3d ctr(spherecenter[0] - sDist*m_plane.n[0],
                         spherecenter[1] - sDist*m_plane.n[1],
@@ -199,7 +209,8 @@ namespace STGM
     return STGM::CCircle3(ctr,radius, m_plane.n,1);
   }
 
-  IntersectionType Intersector<STGM::CCylinder>::FindIntersectionType()
+
+  void Intersector<STGM::CCylinder>::setIntersectionType()
   {
      double sDist = m_plane.distanceTo(m_cylinder.origin0());
      double sDist2 = m_plane.distanceTo(m_cylinder.origin1());
@@ -227,8 +238,8 @@ namespace STGM
 
      if(a < 0 || b1 < SQR(m_cylinder.r()))
      {
-         m_type=ELLIPSE;
-         m_ellipse.m_type = ELLIPSE;
+    	 m_type = ELLIPSE;
+         m_ellipse.m_type = m_type;
          m_ellipse.m_side = m_side;
 
          m_ellipse.m_center = Ia;
@@ -276,8 +287,8 @@ namespace STGM
                  m_circle1=GetCircle(m_cylinder.origin1(), sDist2);
              }
 
-             m_type=ELLIPSE_SEGMENT;
-             m_ellipse.m_type = ELLIPSE_SEGMENT;
+             m_type = ELLIPSE_SEGMENT;
+             m_ellipse.m_type = m_type;
              m_ellipse.m_circle1 = m_circle1;
              m_ellipse.m_circle2 = m_circle2;
              m_ellipse.setReferenceSide();
@@ -289,20 +300,19 @@ namespace STGM
                ipt0[2] = m_ellipse.m_center[2] + m_side*(a/NdotW)*m_ellipse.m_majorAxis[2];
 
                if(m_side > 0) {
-                   m_circle1=GetCircle(m_cylinder.origin0(), sDist);
+                   m_circle1 = GetCircle(m_cylinder.origin0(), sDist);
                    m_ellipse.m_psi[0] = GetEllipseSegment(m_cylinder.origin0(),ipt0);
                }
                else {
-                   m_circle1=GetCircle(m_cylinder.origin1(), sDist2);
+                   m_circle1 = GetCircle(m_cylinder.origin1(), sDist2);
                    m_ellipse.m_psi[0] = GetEllipseSegment(m_cylinder.origin1(),ipt0);
                }
 
-               m_type=ELLIPSE_ARC;
-               m_ellipse.m_type = ELLIPSE_ARC;
+               m_type = ELLIPSE_ARC;
+               m_ellipse.m_type = m_type;
                m_ellipse.m_circle1 = m_circle1;
                m_ellipse.setReferenceSide();
          }
-
 
      } else {
 
@@ -313,19 +323,16 @@ namespace STGM
 
           if (fabs(sDist) <= m_cylinder.r()) {
               // origin0 is the sphere m_center
-              m_circle1=GetCircle(m_cylinder.origin0(), sDist);
-              m_type=CAP;
+              m_circle1 = GetCircle(m_cylinder.origin0(), sDist);
+              m_type = CAP;
           }
           if (fabs(sDist2) <= m_cylinder.r()) {
               // origin1 is the sphere m_center
-              m_circle1=GetCircle(m_cylinder.origin1(), sDist2);
-              m_type=CAP;
+              m_circle1 = GetCircle(m_cylinder.origin1(), sDist2);
+              m_type = CAP;
           }
 
      }
-
-     return m_type;
-
   }
 
 

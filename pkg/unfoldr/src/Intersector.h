@@ -66,6 +66,8 @@ namespace STGM
     CGeometry * getObject() { return &m_ellipse; }
     const CGeometry * getObject() const { return &m_ellipse; }
 
+    int getType() const { return 0; };
+
     /**
      * @brief Only check if Spheroid intersects a given plane
      *        and store the intersecting plane, translate center coordinate
@@ -139,6 +141,8 @@ namespace STGM
 
     CGeometry * getObject() { return &m_circle;; }
     const CGeometry * getObject() const { return &m_circle; }
+
+    int getType() const { return 0; };
 
     bool operator() (const CPlane &plane) {
       m_plane = plane;
@@ -214,7 +218,7 @@ namespace STGM
         if(m_type == CAP || m_type == DISC) {
              return & m_circle1;
          } else {  					/* if(type == ELLIPSE ||  type == ELLIPSE_ARC ||  type == ELLIPSE_SEGMENT) */
-             return &m_ellipse;
+             return & m_ellipse;
          }
       }
 
@@ -238,7 +242,7 @@ namespace STGM
       /**
        * @return
        */
-      IntersectionType FindIntersectionType();
+      void setIntersectionType();
 
       inline void setPlaneIdx() {
           switch(m_plane.idx()) {
@@ -273,7 +277,7 @@ namespace STGM
 
 
       /**
-       * @brief Only check if Spheroid intersects a given plane
+       * @brief Only check if cylinder intersects a given plane
        *        and store the intersecting plane, translate center coordinate
        *        periodically to the opposite plane
        *
