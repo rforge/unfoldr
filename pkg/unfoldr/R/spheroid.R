@@ -173,6 +173,8 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
   	else if(length(box)!=3)
 	  stop("Simulation box has wrong dimensions.")
     names(box) <- c("xrange","yrange","zrange")
+	if(dz < min( box[[which(n == 1)]]) || dz > max(box[[which(n == 1)]]))
+	 stop("The plane has to intersect the box.")
 	
 	# digitization (resolution) factor
 	stopifnot(is.numeric(delta))
@@ -419,13 +421,16 @@ intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
 	if(!(class(S) %in% c("prolate","oblate","spheres","cylinders")))
 	  stop("Unknown object class.")
     stopifnot(is.numeric(d))
+	stopifnot(is.numeric(pl))
 	stopifnot(is.logical(intern))
 	if(sum(n)>1)
 	  stop("Normal vector is like c(0,1,0). ")	
+    if(d < min( box[[which(n == 1)]]) || d > max(box[[which(n == 1)]]))
+	  stop("The plane has to intersect the box.")
 	
 	.Call(C_IntersectPoissonSystem,
 			as.character(substitute(S)),
-			list("nsect"=n,"dz"=d,"intern"=intern,"pl"=pl),
+			list("nsect"=n,"dz"=d,"intern"=as.integer(intern),"pl"=as.integer(pl)),
 		    .GlobalEnv)	
 }
 
@@ -554,9 +559,9 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 	}
 	
 	args <- list(...)
-	ok <- sapply(S, function(x) x$length>0)
+	ok <- sapply(S, function(x) x$h > 0) 		# only true cylinders not 'spheres'
 	
-	cyls <- lapply(S[ok], function(x) { cylinder(x$center, x$r, x$length, x$rotM, x$u) })
+	cyls <- lapply(S[ok], function(x) { cylinder(x$center, x$r, x$h, x$rotM, x$u) })
 	rgl::shapelist3d(cyls,...)
 	
 	if("col" %in% names(args)) {
