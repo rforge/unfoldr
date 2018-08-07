@@ -2,7 +2,7 @@
 
 ## Spheroids with lognormal distributed length of axes
 ## set number of cpu cores (optional)
-options(par.unfoldr=8)
+# options(par.unfoldr=8)
 
 ## Intensity: mean number of spheroids per unit volume
 lam <- 2500
