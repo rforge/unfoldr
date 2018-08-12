@@ -142,7 +142,7 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' 				   \code{intersect="full"} where the first element stores the 3D generated objects as a list and the second the corresponding section profiles
 #' 				   either in a short verion (if \code{pl=10}) or in a long version otherwise
 #'
-#' @example inst/examples/sim.R
+#' @example inst/examples/simSpheroids.R
 #'
 #' @references
 #'	 \itemize{
