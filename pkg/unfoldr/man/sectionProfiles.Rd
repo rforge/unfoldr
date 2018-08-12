@@ -9,7 +9,7 @@ sectionProfiles(size, angle, type = c("prolate", "oblate"))
 \arguments{
 \item{size}{matrix of axes lengths}
 
-\item{angle}{orientation angle of spheroids, see details}
+\item{angle}{orientation angle of spheroids (see details)}
 
 \item{type}{name of spheroid type, either "\code{prolate}" or "\code{oblate}"}
 }

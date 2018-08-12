@@ -23,43 +23,223 @@ Estimation of empirical sphere diameter distribution
 The function performs the EM algorithm.
 }
 \examples{
+# Comment: Simulate Poisson sphere system and intersect 
+# 
+# Author: bahama
+###############################################################################
+
+library(rgl)
+library(plotrix)
 library(unfoldr)
 
-## beta distribution for radii
-lam <- 10
-theta <- list("size"=list("shape1"=2,"shape2"=4))
+spheres <- function(spheres, box=NULL, draw.box=FALSE, draw.axis=FALSE, ...) {
+	xyz <- apply(sapply(spheres, "[[", "center"),1,function(x) x)
+	sizes <- unlist(lapply(spheres,function(x) x$r))
+	spheres3d(xyz,radius=sizes,...)
+	
+	if(draw.axis) {
+		axes3d(c('x','y','z'), pos=c(1,1,1), tick=FALSE)
+		#title3d('','','x','y','z')		
+	}
+	axes3d(edges = "bbox",labels=TRUE,tick=FALSE,box=TRUE,nticks=0,
+			expand=1.0,xlen=0,xunit=0,ylen=0,yunit=0,zlen=0,zunit=0)
+	
+	if(draw.box) {
+		x <- box$xrange[2]
+		y <- box$yrange[2]
+		z <- box$zrange[2]	
+		c3d.origin <- rgl::translate3d(rgl::scale3d(rgl::cube3d(col="gray", alpha=0.1),x/2,y/2,z/2),x/2,y/2,z/2)
+		rgl::shade3d(c3d.origin)
+	}
+	
+}
 
-#debug(simPoissonSystem)
+col <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF") 
+
+#################################################################
+## `beta` distribution for radii
+#################################################################
+
+lam <- 50
+## parameter beta distribution (radii)
+theta <- list("size"=list("shape1"=1,"shape2"=10))
+
+# simulation bounding box
+box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
+
+## simulate and return full spheres system
+## intersect with XZ plane and return full list of intersection profiles
+
+## section plane xy
+S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="spheres",
+		intersect="full",n=c(0,0,1),dz=0,pl=101)
+
+# check resulting distribution
+length(S$S)
+summary(sapply(S$S,"[[","r"))
+theta$size[[1]]/(theta$size[[1]]+theta$size[[2]])			# mean
+
+## interior spheres:
+## the ones which intersect one of the lateral planes (without top/bottom planes)
+## showing spheres with color intersect 
+notIn <- sapply(S$S,function(x) !attr(x,"interior"))
+spheres(S$S[notIn],box,FALSE,TRUE,color=col)
+
+# not intersecting
+In <- sapply(S$S,function(x) attr(x,"interior"))
+spheres(S$S[In],box,color="gray")
+
+## ful sphere system
+# open3d()
+# spheres(S$S,box,FALSE,TRUE,color=col)
+# planes3d(0,0,1,0,col="darkgray",alpha=1)
+
+## draw intersections
+sp <- S$sp
+id <- sapply(sp,"[[","id") 
+open3d()
+spheres(S$S[id],box,FALSE,TRUE,color=col)
+planes3d(0,0,1,0,col="darkgray",alpha=1)
+
+XYr <- t(sapply(sp,function(s) cbind(s$center[1],s$center[2],s$r)))
+# centers
+x <- XYr[,1]
+y <- XYr[,2]
+r <- XYr[,3]
+xlim <- c(-1,4)
+ylim <- c(-1.5,3.5) 
+
+dev.new()
+plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=xlim,ylim=ylim)
+for(i in 1:nrow(XYr))
+ draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black")
+
+## digitize inersections
+sp <- S$sp
+## `win` can also be omitted if not different
+## from original itersection window (derived from the box)
+win <- attr(sp,"win")
+W <- digitizeProfiles(sp, delta=0.01, win=win)
+dim(W)
+dev.new()
+image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
+
+#################################################################
+## Exact simulation of spheres with log normal radii
+#################################################################
+
+lam <- 100
+## parameter rlnorm distribution (radii)
+theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
+# simulation bounding box
 box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
-S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="sphere",pl=101)
+## simulate only 3D system
+S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
+		intersect="original", perfect=TRUE, pl=101)
+## show
+open3d()
+spheres(S[1:2000],box,TRUE,TRUE,color=col)
 
-# planar vertical section
-sp <- planarSection(S,d=2.5)
-## or equivalently
-## sp0 <- 2.0*sphereIntersection(S,2.5,c(0,0,1),FALSE,10)
-## sp[1:10]
-## sp0[1:10]
+## check!
+mean(log(sapply(S,"[[","r")))
+sd(log(sapply(S,"[[","r")))
 
-## _TODO_ diameter or radii for unfolding (see Wicksel)?
-ret <- unfold(S$sp,nclass=25)
- 
+
+#################################################################
+## Planar section
+#################################################################
+
+# planar section of exact simulated `rlnorm` sphere system:
+# returns diameters for those section profiles
+# which have their centers inside the intersection window
+sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
+hist(sp)
+summary(sp)
+mean(log(sp/2))
+sd(log(sp/2))
+
+
+#################################################################
+## General intersection, all objects (inter=FALSE)
+#################################################################
+
+SP <- intersectSystem(S, 2.5, n=c(0,0,1), intern=FALSE, pl=1)
+
+## show in 3D
+id <- sapply(SP,"[[","id") 
+open3d()
+spheres(S[id],box,TRUE,color=col)
+planes3d(0,0,-1,2.5,col="black",alpha=1)
+
+## 2D sections
+XYr <- t(sapply(SP,function(s) cbind(s$center[1],s$center[2],s$r)))
+# centers
+x <- XYr[,1]
+y <- XYr[,2]
+r <- XYr[,3]
+xlim <- box$xrange
+ylim <- box$yrange 
+
+dev.new()
+plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=xlim,ylim=ylim)
+for(i in 1:nrow(XYr))
+	draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black")
+
+# digitize
+W <- digitizeProfiles(SP, delta=0.01)
+dev.new()
+image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
+
+
+#################################################################
+## Unfolding
+#################################################################
+
+ret <- unfold(sp,nclass=25)
+
 ## Point process intensity
 cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\\n")
- 
+
 ## original diameters
-r3d <- unlist(lapply(S,function(x) 2.0*x$r))
+r3d <- unlist(lapply(S,function(x) 2*x$r))
 rest3d <- unlist(lapply(2:(length(ret$breaks)),
-            function(i) rep(ret$breaks[i],sum(ret$N_V[i-1]))))
- 
+				function(i) rep(ret$breaks[i],sum(ret$N_V[i-1]))))
+
 op <- par(mfrow = c(1, 2))
-hist(r3d[r3d<=max(ret$breaks)], breaks=ret$breaks, main="Radius 3d",
-     freq=FALSE, col="gray",xlab="r")
+hist(r3d[r3d<=max(ret$breaks)], breaks=ret$breaks, main="Radius 3D",
+		freq=FALSE, col="gray",xlab="r")
 hist(rest3d, breaks=ret$breaks,main="Radius estimated",
-     freq=FALSE, col="gray", xlab="r")
+		freq=FALSE, col="gray", xlab="r")
 par(op)
 
 
+#################################################################
+## Update intersection: find objects which intersect bounding box
+#################################################################
 
+idx <- updateIntersections(S)
+sum(!idx)							# objects intersecting
+id <- which( idx != 1)				
+open3d()
+spheres(S[id],box,TRUE,TRUE,color=col)
+
+#################################################################
+## user-defined simulation function
+#################################################################
+
+lam <- 50
+theta <- list("p1"=-2.5,"p2"=0.5)
+myfun <- function(p1,p2) { c("r"=rlnorm(1,p1,p2)) }
+
+box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+
+S <- simPoissonSystem(theta,lam,rjoint=myfun,box=box,type="spheres",pl=1)
+r <- sapply(S,"[[","r")
+mean(log(r))
+sd(log(r))
+
+open3d()
+spheres(S,box,TRUE,TRUE,color=col)
 }
 \references{
 Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
