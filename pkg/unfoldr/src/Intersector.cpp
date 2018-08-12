@@ -132,7 +132,6 @@ namespace STGM
 
            if ( (SQR(a/plane.n.dot(w))-SQR(a)) < SQR(m_cylinder.r()))
            {
-
         	  m_type = NON_EMPTY;
               return true;
 
@@ -265,7 +264,8 @@ namespace STGM
 
          double b2 = SQR((a+m_cylinder.h())/NdotW)-SQR(a+m_cylinder.h());
 
-         if ( b1 < SQR(m_cylinder.r()) && b2 < SQR(m_cylinder.r()) )  {
+         if ( b1 < SQR(m_cylinder.r()) && b2 < SQR(m_cylinder.r()) )
+         {
              /** both ends have circles */
              ipt0[0] = m_ellipse.m_center[0] + m_side*(a/NdotW)*m_ellipse.m_majorAxis[0];
              ipt0[1] = m_ellipse.m_center[1] + m_side*(a/NdotW)*m_ellipse.m_majorAxis[1];
@@ -278,13 +278,13 @@ namespace STGM
              if(m_side > 0) {
                  m_ellipse.m_psi[0] = GetEllipseSegment(m_cylinder.origin0(),ipt0);
                  m_ellipse.m_psi[1] = GetEllipseSegment(m_cylinder.origin1(),ipt1);
-                 m_circle1=GetCircle(m_cylinder.origin0(), sDist);
-                 m_circle2=GetCircle(m_cylinder.origin1(), sDist2);
+                 m_circle1 = GetCircle(m_cylinder.origin0(), sDist);
+                 m_circle2 = GetCircle(m_cylinder.origin1(), sDist2);
              } else {
                  m_ellipse.m_psi[0] = GetEllipseSegment(m_cylinder.origin1(),ipt0);
                  m_ellipse.m_psi[1] = GetEllipseSegment(m_cylinder.origin0(),ipt1);
-                 m_circle2=GetCircle(m_cylinder.origin0(), sDist);
-                 m_circle1=GetCircle(m_cylinder.origin1(), sDist2);
+                 m_circle2 = GetCircle(m_cylinder.origin0(), sDist);
+                 m_circle1 = GetCircle(m_cylinder.origin1(), sDist2);
              }
 
              m_type = ELLIPSE_SEGMENT;
@@ -302,8 +302,7 @@ namespace STGM
                if(m_side > 0) {
                    m_circle1 = GetCircle(m_cylinder.origin0(), sDist);
                    m_ellipse.m_psi[0] = GetEllipseSegment(m_cylinder.origin0(),ipt0);
-               }
-               else {
+               } else {
                    m_circle1 = GetCircle(m_cylinder.origin1(), sDist2);
                    m_ellipse.m_psi[0] = GetEllipseSegment(m_cylinder.origin1(),ipt0);
                }

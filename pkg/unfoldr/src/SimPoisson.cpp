@@ -500,23 +500,25 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 	int nprotect = 0;
 	SEXP R_S = R_NilValue;
 	PROTECT(R_S = getVar(R_var,R_env)); ++nprotect;			// section profiles
-	//const char *name = GET_OBJECT_CLASS(R_S);
 
 	/*  get the window if not provided:
 	 *  this has the correct dimension of the original box
 	 *  and corresponds to the intersecting plane  (normal vector) */
 	if(isNull(R_win)){
-	 PROTECT(R_win = getAttrib(R_S, install("win"))); ++nprotect;
+		PROTECT(R_win = getAttrib(R_S, install("win")));
+		++nprotect;
+		if(isNull(R_win))
+		 error(_("Intersection window must be given as an attribute."));
 	}
 	STGM::CWindow win(REAL(VECTOR_ELT(R_win,0)),REAL(VECTOR_ELT(R_win,1)));
-
+    /** spacing */
 	PROTECT(R_delta = AS_NUMERIC(R_delta)); ++nprotect;
 	double delta = REAL(R_delta)[0];
 	STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
 							  (int) std::floor(win.m_size[1]/delta));
 
-	if(PL>10){
-	 Rprintf("Digitize: resolution (%d x %d), delta: %f \n",nPix[0],nPix[1], delta);
+	if(PL>10) {
+	 Rprintf("Digitize intersection profiles with resolution (%d x %d) and spacing delta by %f \n",nPix[0],nPix[1], delta);
 	}
 
 	/* alloc binary return  matrix */
@@ -525,30 +527,45 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 
 	/* init digitizer, pass lower left corner in order to move to objects relative to [0,0] */
 	STGM::CDigitizer digitizer(INTEGER(R_w),win.m_low,nPix,delta);
+    /** normal vector defining intersection plane */
+	SEXP R_plane = R_NilValue;
+	PROTECT(R_plane = getAttrib(R_S, install("plane"))); ++nprotect;
+	if(isNull(R_plane))
+	 error(_("`plane` vector must be provided as an attribute."));
+	STGM::CVector3d n(REAL(AS_NUMERIC(R_plane)));
 
-	SEXP R_obj;
+	/** iterate over all intersection profiles */
 	int type = 0;
+	SEXP R_obj = R_NilValue;
 	size_t num = (size_t) LENGTH(R_S);
-	STGM::CVector3d n(REAL(getAttrib(R_S, install("plane"))));
-
 	for(size_t k=0; k < num ; k++)
 	{
-	   PROTECT(R_obj = VECTOR_ELT(R_S, k));
-	   type = INTEGER(VECTOR_ELT(R_obj, 1))[0];   			// intersection type
+	   PROTECT(R_obj = VECTOR_ELT(R_S,k));
+	   type = INTEGER(VECTOR_ELT(R_obj,1))[0];   						// intersection type
 
-	   if(type == STGM::ELLIPSE_2D)							// CEllipse2
+	   /** Convert R object to the corresponding intersection type:
+	    *  see 'convert_R_CylinderIntersections' for
+	    *  indices of intersection profiles 'R_obj' */
+	   if(type == STGM::ELLIPSE_2D)
 	   {
+		   /** CEllipse2 */
 		   STGM::CEllipse2 ellipse2 = convert_C_Ellipse2(R_obj);
 		   digitizer(ellipse2);
 
-	   } else if(type == STGM::DISC || type == STGM::CAP) {	// CCircle3 (disc) and caps (from spherocylinders)
-
-		   STGM::CVector3d ctr(REAL(VECTOR_ELT(R_obj,2)));
-		   STGM::CCircle3 disc3(ctr,REAL(VECTOR_ELT(R_obj,3))[0],n,k);
+	   } else if(type == STGM::DISC) {
+		   /** CCircle3 (disc)*/
+		   STGM::CVector3d ctr(REAL(VECTOR_ELT(R_obj,2)));	 			// center of disc
+		   STGM::CCircle3 disc3(ctr,REAL(VECTOR_ELT(R_obj,3))[0],n,k);	// radius
 		   digitizer(disc3);
 
-	   } else {												// CEllipse3: other objects from intersected cylinders
+	   } else if(type == STGM::CAP) {
+		   STGM::CVector3d ctr(REAL(VECTOR_ELT(R_obj,7)));   			// center of cap 'mPoint0'
+		   STGM::CCircle3 disc3(ctr,REAL(VECTOR_ELT(R_obj,13))[0],n,k);
+		   digitizer(disc3);
 
+	   } else {
+		   /** CEllipse3 including caps, segments, arcs as
+		     * objects as part of the ellipse object in 3D */
 		   STGM::CEllipse3 ellipse3 = convert_C_Ellipse3(R_obj, n);
 		   digitizer(ellipse3);
 	   }
@@ -599,6 +616,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	      SEXP R_tmp = VECTOR_ELT( R_args, 0);
 	      if(isNull(R_tmp) || LENGTH(R_tmp) != 5)
 	    	error(_("Number of arguments required for bivariate normal is invalid."));
+
 	      double mx  = REAL(getListElement( R_tmp, "mx"))[0];
 	      double my  = REAL(getListElement( R_tmp, "my"))[0];
 	      double sdx = REAL(getListElement( R_tmp, "sdx"))[0];
@@ -842,14 +860,14 @@ void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
          if(info != 0)
            error(_("simJoint(): R `try` error in user defined distribution function."));
 
-         a=REAL(getListElement(Reval,"a"))[0];			// 2nd. semi-minor
-         b=REAL(getListElement(Reval,"b"))[0];			// 		semi-major
-         c=REAL(getListElement(Reval,"c"))[0];			// 1st. semi-minor
-         theta=REAL(getListElement(Reval,"theta"))[0];
-         phi=REAL(getListElement(Reval,"phi"))[0];
+         a = REAL(getListElement(Reval,"a"))[0];			// 2nd. semi-minor
+         b = REAL(getListElement(Reval,"b"))[0];			// 		semi-major
+         c = REAL(getListElement(Reval,"c"))[0];			// 1st. semi-minor
+         theta = REAL(getListElement(Reval,"theta"))[0];
+         phi = REAL(getListElement(Reval,"phi"))[0];
 
-         v=REAL(getListElement(Reval,"u"));
-         u[0]=v[0]; u[1]=v[1]; u[2]=v[2];
+         v = REAL(getListElement(Reval,"u"));
+         u[0] = v[0]; u[1] = v[1]; u[2] = v[2];
 
          CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
          		 	   	  runif(0.0,1.0)*(m_box.m_size[1])+(m_box.m_low[1]),
@@ -952,7 +970,7 @@ void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
        ++nTry;
      }
      m_objects.reserve(m_num);
-     double *v=0,h=0,theta=0, phi=0,r=0;
+     double *v=0,h=0,theta=0,phi=0,r=0;
 
      CVector3d u;
      SEXP Reval = R_NilValue;
@@ -964,12 +982,12 @@ void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
          if(info != 0)
            error(_("simJoint(): `try` error in user defined distribution function."));
 
-         h=REAL(getListElement(Reval,"length"))[0]; 		/* length of cylinder! */
-         r=REAL(getListElement(Reval,"radius"))[0];
-         theta=REAL(getListElement(Reval,"theta"))[0];
-         phi=REAL(getListElement(Reval,"phi"))[0];
-         h-=2.0*r;											/* store only the height */
-         v=REAL(getListElement(Reval,"u"));
+         h = REAL(getListElement(Reval,"h"))[0]; 				/* height of cylinder! */
+         r = REAL(getListElement(Reval,"r"))[0];				/* radius */
+         theta = REAL(getListElement(Reval,"theta"))[0];      /* polar angle */
+         phi = REAL(getListElement(Reval,"phi"))[0];
+
+         v = REAL(getListElement(Reval,"u"));
          u[0]=v[0]; u[1]=v[1];  u[2]=v[2];
 
          CVector3d center(runif(0.0,1.0)*(m_box.m_size[0])+(m_box.m_low[0]),
@@ -1884,16 +1902,24 @@ STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n)
 	STGM::CVector3d majorA(REAL(VECTOR_ELT(R_E,3)));
 	STGM::CVector3d minorA(REAL(VECTOR_ELT(R_E,4)));
 
+	/* midpoints of caps */
+	STGM::CVector3d mPoint0(REAL(VECTOR_ELT(R_E,7)));
+	STGM::CVector3d mPoint1(REAL(VECTOR_ELT(R_E,8)));
+
 	double *ab = REAL(VECTOR_ELT(R_E,9));
 	double *psi= REAL(VECTOR_ELT(R_E,12));
+	double *rcaps= REAL(VECTOR_ELT(R_E,13));
 
 	return STGM::CEllipse3(ctr,
-							n,											// plane normal
-							majorA, minorA,								// axes vectors
-							ab[0],ab[1],								// lengths
-							REAL(VECTOR_ELT(R_E,10))[0],				// angle phi
-							psi[0],psi[1],								// segment angles
-							INTEGER(VECTOR_ELT(R_E,14))[0]);			// `m_side` to set reference side `m_side0`.
+					n,											// plane normal
+					majorA, minorA,								// axes vectors
+					mPoint0, mPoint1,							// midpoints of caps
+					ab[0],ab[1],								// lengths
+					REAL(VECTOR_ELT(R_E,10))[0],				// angle phi
+					psi[0],psi[1],								// segment angles
+					rcaps[0],rcaps[1],
+					INTEGER(VECTOR_ELT(R_E,1))[0],				// intersection type
+					INTEGER(VECTOR_ELT(R_E,14))[0]);			// `m_side` to set reference side `m_side0`.
 }
 
 

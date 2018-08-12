@@ -769,7 +769,9 @@ namespace STGM {
 		m_b(1),
 		m_phi(0),
 		m_i(0), m_j(1),
-		m_type(7), m_side(0), m_side0(0)   // default values because not intersected yet
+		m_type(7),   // default is a full ellipse in 3D
+		m_side(0),
+		m_side0(0)   // default values for side of caps relative to the plane (not intersected yet)
       {
          m_psi[0] = 0;
          m_psi[1] = 0;
@@ -780,8 +782,9 @@ namespace STGM {
 
       CEllipse3(STGM::CVector3d &center, STGM::CVector3d &n,
                 STGM::CVector3d &major,STGM::CVector3d &minor,
+				STGM::CVector3d &mPoint0, STGM::CVector3d &mPoint1,
                 double a, double b, double phi, double psi0, double psi1,
-				int side = 0) :
+				double r0, double r1, int type, int side = 0) :
          m_center(center),
 		 m_n(n),
 		 m_majorAxis(major),
@@ -789,12 +792,26 @@ namespace STGM {
 		 m_plane(STGM::CPlane(n)),
 		 m_a(a), m_b(b),
          m_phi(phi), m_i(0), m_j(1),
-         m_type(7), m_side(side),  m_side0(0)     	// default values because not intersected yet
+         m_type(type),
+		 m_side(side),
+		 m_side0(0)									     	// default values because not intersected yet
       {
         m_psi[0] = psi0;
         m_psi[1] = psi1;
-        setPlaneIdx();								// set m_i and m_j to select coordinates
-        setReferenceSide();							// set m_side0
+        setPlaneIdx();										// set m_i and m_j to select coordinates
+
+        if(m_type == ELLIPSE_SEGMENT)
+        {
+        	m_circle1 = CCircle3(mPoint0,r0,n,1);
+        	m_circle2 = CCircle3(mPoint1,r1,n,1);
+        	setReferenceSide();								// set m_side0
+
+        } else if(m_type == ELLIPSE_ARC || m_type == CAP)
+        {
+        	m_circle1 = CCircle3(mPoint0,r0,n,1);
+        	setReferenceSide();
+        }
+
       };
 
 
