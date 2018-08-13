@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{coefficientMatrixSpheroids}
 \alias{coefficientMatrixSpheroids}
-\title{Calculate coefficients for unfolding}
+\title{Compute coefficients for trivariate unfolding}
 \usage{
 coefficientMatrixSpheroids(breaks, stype = c("prolate", "oblate"),
   check = TRUE, nCores = getOption("par.unfoldr", 1))
@@ -14,25 +14,21 @@ coefficientMatrixSpheroids(breaks, stype = c("prolate", "oblate"),
 
 \item{check}{logical, whether to run some input checks}
 
-\item{nCores}{number of cores used to calculate the coefficients}
+\item{nCores}{number of cores used to compute the coefficients}
 }
 \value{
-coefficient array
+coefficient 6D array
 }
 \description{
-Calculate coefficients of discretized integral equation
+Compute coefficients of the discretized integral equation for unfolding
 }
 \details{
-In order to apply the EM algorithm to the stereological
-unfolding procedure for the joint size-shape-orientation distribution
-one first has to calculate the coefficients of the discretized integral
-equation. This step is the most time consuming part of unfolding
-the parameters and therefore has been separated in its own function.
-Further, the number of classes for size, shape and orientation do not
-need to be equal, whereas the same class limits are used for binning spatial and planar values.
-This might be changed in future releases.
-Using multiple cpu cores is controlled by either setting the option \code{par.unfoldr} in the global
-R environment or passing the number of cores \code{nCores} directly.
+In order to apply the EM algorithm to the stereological unfolding procedure for the joint
+size-shape-orientation distribution in 3D one first has to compute the coefficients of the
+discretized integral equation. This step is the most time consuming part of unfolding and
+therefore has been separated in its own function. Further, the number of classes for size, shape and orientation
+do not need to be the same, but the given class limits are also used for binning the spatial values. One can define
+the number of cpu cores by a global option \code{par.unfoldr} or passing the number of cores by \code{nCores} directly.
 }
 \examples{
 \dontrun{

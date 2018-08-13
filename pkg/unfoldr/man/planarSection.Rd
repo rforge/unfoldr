@@ -9,21 +9,22 @@ planarSection(S, d, intern = FALSE, pl = 0)
 \arguments{
 \item{S}{list of spheres of class \code{sphere}, see \code{\link{simPoissonSystem}}}
 
-\item{d}{distance of the intersecting xy-plane to the origin (as a planar section)}
+\item{d}{distance of the (planar) xy-plane to the origin}
 
-\item{intern}{logical, \code{FALSE} (default), return all planar section profiles otherwise
+\item{intern}{logical, \code{FALSE} (default), whether to return all section profiles or
 only those which have their centers inside the intersecting window}
 
-\item{pl}{print level, \code{pl=0} (default) for no output}
+\item{pl}{print level, \code{pl>0} for verbose output}
 }
 \value{
 numeric vector of planar section diameters
 }
 \description{
-Intersection of given spheres by a plane
+Planar intersection of spheres
 }
 \details{
-The function intersects a sphere system and returns the diameters of the corrsponding planar section profiles.
+The function computes the planar intersection of a sphere system and returns the diameters
+of the corrsponding section profiles.
 }
 \author{
 M. Baaske

@@ -4,20 +4,27 @@
 \alias{digitizeProfiles}
 \title{Digitize section profiles}
 \usage{
-digitizeProfiles(sp, delta, win = NULL)
+digitizeProfiles(sp, delta = 0.01, win = NULL)
 }
 \arguments{
 \item{sp}{list of section profiles, see \code{\link{intersectSystem}}}
+
+\item{delta}{lattice constant for discretization of section profiles}
+
+\item{win}{a window, default \code{NULL}, either taken from the attribute of \code{sp} or
+defined by the user as \eqn{[l,u]^2} where \code{l,u} are lower, respectively, upper
+   bounds of the 2D (intersection) region corresponding to the simulation box}
 }
 \value{
 image as a matrix
 }
 \description{
-Digitize 2D objects (section profiles)
+Digitize 2D section profiles
 }
 \details{
 A list of section profiles, e.g. discs, ellipses or segments from intersected spherocylinders, is digitized according
-to a given resolution such that the result is an image stored in matrix form.
+to a given resolution according to the lattice constant \code{delta} such that the result is an integer matrix which can
+be seen as a binary image.
 }
 \author{
 M. Baaske

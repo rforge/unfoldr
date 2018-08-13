@@ -2,24 +2,24 @@
 % Please edit documentation in R/spheroid.R
 \name{updateIntersections}
 \alias{updateIntersections}
-\title{Check intersections with simultion box}
+\title{Check intersection}
 \usage{
 updateIntersections(S)
 }
 \arguments{
-\item{S}{list of spheres, spheroids or cylinders, see \code{\link{simPoissonSystem}}}
+\item{S}{list of spheres, spheroids or spherocylinders, see \code{\link{simPoissonSystem}}}
 }
 \value{
 binary integer vector of length equal to the length of \code{S}.
 			    THe coding is \code{0} for not interior and \code{1} for interior
 }
 \description{
-Check itersections of either spheres, spheroids or cylinders with the bounding (simulation) box
+Check itersection of either spheres, spheroids or cylinders with the simulation box
 }
 \details{
-For a given list of spheres, spheroids or cylinders the function tests whether an object intersects
-the bounding simulation box. The vector returned is of length equal to \code{S} and has entries either \code{1}
-for an object which is intersected by one of the bounding lateral planes of the simulation box or otherwise \code{0}.
+For a given list of spheres, spheroids or spherocylinders the function tests whether an object intersects
+the simulation box. The vector returned is of length equal to the number of objects in \code{S} and has entries either \code{1}
+for an object which is intersected by one of the lateral planes of the simulation box and \code{0} otherwise.
 }
 \author{
 M. Baaske

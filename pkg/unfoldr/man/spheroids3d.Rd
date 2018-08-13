@@ -2,13 +2,13 @@
 % Please edit documentation in R/spheroid.R
 \name{spheroids3d}
 \alias{spheroids3d}
-\title{Generate 3D plot of spheroid system}
+\title{Draw a spheroid system in 3D}
 \usage{
 spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
   bg.col = "white", clipping = FALSE, ...)
 }
 \arguments{
-\item{S}{a list of spheroids}
+\item{S}{list of spheroids, see \code{\link{simPoissonSystem}}}
 
 \item{box}{simulation box}
 
@@ -25,7 +25,7 @@ spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
 \item{...}{further material properties passed to 3d plotting functions}
 }
 \description{
-Draw a spheroid system
+Draw a spheroid system in 3D
 }
 \details{
 The function requires the package \code{rgl} to be installed.

@@ -2,31 +2,33 @@
 % Please edit documentation in R/spheroid.R
 \name{verticalSection}
 \alias{verticalSection}
-\title{Spheroid vertical section}
+\title{Vertical sections}
 \usage{
 verticalSection(S, d, n = c(0, 1, 0), intern = FALSE)
 }
 \arguments{
 \item{S}{list of spheroids, see \code{\link{simPoissonSystem}}}
 
-\item{d}{distance of the box-aligned intersecting plane from the origin}
+\item{d}{distance of the intersecting plane from the origin of the coordinate system}
 
-\item{n}{normal vector which defines the intertecting plane}
+\item{n}{normal vector which defines the intertecting vertical plane}
 
 \item{intern}{logical, \code{FALSE} (default), return all section profiles otherwise
-only those which have their centers inside the intersection window (if the 
-intersected spheroid system had been simulated using exact simulation)}
+only those which have their centers inside the intersection window}
 }
 \value{
-list sizes \code{A}, shapes \code{S} and angles \code{alpha} of section profiles
+list of sizes \code{A}, shape factors \code{S} and (vertical) angles \code{alpha}
+              of section profiles in the plane w.r.t the z-axis between \code{[0,pi/2]}.
 }
 \description{
-Get a vertical section of a spheroid system
+Compute a vertical section of a spheroid system
 }
 \details{
 The function intersects a spheroid system by an intersecting plane defined by a normal 
-vector \code{n=c(0,1,0)} (default), which depends on the main orientation axis of the
-coordinate system.
+vector \code{n}, equal to \code{c(0,1,0)} (default) or \code{c(1,0,0)} which is called a 
+vertical section. Depending on the type of spheroid (either prolate or oblate) the returned
+lengths are those corresponding to the minor semi-axis and, respectively, major semi-axis in
+the way these are required for unfolding.
 }
 \author{
 M. Baaske

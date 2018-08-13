@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{sectionProfiles}
 \alias{sectionProfiles}
-\title{Construct section profiles of spheroids}
+\title{Construct section profiles of spheroids for unfolding}
 \usage{
 sectionProfiles(size, angle, type = c("prolate", "oblate"))
 }
@@ -20,14 +20,13 @@ section profiles object, either of class "\code{prolate}" or "\code{oblate}"
 Get a storing structure for section profiles of spheroids
 }
 \details{
-The function aggregates the necessary data for the trivariate unfolding procedure either for \code{type}
-"\code{prolate}" or "\code{oblate}" spheroids. Argument \code{size} is a numeric matrix which contains the
-axes lengths (first column corresponds to major semi-axis, second one to minor semi-axis). The \code{angle}
-is the orientation angle between the major axis and the vertical axis direction in the vertical intersection plane.
-If the angles range within \eqn{[0,2\pi]} these are transformed to \eqn{[0,\pi/2]}. The function returns a
-list which consists of either longer or shorter axis \code{A} of section profiles corresponding to the type
-of spheroids which are intended to be reconstructed (by unfolding), the aspect ratio of both semi-axes is given by
-the shape factor \code{S} between \eqn{(0,1]} and the orientation angle is named \code{alpha}.
+The function aggregates the necessary information for trivariate unfolding for spheroids of type \code{type}
+"\code{prolate}" and "\code{oblate}". The argument \code{size} is a numeric matrix of semi-axis lengths (first column corresponds
+to the semi major-axis, second one to semi minor-axis). The orientation of the ellipse is seen as the angle between its major axis
+and the vertical axis of the coordinate system in the intersection plane. For values in \eqn{[0,2\pi]} these are transformed to
+\eqn{[0,\pi/2]} as required by the unfolding procedure. The function returns a list which consists of either longer or shorter axis
+\code{A} of section profiles corresponding to the type of spheroids which are intended to be reconstructed (by unfolding), the aspect
+ratio of both semi-axes is given by the shape factor \code{S} between \eqn{(0,1]} where the orientation angle is named \code{alpha}.
 }
 \author{
 M. Baaske

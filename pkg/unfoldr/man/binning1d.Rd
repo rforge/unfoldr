@@ -11,7 +11,8 @@ binning1d(x, bin, na.rm = FALSE)
 
 \item{bin}{non-decreasingly sorted breaks vector}
 
-\item{na.rm}{logical, removing missing values (including NaN) in the argument \code{x}?}
+\item{na.rm}{logical, default \code{FALSE}, whether to remove missing values
+(including NaN) in \code{x}}
 }
 \value{
 Vector of count data
@@ -20,7 +21,7 @@ Vector of count data
 Vector of count data
 }
 \details{
-This function provides basic binning (grouping) of numeric values into
+The function provides basic binning (grouping) of numeric values into
 classes defined by the breaks vector \code{bin}. The values are binned
 according to bin[i[j]]\eqn{<}x[j]\eqn{\leq} bin[i[j]+1] for interval i=1,...,N-1
 for \code{length(bin)=N} and value x[j].

@@ -2,13 +2,13 @@
 % Please edit documentation in R/spheroid.R
 \name{cylinders3d}
 \alias{cylinders3d}
-\title{3D a cylinder system}
+\title{Draw a cylinder system in 3D}
 \usage{
 cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE, clipping = FALSE,
   ...)
 }
 \arguments{
-\item{S}{a list of cylinders}
+\item{S}{list of cylinders, see \code{\link{simPoissonSystem}}}
 
 \item{box}{simulation box}
 
@@ -21,7 +21,7 @@ cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE, clipping = FALSE,
 \item{...}{further material properties passed to 3d plotting functions}
 }
 \description{
-Draw 3D spherocylinders
+Draw spherocylinders in 3D
 }
 \details{
 The function requires the package \code{rgl} to be installed.

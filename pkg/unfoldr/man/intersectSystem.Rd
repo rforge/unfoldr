@@ -2,12 +2,12 @@
 % Please edit documentation in R/spheroid.R
 \name{intersectSystem}
 \alias{intersectSystem}
-\title{Intersect a 3D system of grains}
+\title{Intersection in 3D}
 \usage{
 intersectSystem(S, d, n = c(0, 1, 0), intern = FALSE, pl = 0)
 }
 \arguments{
-\item{S}{list of spheroids, see \code{\link{simPoissonSystem}}}
+\item{S}{list of spheres, spheroids or spherocylinders, see \code{\link{simPoissonSystem}}}
 
 \item{d}{distance of the the box-aligned intersecting plane from the origin}
 
@@ -23,13 +23,17 @@ intersected spheroid system had been simulated using exact simulation)}
 list of size, shape and angle of section profiles
 }
 \description{
-Intersect a system of spheres, spheroids or cylinders by a given plane
+Intersect a system of spheres, spheroids or spherocylinders by a given plane
 }
 \details{
-The function intersects a given system of spheres, spheroids or cylinders by a plane which is defined by a
-normal vector, e.g. \code{n=c(0,1,0)}, perpendicular to one of the lateral planes of the simulation box. 
-The print level \code{pl>=0} sets the type of return value. If \code{pl=10} the functions only returns
-the lengths of the semi axes, the shape factor of the angle in the intersection plane between \code{[0,pi/2]}.
+The function intersects a given (Poisson) system of spheres, spheroids or cylinders by an intersecting plane defined by a
+normal vector, e.g. \code{n=c(0,1,0)}, and thus perpendicular to one of the lateral planes of the simulation box only. 
+The print level \code{pl>=0} sets the type of return value. In case of spheroid intersections, setting \code{pl=10},
+the function returns a short version of the full specification list of section profiles with elements \code{A} (major semi-axis),
+\code{C} (minor semi-axis), \code{S} (shape factor as the ratio of these two) and the angle in the intersecting plane \code{phi}
+between \code{[0,2pi)} relative to the 'x' axis. Otherwise additional components are returned such as the ellipse`s rotation
+matrix \code{A}, the center point \code{center} and constant \code{type=10} (defining full ellipses and not only segments) of the
+section profiles. For sphere intersections only the radii are returned and \code{pl} is ignored in case of cylinder intersections.
 }
 \author{
 M. Baaske

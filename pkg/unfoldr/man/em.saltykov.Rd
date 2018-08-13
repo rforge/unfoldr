@@ -11,13 +11,13 @@ em.saltykov(y, bin, maxIt = 32)
 
 \item{bin}{non-decreasing vector of class limits}
 
-\item{maxIt}{maximum number of iterations used}
+\item{maxIt}{maximum number of iterations to be used}
 }
 \value{
 vector of count data of absolute frequenties of sphere diameters
 }
 \description{
-Estimation of empirical sphere diameter distribution
+Estimation of the empirical sphere diameter distribution
 }
 \details{
 The function performs the EM algorithm.
@@ -48,7 +48,8 @@ spheres <- function(spheres, box=NULL, draw.box=FALSE, draw.axis=FALSE, ...) {
 		x <- box$xrange[2]
 		y <- box$yrange[2]
 		z <- box$zrange[2]	
-		c3d.origin <- rgl::translate3d(rgl::scale3d(rgl::cube3d(col="gray", alpha=0.1),x/2,y/2,z/2),x/2,y/2,z/2)
+		c3d.origin <- rgl::translate3d(rgl::scale3d(rgl::cube3d(col="gray", alpha=0.1),
+						x/2,y/2,z/2),x/2,y/2,z/2)
 		rgl::shade3d(c3d.origin)
 	}
 	
