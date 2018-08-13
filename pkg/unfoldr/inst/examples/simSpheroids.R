@@ -93,10 +93,11 @@ spheroids3d(S$S[id], FALSE, TRUE, box=box, col=col)
 #planes3d(-1,0,0,2.5,col="black",alpha=1)
 planes3d(0,0,-1,2.5,col="black",alpha=1)
 
-(phi <- sapply(sp,"[[","phi"))
-summary(phi)
-phi2 <- sapply(phi,.getAngle)
-summary(phi2)
+## TODO check!
+#(phi <- sapply(sp,"[[","phi"))
+#summary(phi)
+#phi2 <- sapply(phi,.getAngle)
+#summary(phi2)
 
 ## check rotation matrix ellipses
 #E <- sp[[10]]
@@ -161,10 +162,10 @@ summary(spv$alpha)
 phi <- sapply(sp,"[[","phi")
 summary(phi)
 
-# relative to z axis (mu = c(0,0,1) ) 
-phi2 <- sapply(phi,.getAngle)
-summary(0.5*pi-phi2) 
-summary(spv$alpha) 
+## relative to z axis (mu = c(0,0,1) ) 
+#phi2 <- sapply(phi,.getAngle)
+#summary(0.5*pi-phi2) 
+#summary(spv$alpha) 
 
 
 #################################################################
