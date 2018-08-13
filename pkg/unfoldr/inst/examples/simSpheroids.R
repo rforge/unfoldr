@@ -7,13 +7,13 @@ library(rgl)
 library(plotrix)
 library(unfoldr)
 
-drawEllipses <- function(E, x=c(0,1), y=x, xlab="x",ylab="y", bg="gray", angle=0, rot=0, ...) {
+drawEllipses <- function(E, x=c(0,1), y=x, xlab="x",ylab="y", bg="gray", angle=0, ...) {
 	Es <- sapply(E,
 			function(x) {
 				c("id"=x$id,
 				  "x"=x$center[1],
 				  "y"=x$center[2],
-				  "phi"=x$phi + rot,		# add pi/2 to conform with `u` direction
+				  "phi"=x$phi,
 				  "a"=x$ab[1],
 				  "b"=x$ab[2])
 			})

@@ -23,7 +23,8 @@ spheres <- function(spheres, box=NULL, draw.box=FALSE, draw.axis=FALSE, ...) {
 		x <- box$xrange[2]
 		y <- box$yrange[2]
 		z <- box$zrange[2]	
-		c3d.origin <- rgl::translate3d(rgl::scale3d(rgl::cube3d(col="gray", alpha=0.1),x/2,y/2,z/2),x/2,y/2,z/2)
+		c3d.origin <- rgl::translate3d(rgl::scale3d(rgl::cube3d(col="gray", alpha=0.1),
+						x/2,y/2,z/2),x/2,y/2,z/2)
 		rgl::shade3d(c3d.origin)
 	}
 	

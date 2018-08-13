@@ -41,8 +41,10 @@ draw.segments <- function(E, cyltype=0, x=c(0,1), y=x, angle=0, normal=c(0,0,1),
 		
 		tt <- sort(c(psi0_1,psi1_1,psi0_2,psi1_2))
 		
-		pp1 <- rbind(t(sapply(seq(tt[2],tt[3],length=nv), function(xi) .PointOnEllipse(ctr,x$ab[1],x$ab[2],x$phi,xi))))
-		pp2 <- rbind(t(sapply(seq(tt[4],2*pi-abs(tt[1]),length=nv), function(xi) .PointOnEllipse(ctr,x$ab[1],x$ab[2],x$phi,xi))))
+		pp1 <- rbind(t(sapply(seq(tt[2],tt[3],length=nv),
+				function(xi) .PointOnEllipse(ctr,x$ab[1],x$ab[2],x$phi,xi))))
+		pp2 <- rbind(t(sapply(seq(tt[4],2*pi-abs(tt[1]),length=nv),
+				function(xi) .PointOnEllipse(ctr,x$ab[1],x$ab[2],x$phi,xi))))
 		
 		pp <- rbind(.PointOnEllipse(ctr,x$ab[1],x$ab[2],x$phi,tt[1]), pp1 ,pp2)
 		polygon(pp[,1], pp[,2],...)	
@@ -76,7 +78,8 @@ draw.segments <- function(E, cyltype=0, x=c(0,1), y=x, angle=0, normal=c(0,0,1),
 					t0 <- acos(.tA(p,x$mPoint1[c(i,j)],x$rcaps[2],x$rcaps[2],x$phi))
 					psi0 <- ifelse(x$pS>0,-t0,t0)
 					psi1 <- ifelse(x$pS>0, t0,2*pi-t0)
-					draw.ellipse(x$mPoint1[i],x$mPoint1[j], x$rcaps[2], x$rcaps[2],angle=x$phi,	segment=c(psi0,psi1), deg=FALSE,...)
+					draw.ellipse(x$mPoint1[i],x$mPoint1[j], x$rcaps[2], x$rcaps[2],
+						angle=x$phi,	segment=c(psi0,psi1), deg=FALSE,...)
 					
 					## second end cap
 					t <- x$psi[1]
@@ -86,8 +89,8 @@ draw.segments <- function(E, cyltype=0, x=c(0,1), y=x, angle=0, normal=c(0,0,1),
 					psi0 <- ifelse(x$pS<0,-t0,t0)
 					psi1 <- ifelse(x$pS<0, t0,2*pi-t0)
 					
-					draw.ellipse(x$mPoint0[i],x$mPoint0[j], x$rcaps[1], x$rcaps[1],angle=x$phi,segment=c(psi0,psi1), deg=FALSE,...)
-						
+					draw.ellipse(x$mPoint0[i],x$mPoint0[j], x$rcaps[1], x$rcaps[1],
+						angle=x$phi,segment=c(psi0,psi1), deg=FALSE,...)						
 				})
 	}
 	
