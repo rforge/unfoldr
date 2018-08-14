@@ -1,23 +1,19 @@
-# Comment: Simulate Poisson sphere system and intersect 
-# 
-# Author: bahama
-###############################################################################
+\dontrun{
+## Comment: Simulate a Poisson spherocylinder system,
+## 			intersect, discretize and display results
 
 library(rgl)
 library(plotrix)
 library(unfoldr)
-
-# drawing function
-
-col <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF") 
 
 ## intensity
 lam <- 500
 
 ## simulation bounding box
 box <- list("xrange"=c(0,2),"yrange"=c(0,2),"zrange"=c(0,5))
+col <- c("#0000FF","#00FF00","#FF0000","#FF00FF","#FFFF00","#00FFFF")
 
-## drawing function of 2D intersection of spherocylinders
+## 2D intersection of spherocylinders
 draw.segments <- function(E, cyltype=0, x=c(0,1), y=x, angle=0, normal=c(0,0,1),axes=TRUE, ...)
 {
 	.tA <- function(p,ctr,a,b,phi) {
@@ -181,10 +177,8 @@ theta <- list("size"=list("mx"=-1.45,"my"=-2.0, "sdx"=0.15,"sdy"=0.25,"rho"=0.0)
 			  "orientation"=list("kappa"=5))
 
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="cylinders",
-		intersect="full", n=c(0,0,1), "orientation"="rbetaiso", dz=2.5,
-		perfect=TRUE,intern=FALSE,delta=0.005, pl=101)
-
-## show the full system
+		intersect="full", n=c(0,1,0), "orientation"="rbetaiso", dz=1.5,
+		perfect=TRUE, intern=TRUE, delta=0.005, pl=101)
 
 #open3d()
 #cylinders3d(S$S[1:1000], draw.box=TRUE, box=box, col=col)
@@ -195,9 +189,13 @@ sp <- S$sp
 id <- sapply(sp,"[[","id") 
 open3d()
 cylinders3d(S$S[id], draw.box=TRUE, box=box, col=col)
-planes3d(0,0,-1,2.5,col="black",alpha=1)
+planes3d(0,-1,0,1.5,col="black",alpha=1)
 
-draw.segments(sp,x=c(0,2),bg="gray",normal=c(0,0,1),xlab="[mm]",xaxs="i",yaxs="i",
+n <- attr(sp,"plane")	# normal vector of intersecting plane
+win <- attr(sp,"win")	# intersection window
+
+dev.new()
+draw.segments(sp,x=win[[1]],y=win[[2]],bg="gray",normal=n,xlab="[mm]",xaxs="i",yaxs="i",
 		ylab="[mm]",col="black",axes=TRUE,cex.lab=1.8,cex=1.8,cex.axis=1.8)
 
 ## digitized
@@ -209,16 +207,19 @@ image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 # general intersections (should be same as above)
 ##################################################################################
 
-S <- S$S
-SP <- intersectSystem(S, 2.5, n=c(0,0,1), intern=FALSE, pl=1)
+Sp <- S$S
+SP <- intersectSystem(Sp, 1.5, n=c(0,1,0), intern=TRUE, pl=1)
 id <- sapply(SP,"[[","id") 
-length(id)
 
 open3d()
-cylinders3d(S[id], draw.box=TRUE, box=box, col=col)
-planes3d(0,0,-1,2.5,col="black",alpha=1)
+cylinders3d(Sp[id], draw.box=TRUE, box=box, col=col)
+planes3d(0,-1,0,1.5,col="black",alpha=1)
 
-draw.segments(SP,x=c(0,2),bg="gray",normal=c(0,0,1),xlab="[mm]",xaxs="i",yaxs="i",
+n <- attr(SP,"plane")	# normal vector of intersecting plane
+win <- attr(SP,"win")	# intersection window
+
+dev.new()
+draw.segments(SP,x=win[[1]],y=win[[2]],bg="gray",normal=n,xlab="[mm]",xaxs="i",yaxs="i",
 		ylab="[mm]",col="black",axes=TRUE,cex.lab=1.8,cex=1.8,cex.axis=1.8)
 
 
@@ -231,13 +232,13 @@ image(1:nrow(W2),1:ncol(W2),W2,col=gray(1:0))
 ## Update intersection: find objects which intersect bounding box
 #################################################################
 
-idx <- updateIntersections(S)
+idx <- updateIntersections(Sp)
 sum(!idx)							# number of objects intersecting bounding box
 id <- which( idx != 1)	
 
-# show in 3D
-open3d()
-cylinders3d(S[id], draw.box=TRUE, box=box, col=col)
+## show in 3D
+# open3d()
+# cylinders3d(Sp[id], draw.box=TRUE, box=box, col=col)
 
 
 #################################################################
@@ -276,11 +277,15 @@ cylinders3d(S$S[id], draw.box=TRUE, box=box, col=col)
 planes3d(0,0,-1,2.5,col="black",alpha=1)
 
 # 2D intersection profiles
+n <- attr(sp,"plane")	# normal vector of intersecting plane
+win <- attr(sp,"win")	# intersection window
+
 dev.new()
-draw.segments(sp,x=win[[1]],y=win[[2]],bg="gray",normal=c(0,0,1),xlab="[mm]",
+draw.segments(sp,x=win[[1]],y=win[[2]],bg="gray",normal=n,xlab="[mm]",
 	xaxs="i",yaxs="i",ylab="[mm]",col="black",axes=TRUE,cex.lab=1.8,cex=1.8,cex.axis=1.8)
 
 ## digitize objects
 W <- digitizeProfiles(sp, delta=0.001)
 dev.new()
 image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
+}
