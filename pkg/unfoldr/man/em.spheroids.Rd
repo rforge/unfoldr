@@ -32,9 +32,10 @@ parts of the EM iterations are done in parallel.
 \examples{
 \dontrun{
 
-## Spheroids with lognormal distributed length of axes
+## Comment: Trivariate unfolding of spheroid distribution
+
 ## set number of cpu cores (optional)
-# options(par.unfoldr=8)
+# options(par.unfoldr=detectCores())
 
 ## Intensity: mean number of spheroids per unit volume
 lam <- 2500

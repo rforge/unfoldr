@@ -23,10 +23,9 @@ Estimation of the empirical sphere diameter distribution
 The function performs the EM algorithm.
 }
 \examples{
-# Comment: Simulate Poisson sphere system and intersect 
-# 
-# Author: bahama
-###############################################################################
+\dontrun{
+## Comment: Simulate a Poisson sphere system,
+## 			intersect, discretize and display results
 
 library(rgl)
 library(plotrix)
@@ -90,7 +89,7 @@ spheres(S$S[notIn],box,FALSE,TRUE,color=col)
 In <- sapply(S$S,function(x) attr(x,"interior"))
 spheres(S$S[In],box,color="gray")
 
-## ful sphere system
+## full sphere system
 # open3d()
 # spheres(S$S,box,FALSE,TRUE,color=col)
 # planes3d(0,0,1,0,col="darkgray",alpha=1)
@@ -107,8 +106,9 @@ XYr <- t(sapply(sp,function(s) cbind(s$center[1],s$center[2],s$r)))
 x <- XYr[,1]
 y <- XYr[,2]
 r <- XYr[,3]
-xlim <- c(-1,4)
-ylim <- c(-1.5,3.5) 
+win <- attr(sp,"win")
+xlim <- win[[1]]
+ylim <- win[[2]] 
 
 dev.new()
 plot(x,y,type="n",xaxs="i", yaxs="i", xlab="x",ylab="y",xlim=xlim,ylim=ylim)
@@ -116,10 +116,8 @@ for(i in 1:nrow(XYr))
  draw.circle(x[i],y[i],r[i],nv=100,border=NULL,col="black")
 
 ## digitize inersections
-sp <- S$sp
 ## `win` can also be omitted if not different
 ## from original itersection window (derived from the box)
-win <- attr(sp,"win")
 W <- digitizeProfiles(sp, delta=0.01, win=win)
 dim(W)
 dev.new()
@@ -145,7 +143,6 @@ spheres(S[1:2000],box,TRUE,TRUE,color=col)
 mean(log(sapply(S,"[[","r")))
 sd(log(sapply(S,"[[","r")))
 
-
 #################################################################
 ## Planar section
 #################################################################
@@ -158,7 +155,6 @@ hist(sp)
 summary(sp)
 mean(log(sp/2))
 sd(log(sp/2))
-
 
 #################################################################
 ## General intersection, all objects (inter=FALSE)
@@ -241,6 +237,7 @@ sd(log(r))
 
 open3d()
 spheres(S,box,TRUE,TRUE,color=col)
+}
 }
 \references{
 Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000

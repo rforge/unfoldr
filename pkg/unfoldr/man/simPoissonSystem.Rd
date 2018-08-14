@@ -92,11 +92,10 @@ of spheroids or spheres is returned to speed up computation. Note that, the curr
 the joint 3D size-shape-orientation distribution of spherocylinders so far.
 }
 \examples{
-# Comment: Simulate Poisson sphere system and intersect 
-# 
-# Author: bahama
-###############################################################################
-
+\dontrun{
+## Comment: Simulate a Poisson spheroid system,
+## 			intersect, discretize and display results
+	
 library(rgl)
 library(plotrix)
 library(unfoldr)
@@ -154,14 +153,13 @@ S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="oblate",
 
 ## show some objects to get an impression
 open3d()
-spheroids3d(S[1:2000], FALSE, TRUE, box=box, col=col)
+spheroids3d(S[1:1000], FALSE, TRUE, box=box, col=col)
 
+###################################################################
+## simulate bivariate size-shape distribution for prolate spheroids
+###################################################################
 
-#################################################################
-## simulate bivariate
-#################################################################
-
-## no `shape` required
+## no `shape` required, isotropic orientation
 theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
 		"orientation"=list("kappa"=1))
 
@@ -169,28 +167,16 @@ S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="prolate",
 		intersect="full", ,n=c(0,0,1), mu=c(0,0,1),
 		"orientation"="rbetaiso", dz=2.5,perfect=TRUE,pl=101)
 
-## check!
-#ACB <- t(sapply(S$S,"[[","acb"))
-#mean(log(ACB[,3])) # mx
-#sd(log(ACB[,3]))   # sdx
-
-## show
-#open3d()
-#spheroids3d(S$S[1:2000], FALSE, TRUE, box=box, col=col)
-
 ## 3D intersected objects
 sp <- S$sp
 id <- sapply(sp,"[[","id") 
 open3d()
 spheroids3d(S$S[id], FALSE, TRUE, box=box, col=col)
-#planes3d(0,-1,0,2.5,col="black",alpha=1)
-#planes3d(-1,0,0,2.5,col="black",alpha=1)
 planes3d(0,0,-1,2.5,col="black",alpha=1)
 
-(phi <- sapply(sp,"[[","phi"))
+## angle always w.r.t to x axis after simulation
+phi <- sapply(sp,"[[","phi")
 summary(phi)
-phi2 <- sapply(phi,.getAngle)
-summary(phi2)
 
 ## check rotation matrix ellipses
 #E <- sp[[10]]
@@ -203,10 +189,10 @@ summary(phi2)
 #E$A
 
 dev.new()
-Es <- drawEllipses(sp, x=box$xrange, border="black",xlab="[mm]", ylab="[mm]",
-		rot=0, bg="gray",col=col,	cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
+Es <- drawEllipses(sp, x=box$xrange, y=box$yrange, border="black",xlab="[mm]", ylab="[mm]",
+		bg="gray",col=col,	cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
 
-## digitized
+## digitized image
 W <- S$W
 dev.new()
 image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
@@ -226,12 +212,14 @@ str(SP[[100]])
 ## Vertical section
 #################################################################
 
-# vertical 
-dz <- 2.5
-n <- c(0,1,0)
+# vertical intersection
+dz <- 2.5		# distance to origin of box [0,5]^3
+n <- c(0,1,0)	# normal in y direction (xz plane)
 
-S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="prolate",
-		intersect="full", ,n=n, mu=c(0,0,1),
+theta$orientation$kappa <- 10	# random planar in xy plane
+
+S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,
+		type="prolate", intersect="full", ,n=n, mu=c(0,0,1),
 		"orientation"="rbetaiso", dz=dz, perfect=TRUE, intern=TRUE, pl=101)
 
 sp <- S$sp # sections
@@ -240,43 +228,37 @@ open3d()
 spheroids3d(S$S[id], FALSE, TRUE, box=box, col=col)
 planes3d(0,-1,0,2.5,col="black",alpha=1)
 
-dev.new()
-Es <- drawEllipses(sp, x=box$xrange, border="black",xlab="[mm]", ylab="[mm]",
-		rot=0, bg="gray",col=col,	cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
-
-# intersect 3D system
-S <- S$S   # spheroids
-spv <- verticalSection(S,d=dz,n=n,intern=TRUE)
-
-## approx. pi/4 (isotropic)
-summary(spv$alpha) 
-
-# original
+# check angle
 phi <- sapply(sp,"[[","phi")
 summary(phi)
 
-# relative to z axis (mu = c(0,0,1) ) 
-phi2 <- sapply(phi,.getAngle)
-summary(0.5*pi-phi2) 
-summary(spv$alpha) 
+dev.new()
+Es <- drawEllipses(sp, x=box$xrange, y=box$yrange, border="black",xlab="[mm]", ylab="[mm]",
+		 bg="gray",col=col,	cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
+ 
+# intersect 3D system
+Sp <- S$S   # spheroids
+spv <- verticalSection(Sp,d=dz,n=n,intern=TRUE)
 
+# angle in the intersecting plane always
+# w.r.t. to mu=(0,0,1) used for unfolding
+summary(spv$alpha) 
 
 #################################################################
 ## Update intersection: find objects which intersect bounding box
 #################################################################
 
-idx <- updateIntersections(S)
+idx <- updateIntersections(Sp)
 sum(!idx)							# objects intersecting
 id <- which( idx != 1)	
 
 # show in 3D
 open3d()
-spheroids3d(S[id], FALSE, TRUE, box=box, col=col)
+spheroids3d(Sp[id], FALSE, TRUE, box=box, col=col)
 
 #################################################################
 ## user-defined simulation function
 #################################################################
-
 
 # no perfect simualtion here for 'rmulti'
 # multivariate size distribution,
@@ -327,6 +309,7 @@ Es <- drawEllipses(sp, x=box$xrange, border="black",xlab="[mm]", ylab="[mm]",
 W <- S$W
 dev.new()
 image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
+}
 }
 \references{
 \itemize{

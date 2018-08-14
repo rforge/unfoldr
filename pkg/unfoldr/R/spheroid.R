@@ -368,7 +368,7 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	 stop("Only spheroids of class 'prolate' or 'oblate' can be used.")
  	stopifnot(is.numeric(d))	
  	stopifnot(is.logical(intern))
-	if(sum(n) != 1)
+	if(sum(n) != 1 || which(n == 1) > 2L)
 	  stop("Normal vector is one of c(0,1,0) or c(1,0,0).")
 	
     ss <- .Call(C_IntersectPoissonSystem,
@@ -380,16 +380,15 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 			sapply(ss,"[[",2)
 		 else sapply(ss,"[[",1)
 	
-    ## angle ´alpha´ in the intersecting plane
-	## is always between [0,pi/2] and relative to
-	## z axis in 3D
+    ## convert angle ´alpha´ in the intersecting plane
+	## which is always between [0,pi/2] and w.r.t z axis
 	alpha <- sapply(ss,"[[",4)
 	if(max(alpha)>pi/2)
 	 alpha <- sapply(alpha,.getAngle)		# alpha in [0,pi/2]
 		
 	structure(list("A"=A,
 				   "S"=sapply(ss,"[[",3),
-				   "alpha"=0.5*pi-alpha),	# relative to z axis in 3D
+				   "alpha"=0.5*pi-alpha),	# w.r.t z axis in 3D
 			class=class(S)
 	)
 }
