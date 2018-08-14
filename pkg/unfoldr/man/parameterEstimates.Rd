@@ -20,7 +20,7 @@ Get histogram data from estimated joint distribution
 \details{
 Given the estimated joint distribution in histogram form the function
 returns a list of \code{breaks} replicates which equals the number of
-estimated count data for each class.
+estimated count data for each class. For an example please see the file 'unfold.R'.
 }
 \author{
 M. Baaske

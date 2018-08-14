@@ -111,8 +111,7 @@ unfold.numeric <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L)
 		stop("Expected numeric value 'nclass' as number of classes.")
 	breaks <- seq(0,max(sp), length.out=nclass)
 
-	# Input histogram
-	#N_V <- em.saltykov(N_A,breaks,maxIt)
+	# Input histogram	
 	y <- binning1d(sp,breaks)
 
 	n <- length(y)
@@ -136,6 +135,7 @@ unfold.numeric <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L)
 #' The \code{breaks} list is either obtained from function \code{setbreaks} or the
 #' user supplies his own variant, see \code{\link{setbreaks}} for details.
 #' If \code{check} is \code{TRUE} some checks on the \code{breaks} list are done.
+#' For an example please see the file 'almmc.R'.
 #'
 #' @param size  vector of sizes
 #' @param angle vector of angles
@@ -190,7 +190,7 @@ binning3d <- function(size,angle,shape,breaks,check=TRUE,na.rm = TRUE) {
 #' \eqn{a_i=i\delta, \delta=maxSize/M } or using exponentially increasing limits: \eqn{base^i, i=1,\dots,M}.
 #' The orientation classes are defined as \eqn{\theta_j=j\omega, \omega=\pi/(2N), j=1,\dots,N} in the range
 #' \eqn{[0,\pi/2]}, where \eqn{M,N} are the number of size classes and the number of orientation classes, respectively.
-#' Argument \code{base} must not be \code{NULL} if \code{sizeType} equals "exp".
+#' Argument \code{base} must not be \code{NULL} if \code{sizeType} equals "exp". For an example please see the file 'unfold.R'.
 #'
 #' @param nclass 	number of classes
 #' @param maxSize 	maximum of \code{size} values
@@ -228,7 +228,8 @@ setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp"))
 #'
 #' The function simply extracts the characteristics of a 3D spheroid system
 #' either as oblate or prolate type and returns a list which consists of entries
-#' named 'a' (semi-major axis length), 's' (shape factor) and polar angle 'Theta'.
+#' named 'a' (major semi-axis length), 's' (shape factor) and polar angle 'Theta'.
+#' For an example please see the file 'unfold.R'.
 #'
 #' @param   S list of spheroids
 #' @return  a list of spheroids` 3D characteristics
@@ -237,7 +238,7 @@ setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp"))
 #' @rdname parameters3d
 #' @export
 parameters3d <- function(S) {
-	idx <- if(class(S)=="prolate") c(1,3) else c(3,1)  			# changed index from 2 to 3 for major semi-axis
+	idx <- if(class(S)=="prolate") c(1,3) else c(3,1)  			
 	list("a"=unlist(lapply(S,function(x) x$acb[1])),
 		 "Theta"=unlist(lapply(S,function(x) .getAngle(x$angles[1]))),
 		 "s"=unlist(lapply(S,function(x) x$acb[idx[1]]/x$acb[idx[2]])))
@@ -250,7 +251,7 @@ parameters3d <- function(S) {
 #'
 #' Given the estimated joint distribution in histogram form the function
 #' returns a list of \code{breaks} replicates which equals the number of
-#' estimated count data for each class.
+#' estimated count data for each class. For an example please see the file 'unfold.R'.
 #'
 #' @param H trivariate histogram
 #' @param breaks breaks as obtained from \code{\link{setbreaks}}
@@ -276,7 +277,8 @@ parameterEstimates <- function(H,breaks) {
 #' The (estimated spatial) joint size-shape-orientation distribution is plotted in a 3D
 #' histogram with corresponding axesn. The axes intersect in the first class number.
 #' The ball volumes visualize the relative frequencies of count data for each class which
-#' can be scaled by the user for non-overlapping spheres. Balls within the same size class have the same color.
+#' can be scaled by the user for non-overlapping spheres. Balls within the same size class
+#' have the same color. For an example please see the file 'almmc.R'.
 #'
 #' @param A 		3d array of count data
 #' @param main 		main title of the plot

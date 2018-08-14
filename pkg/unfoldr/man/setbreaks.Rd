@@ -30,7 +30,7 @@ One can either define \code{linear} class limits of 'size' as
 \eqn{a_i=i\delta, \delta=maxSize/M } or using exponentially increasing limits: \eqn{base^i, i=1,\dots,M}.
 The orientation classes are defined as \eqn{\theta_j=j\omega, \omega=\pi/(2N), j=1,\dots,N} in the range
 \eqn{[0,\pi/2]}, where \eqn{M,N} are the number of size classes and the number of orientation classes, respectively.
-Argument \code{base} must not be \code{NULL} if \code{sizeType} equals "exp".
+Argument \code{base} must not be \code{NULL} if \code{sizeType} equals "exp". For an example please see the file 'unfold.R'.
 }
 \author{
 M. Baaske

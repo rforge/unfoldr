@@ -18,7 +18,8 @@ Extract the original 3D size-shape-orientation characteristics
 \details{
 The function simply extracts the characteristics of a 3D spheroid system
 either as oblate or prolate type and returns a list which consists of entries
-named 'a' (semi-major axis length), 's' (shape factor) and polar angle 'Theta'.
+named 'a' (major semi-axis length), 's' (shape factor) and polar angle 'Theta'.
+For an example please see the file 'unfold.R'.
 }
 \author{
 M. Baaske

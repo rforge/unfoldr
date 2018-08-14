@@ -31,6 +31,7 @@ the function counts the number of observations falling into each class.
 The \code{breaks} list is either obtained from function \code{setbreaks} or the
 user supplies his own variant, see \code{\link{setbreaks}} for details.
 If \code{check} is \code{TRUE} some checks on the \code{breaks} list are done.
+For an example please see the file 'almmc.R'.
 }
 \author{
 M. Baaske
