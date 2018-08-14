@@ -352,32 +352,32 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 
 SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
 {
+  int nprotect = 0;
   SEXP R_S = R_NilValue;
-  PROTECT(R_S = getVar(R_var,R_env));
+  PROTECT(R_S = getVar(R_var,R_env)); ++nprotect;
 
   /* read all from attributes */
   SEXP R_box = R_NilValue;
-  PROTECT(R_box = getAttrib(R_S, install("box")));
+  PROTECT(R_box = getAttrib(R_S, install("box"))); ++nprotect;
   STGM::CBox3 box = setBox(R_box);
 
   SEXP R_mu = R_NilValue;
-  PROTECT(R_mu = getAttrib(R_S,install("mu")));
+  PROTECT(R_mu = getAttrib(R_S,install("mu")));  ++nprotect;
   if(isNull(R_mu))
 	error(_("`mu` main direction must be provided as an attribute."));
   STGM::CVector3d maxis(REAL(AS_NUMERIC(R_mu)));
 
   SEXP R_lam = R_NilValue;
-  PROTECT(R_lam = getAttrib(R_S,install("lam")));
+  PROTECT(R_lam = getAttrib(R_S,install("lam"))); ++nprotect;
   if(isNull(R_lam))
     error(_("`lam` must be provided as an attribute."));
   double lam = REAL(AS_NUMERIC(R_lam))[0];
 
   SEXP R_perfect = R_NilValue;
-  PROTECT(R_perfect = getAttrib(R_S,install("perfect")));
+  PROTECT(R_perfect = getAttrib(R_S,install("perfect"))); ++nprotect;
   if(isNull(R_perfect))
      error(_("`perfect` must be provided as an attribute."));
   int perfect = INTEGER(AS_INTEGER(R_perfect))[0];
-  UNPROTECT(4);
 
   /* return value */
   SEXP R_ret = R_NilValue;
@@ -424,7 +424,7 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
 	   error(_("Unknown simulation object type."));
   }
 
-  UNPROTECT(1);
+  UNPROTECT(nprotect+1);
   return R_ret;
 
 }
@@ -1777,41 +1777,29 @@ STGM::CCylinder convert_C_Cylinder(SEXP R_cyl)
 
 STGM::Cylinders convert_C_Cylinders(SEXP R_cyls)
 {
-  SEXP R_cyl, R_ctr, R_u, R_angles;
-
+  SEXP R_cyl;
   STGM::Cylinders cylinders;
   cylinders.reserve(LENGTH(R_cyls));
 
   for(int i=0; i < LENGTH(R_cyls); i++) {
       PROTECT(R_cyl = VECTOR_ELT(R_cyls,i));
-      PROTECT(R_ctr    = AS_NUMERIC( getListElement( R_cyl, "center")));
-      PROTECT(R_u      = AS_NUMERIC( getListElement( R_cyl, "u")));
-      PROTECT(R_angles = AS_NUMERIC( getListElement( R_cyl, "angles")));
-
-      STGM::CVector3d ctr(REAL(R_ctr));
-      STGM::CVector3d u(REAL(R_u));
+      STGM::CVector3d ctr(REAL(VECTOR_ELT( R_cyl, 1)));
+      STGM::CVector3d u(REAL(VECTOR_ELT( R_cyl, 5)));
 
       cylinders.push_back(
     	STGM::CCylinder(ctr,u,
-    		  REAL(getListElement(R_cyl, "h"))[0],
-    		  REAL(getListElement(R_cyl, "r"))[0],
-    		  REAL(R_angles)[0],REAL(R_angles)[1],
-			  INTEGER(getListElement(R_cyl, "id"))[0],
+    		  REAL(VECTOR_ELT(R_cyl, 4))[0],
+    		  REAL(VECTOR_ELT(R_cyl, 6))[0],
+    		  REAL(VECTOR_ELT(R_cyl, 7))[0],
+			  REAL(VECTOR_ELT(R_cyl, 7))[1],
+			  INTEGER(VECTOR_ELT(R_cyl, 0))[0],
 			  translateChar(asChar(getAttrib(R_cyl, install("label")))),
 			  INTEGER(getAttrib(R_cyl, install("interior")))[0]));
 
-      UNPROTECT(4);
+      UNPROTECT(1);
 
-      /*
-      STGM::CCylinder &cyl = cylinders[i];
-      Rprintf("u: %f %f %f \n",cyl.u()[0],cyl.u()[1],cyl.u()[2]);
-      Rprintf("ctr: %f %f %f \n",cyl.center()[0],cyl.center()[1],cyl.center()[2]);
-      Rprintf("angles: %f %f \n",cyl.theta(),cyl.phi());
-      Rprintf("id=%d, h=%f, r=%f  \n",cyl.Id(), cyl.h(), cyl.r());
-      */
   }
 
-  UNPROTECT(1);
   return cylinders;
 }
 
@@ -1851,9 +1839,10 @@ SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type & objects, STGM::
   if(PL==10)
   {
 	 /* return radii only */
+	 double *res = REAL(R_ret);
 	 PROTECT(R_ret = allocVector(REALSXP,num));
 	 for(size_t k=0;k<num;k++)
-	    REAL(R_ret)[k] = objects[k].getCircle().r();
+	    res[k] = objects[k].getCircle().r();
 
   } else {
 
@@ -1986,6 +1975,7 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
          type == STGM::ELLIPSE_SEGMENT ||
          type == STGM::CAP) {
 
+    	  nLoopProtected=0;
           PROTECT(R_obj = allocVector(VECSXP, ncomps) ); ++nLoopProtected;
           PROTECT(R_names = allocVector(STRSXP, ncomps));++nLoopProtected;
 
@@ -2090,7 +2080,6 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
       SET_VECTOR_ELT(R_result,i,R_obj);
 
       UNPROTECT(nLoopProtected);
-      nLoopProtected=0;
   }
 
   SEXP R_win, R_plane;

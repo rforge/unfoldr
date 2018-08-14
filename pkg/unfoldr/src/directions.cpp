@@ -53,7 +53,7 @@ void rVonMisesFisher(double *u, double *mu, double kappa, double &theta, double 
 void rOhserSchladitz(double *u, double *mu, double kappa, double &theta, double &phi)
 {
     double q,w[3];
-    phi = 2.0*M_PI*runif(0.0,1.0);
+    phi = 2.0*M_PI*runif(0.0,1.0);  // 0.0; /* DEBUG */
     q = runif(0.0,1.0);
     theta = acos((1-2*q)/sqrt(kappa*kappa-(1-2*q)*(1-2*q)*(kappa*kappa-1)));
 
