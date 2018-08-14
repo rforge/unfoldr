@@ -4,7 +4,7 @@
 options(par.unfoldr=2L)
 
 ## Intensity: mean number of spheroids per unit volume
-lam <- 2000
+lam <- 1000
 
 ## simulation parameters
 theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
@@ -17,7 +17,10 @@ S <- simPoissonSystem(theta,lam,size="rlnorm",
 
 ## unfolding
 sp <- verticalSection(S,2.5)
-ret <- unfold(sp,c(15,12,11),kap=1.25)
+ret <- unfold(sp,c(10,6,8),kap=1.25)
+
+## even more accurate
+# ret <- unfold(sp,c(15,12,11),kap=1.25)
 cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\n")
 
 ## plot 3d trivariate histogram of joint distribution
