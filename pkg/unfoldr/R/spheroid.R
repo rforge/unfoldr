@@ -431,13 +431,10 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
     ## convert angle 'alpha' in the intersecting plane
 	## which is always between [0,pi/2] and w.r.t 'z' axis
 	alpha <- sapply(ss,"[[",4)
-	if(max(alpha) > pi/2){
-	 alpha <- try(sapply(alpha,.getAngle),silent=TRUE)		# alpha in [0,pi/2]
-	 if(inherits(alpha,"try-error") || !is.numeric(alpha) || anyNA(alpha) )
+    alpha <- try(0.5*pi-sapply(alpha,.getAngle),silent=TRUE)		# alpha in [0,pi/2]
+	if(inherits(alpha,"try-error") || !is.numeric(alpha) || anyNA(alpha) )
 	   warning("Could not compute angle 'alpha'. See the returned list element.")
-   	 else alpha <- 0.5*pi-alpha
- 	}
-		
+    	
 	structure(list("A"=A,
 				   "S"=sapply(ss,"[[",3),
 				   "alpha"=alpha),	# w.r.t z axis in 3D
