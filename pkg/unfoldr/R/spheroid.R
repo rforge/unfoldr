@@ -139,7 +139,7 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #' @param pl  	   integer, print level and return value type, see details
 #' @param label    character, a label set to each generated object, '\code{N}' (default)
 #'  
-#' @return 		   list of objects depending on the chosen return type defined by argument \code{intersect}
+#' @return 		   list of objects depending on the chosen return type defined by the argument \code{intersect}
 #'
 #' @example inst/examples/simSpheroids.R
 #'

@@ -22,6 +22,7 @@ summary(sp$alpha)
 bin <- c(14,16,18)
 # unfold the joint distribution
 ret <- unfold(sp,bin,kap=1.25)
+
 ## optional: histogram plot
 # library(rgl)
 # trivarHist(ret$N_V,main="Trivariate Histogram (3d estimated)",scale=1.2)

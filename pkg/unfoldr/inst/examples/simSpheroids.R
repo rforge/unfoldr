@@ -4,7 +4,6 @@
 	
 library(rgl)
 library(plotrix)
-library(unfoldr)
 
 drawEllipses <- function(E, x=c(0,1), y=x, xlab="x",ylab="y", bg="gray", angle=0, ...) {
 	Es <- sapply(E,

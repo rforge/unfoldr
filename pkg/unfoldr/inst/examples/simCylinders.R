@@ -4,7 +4,6 @@
 
 library(rgl)
 library(plotrix)
-library(unfoldr)
 
 ## intensity
 lam <- 500
