@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{coefficientMatrixSpheroids}
 \alias{coefficientMatrixSpheroids}
-\title{Compute coefficients for trivariate unfolding}
+\title{Coefficients for trivariate unfolding}
 \usage{
 coefficientMatrixSpheroids(breaks, stype = c("prolate", "oblate"),
   check = TRUE, nCores = getOption("par.unfoldr", 1))
@@ -10,11 +10,11 @@ coefficientMatrixSpheroids(breaks, stype = c("prolate", "oblate"),
 \arguments{
 \item{breaks}{list of bin vectors}
 
-\item{stype}{either \code{prolate} or \code{oblate}}
+\item{stype}{type of spheroid, either "\code{prolate}" or "\code{oblate}"}
 
 \item{check}{logical, whether to run some input checks}
 
-\item{nCores}{number of cores used to compute the coefficients}
+\item{nCores}{number of cpu cores used to compute the coefficients}
 }
 \value{
 coefficient 6D array
@@ -23,12 +23,13 @@ coefficient 6D array
 Compute coefficients of the discretized integral equation for unfolding
 }
 \details{
-In order to apply the EM algorithm to the stereological unfolding procedure for the joint
+In order to apply the Expectation Maximization (EM) algorithm to the stereological unfolding procedure for the joint
 size-shape-orientation distribution in 3D one first has to compute the coefficients of the
 discretized integral equation. This step is the most time consuming part of unfolding and
-therefore has been separated in its own function. Further, the number of classes for size, shape and orientation
+therefore has been separated in its own function. The number of bin classes for the size, shape and orientation
 do not need to be the same, but the given class limits are also used for binning the spatial values. One can define
-the number of cpu cores by a global option \code{par.unfoldr} or passing the number of cores by \code{nCores} directly.
+the number of cpu cores by the global option \code{par.unfoldr} or passing the number of cores \code{nCores} directly
+as an argument.
 }
 \examples{
 \dontrun{

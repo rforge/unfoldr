@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{em.saltykov}
 \alias{em.saltykov}
-\title{Expectation Maximization algorithm}
+\title{Expectation Maximization (EM) algorithm}
 \usage{
 em.saltykov(y, bin, maxIt = 32)
 }
@@ -20,7 +20,7 @@ vector of count data of absolute frequenties of sphere diameters
 Estimation of the empirical sphere diameter distribution
 }
 \details{
-The function performs the EM algorithm.
+The function performs the EM algorithm, see reference below.
 }
 \examples{
 \dontrun{

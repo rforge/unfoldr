@@ -23,9 +23,9 @@ Vector of count data
 \details{
 The function provides basic binning (grouping) of numeric values into
 classes defined by the breaks vector \code{bin}. The values are binned
-according to bin[i[j]]\eqn{<}x[j]\eqn{\leq} bin[i[j]+1] for interval i=1,...,N-1
-for \code{length(bin)=N} and value x[j].
-If x[j] > bin[N] or x[j] < bin[1] then x[j] is not counted at all.
+according to \eqn{bin[i[j]]<x[j]\leq bin[i[j]+1]} for intervals \eqn{i=1,...,N-1}
+and \code{length(bin)=N} of values x[j].' If \eqn{x[j] > bin[N]} or \eqn{x[j] < bin[1]} then \eqn{x[j]}
+is not counted at all.
 }
 \examples{
 	x <- runif(100,0,1)

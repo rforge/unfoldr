@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{drawSpheroidIntersection}
 \alias{drawSpheroidIntersection}
-\title{Draw spheroid intersections in 3D}
+\title{Spheroid intersections 3D}
 \usage{
 drawSpheroidIntersection(E, n = c(0, 1, 0), np = 25)
 }
@@ -14,7 +14,7 @@ drawSpheroidIntersection(E, n = c(0, 1, 0), np = 25)
 \item{np}{number of points for polygon approximation of the ellipses}
 }
 \description{
-Drawing section profiles of spheroids in a 3D image
+Draw section profiles of spheroids in 3
 }
 \details{
 The function requires the package \code{rgl} to be installed for drawing section profiles (ellipses)

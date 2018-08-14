@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{simPoissonSystem}
 \alias{simPoissonSystem}
-\title{Simulation of a Poisson germ-grain process}
+\title{Poisson germ-grain process}
 \usage{
 simPoissonSystem(theta, lam, size = "const", shape = "const",
   orientation = "rbetaiso", type = c("prolate", "oblate", "spheres",
@@ -39,18 +39,18 @@ choose "\code{only}" for section profiles only,
 "\code{original}" for the 3D system only and "\code{digi}" for an integer matrix \code{W} as an discretized (binary) image
 of section profiles}
 
-\item{delta}{lattice constant for discretization, \code{0.01} (default)}
+\item{delta}{lattice constant for discretization, set to \code{0.01} (default)}
 
 \item{intern}{logical, \code{FALSE} (default), whether to return only section profiles with centers inside the simulation window}
 
-\item{perfect}{logical, \code{TRUE} (default), whether to simulate exactly (also called perfect)}
+\item{perfect}{logical, \code{FALSE} (default), whether to simulate exactly (also called perfect)}
 
 \item{pl}{integer, print level and return value type, see details}
 
-\item{label}{character, a label set to each generated object, '\code{N}' (default)}
+\item{label}{character, a label set to each generated object, set to '\code{N}' (default)}
 }
 \value{
-list of objects depending on the chosen return type defined by the argument \code{intersect}
+list of 3D objects depending on the chosen return type defined by the argument \code{intersect}
 }
 \description{
 Simulation of a Poisson germ-grain process with either spheres, spheroids or spherocylinders as grains
@@ -63,12 +63,13 @@ spheroids, spheres or spherocylinders. The argument \code{size} sets the name of
 of the objects, i.e. the semi-major axis lengths in case of spheroids, radii for spheres or the lengths of the main axis
 of rotation for spherocylinders including the caps.
 
-The following directional orientation distributions of the spheroid's major-axis or cylinder's main axis are available:
+The following directional (orientation) distributions of the spheroid's major-axis or cylinder's main axis are available:
 a uniform distribution (\code{runifdir}), isotropic random planar distribution (\code{rbetaiso}, see the reference below)
 and a "von Mises-Fisher" (\code{rvMisesFisher}) distribution. The simulation box is a list containing the ranges of each box dimension
 corresponding to the lower and upper limits in each direction. If the argument \code{box} contains only a single range, i.e. \code{list(c(0,1)}, the
-same limits are assumed for the remaining dimensions. The argument \code{rjoint} names a (joint) distribution function which can be any function
-provided by the user in order to generate the required random parameters for spheroids or spherocylinders, see below.
+same limits are assumed for the remaining dimensions. The argument \code{rjoint} defines a (joint) distribution function which can be any function
+provided by the user in order to generate the required random parameters for spheroids or spherocylinders. An in-depth example of usage is given in
+the example files 'simSpheroids.R' and 'simCylinders.R'.
 
 In addition, the function supports an exact simulation type [2] of the grains. In case of spheroids and spherocylinders setting \code{size="rbinorm"}
 declares a bivariate normal size-shape distribution for which the exact simulation is available setting \code{perfect=TRUE}. More specifically,
@@ -92,10 +93,14 @@ of spheroids or spheres is returned to speed up computation. Note that, the curr
 the joint 3D size-shape-orientation distribution of spherocylinders so far.
 }
 \examples{
+ # intensity parameter
 	lam <- 100
+
  # simulation bounding box
  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
- # log normal size, constant shape, isotropic orientation (rbetaiso) 
+
+ # log normal size distribution with a constant shape factor and
+ # isotropic (\\code{kappa=1}) random orientation, see reference [1] 
  theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
                "shape"=list("s"=0.5),
                "orientation"=list("kappa"=1))

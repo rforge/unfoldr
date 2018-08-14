@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{digitizeProfiles}
 \alias{digitizeProfiles}
-\title{Digitize section profiles}
+\title{Digitization}
 \usage{
 digitizeProfiles(sp, delta = 0.01, win = NULL)
 }
@@ -11,20 +11,20 @@ digitizeProfiles(sp, delta = 0.01, win = NULL)
 
 \item{delta}{lattice constant for discretization of section profiles}
 
-\item{win}{a window, default \code{NULL}, either taken from the attribute of \code{sp} or
+\item{win}{window as a list of length two, default \code{NULL}, either taken from the attribute of \code{sp} or
 defined by the user as \eqn{[l,u]^2} where \code{l,u} are lower, respectively, upper
    bounds of the 2D (intersection) region corresponding to the simulation box}
 }
 \value{
-an image as a binary matrix
+binary (integer) matrix as an image
 }
 \description{
 Digitize 2D section profiles
 }
 \details{
 A list of section profiles, e.g. discs, ellipses or segments from intersected spherocylinders, is digitized according
-to a given resolution according to the lattice constant \code{delta} such that the result is an integer matrix which can
-be seen as a binary image.
+to a given resolution according to the lattice constant \code{delta} such that the result is an integer matrix 
+which can be interpretated as a binary image.
 }
 \examples{
  # simulation box
@@ -39,8 +39,12 @@ be seen as a binary image.
 
  # vertical intersection
  sp <- intersectSystem(S, 2.5)
-  	
- W <- digitizeProfiles(sp, delta=0.01)
+
+ # show intersecting window
+ win <- attr(sp,"win")
+
+ # digitize (could also pass some 'win' as an argument) 	
+ W <- digitizeProfiles(sp, delta=0.01, win = NULL)  
  image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 
 }

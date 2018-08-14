@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{planarSection}
 \alias{planarSection}
-\title{Sphere planar section}
+\title{Sphere planar sections}
 \usage{
 planarSection(S, d, intern = FALSE, pl = 0)
 }
@@ -11,20 +11,20 @@ planarSection(S, d, intern = FALSE, pl = 0)
 
 \item{d}{distance of the (planar) xy-plane to the origin}
 
-\item{intern}{logical, \code{FALSE} (default), whether to return all section profiles or
+\item{intern}{logical, \code{FALSE} (default), whether to return all discs or
 only those which have their centers inside the intersecting window}
 
-\item{pl}{print level, \code{pl>0} for verbose output}
+\item{pl}{print level, \code{pl>0} for some verbose output}
 }
 \value{
-numeric vector of planar section diameters
+numeric vector of disc diameters
 }
 \description{
 Planar intersection of spheres
 }
 \details{
 The function computes the planar intersection of a sphere system and returns the diameters
-of the corrsponding section profiles.
+of the corrsponding discs.
 }
 \examples{
  lam <- 100

@@ -14,26 +14,27 @@ intersectSystem(S, d, n = c(0, 1, 0), intern = FALSE, pl = 0)
 \item{n}{normal vector which defines the intersecting plane}
 
 \item{intern}{logical, \code{FALSE} (default), return all section profiles otherwise
-only those which have their centers inside the intersection window (if the 
-intersected spheroid system had been simulated using exact simulation)}
+   only those which have their centers inside the corresponding intersection window
+(if the intersected system had been simulated using exact simulation)}
 
-\item{pl}{integer, \code{pl=0} (default)}
+\item{pl}{integer, \code{pl=0} (default), for no verbose output and full specification list of section profiles}
 }
 \value{
-list of size, shape and angle of section profiles or a short version of it
+list of size, shape and angle of section profiles or a short version of it, see above
 }
 \description{
 Intersect a system of spheres, spheroids or spherocylinders by a given plane
 }
 \details{
-The function intersects a given (Poisson) system of spheres, spheroids or cylinders by an intersecting plane defined by a
-normal vector, e.g. \code{n=c(0,1,0)}, and thus perpendicular to one of the lateral planes of the simulation box only. 
-The print level \code{pl>=0} sets the type of return value. In case of spheroid intersections, setting \code{pl=10},
-the function returns a short version of the full specification list of section profiles with elements \code{A} (major semi-axis),
-\code{C} (minor semi-axis), \code{S} (shape factor as the ratio of these two) and the angle in the intersecting plane \code{phi}
-between \code{[0,2pi]} relative to the 'x' axis. Otherwise additional components are returned such as the ellipse`s rotation
-matrix \code{A}, the center point \code{center} and constant \code{type=10} (defining full ellipses and not only segments) of the
-section profiles. For sphere intersections only the radii are returned and \code{pl} is ignored in case of cylinder intersections.
+The function intersects a given (Poisson) system of spheres, spheroids or cylinders by a plane defined by a
+normal vector, e.g. \code{n=c(0,1,0)}, perpendicular to one of the bounding planes of the simulation box. 
+For a print level \code{pl>=0} some verbose output is given. Also it sets the type of return value. In case of spheroid
+intersections, setting \code{pl=10}, the function returns a short version of the full specification list of section profiles
+with elements named \code{A} (major semi-axis), \code{C} (minor semi-axis), \code{S} (shape factor as the ratio of these two)
+and \code{phi} as the angle in the intersecting plane between \code{[0,2pi]} w.r.t. the 'x' axis. Otherwise additional components
+are returned such as the ellipse`s rotation matrix, also named \code{A}, the center point \code{center} and a constant \code{type=10}
+(defining full ellipses among other types of intersection objects) of the section profiles. For sphere intersections only the
+radii are returned and \code{pl} is ignored in case of cylinder intersections because there is no short version.
 }
 \examples{
  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))

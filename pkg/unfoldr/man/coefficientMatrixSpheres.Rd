@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{coefficientMatrixSpheres}
 \alias{coefficientMatrixSpheres}
-\title{Compute coefficients for EM algorithm (spheres)}
+\title{Coefficients for Expectation Maximization algorithm}
 \usage{
 coefficientMatrixSpheres(bin)
 }
@@ -16,8 +16,8 @@ array of coefficients
 Matrix of coefficients for Wicksell's corpuscle problem
 }
 \details{
-The function computes the matrix of coefficients for solving the
-discretized integral equation of the Wicksell's corpuscle problem.
+The function computes the matrix of coefficients for solving the discretized integral equation of
+the Wicksell's corpuscle problem.
 }
 \references{
 Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000

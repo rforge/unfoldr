@@ -11,15 +11,15 @@ updateIntersections(S)
 }
 \value{
 binary integer vector of length equal to the length of \code{S}.
-			    THe coding is \code{0} for not interior and \code{1} for interior
 }
 \description{
-Check itersection of either spheres, spheroids or cylinders with the simulation box
+Check itersection of either spheres, spheroids or spherocylinders with the simulation box
 }
 \details{
 For a given list of spheres, spheroids or spherocylinders the function tests whether an object intersects
-the simulation box. The vector returned is of length equal to the number of objects in \code{S} and has entries either \code{1}
-for an object which is intersected by one of the lateral planes of the simulation box and \code{0} otherwise.
+one of the lateral planes (bottom, top plane included) of the simulation box. The vector returned is of length
+equal to the number of objects in \code{S} and has entries either \code{1} for an object which is intersected by
+and \code{0} otherwise.
 }
 \author{
 M. Baaske

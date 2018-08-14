@@ -9,26 +9,26 @@ verticalSection(S, d, n = c(0, 1, 0), intern = FALSE)
 \arguments{
 \item{S}{list of spheroids, see \code{\link{simPoissonSystem}}}
 
-\item{d}{distance of the intersecting plane from the origin of the coordinate system}
+\item{d}{distance of the intersecting plane from the origin of the box}
 
-\item{n}{normal vector which defines the intertecting vertical plane}
+\item{n}{normal vector which defines the interecting vertical plane}
 
 \item{intern}{logical, \code{FALSE} (default), return all section profiles otherwise
-only those which have their centers inside the intersection window}
+only those which have their centers inside the correspondig intersection window}
 }
 \value{
 list of sizes \code{A}, shape factors \code{S} and (vertical) angles \code{alpha}
-              of section profiles in the plane w.r.t the z-axis between \code{[0,pi/2]}.
+              of section profiles in the plane w.r.t the 'z' axis between \code{[0,pi/2]}.
 }
 \description{
-Compute a vertical section of a spheroid system
+Compute vertical section profiles of a spheroid system
 }
 \details{
-The function intersects a spheroid system by an intersecting plane defined by a normal 
-vector \code{n}, equal to \code{c(0,1,0)} (default) or \code{c(1,0,0)} which is called a 
-vertical section. Depending on the type of spheroid (either prolate or oblate) the returned
-lengths are those corresponding to the minor semi-axis and, respectively, major semi-axis in
-the way these are required for unfolding.
+The function intersects a spheroid system by a plane defined by the normal 
+vector \code{n} either equal to \code{c(0,1,0)} (default) or \code{c(1,0,0)} which is then
+called a vertical section. Depending on the type of spheroid (either prolate or oblate) the
+returned lengths are those corresponding to the minor semi-axis and, respectively, major semi-axis
+in the way these are required for unfolding.
 }
 \examples{
  
@@ -41,8 +41,8 @@ the way these are required for unfolding.
   "orientation"="rbetaiso",perfect=TRUE,pl=1)
 
  sp <- verticalSection(S,d=2.5,n=c(0,1,0),intern=TRUE)
- summary(sp$alpha)  # angle [0,pi/2] in the intersecting plane w.r.t z axis
-
+ summary(sp$alpha)
+ 
 }
 \author{
 M. Baaske

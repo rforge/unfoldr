@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{spheroids3d}
 \alias{spheroids3d}
-\title{Draw a spheroid system in 3D}
+\title{Spheroid system 3D}
 \usage{
 spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
   bg.col = "white", clipping = FALSE, ...)
@@ -12,23 +12,23 @@ spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
 
 \item{box}{simulation box}
 
-\item{draw.axes}{logical: if true, draw the axes}
+\item{draw.axes}{logical, whether to show the axes}
 
-\item{draw.box}{logical: if true, draw the bounding box}
+\item{draw.box}{logical, whether to show the bounding box}
 
-\item{draw.bg}{logical: if true, draw the a gray background box}
+\item{draw.bg}{logical, whether to show a gray background box correpsonding to the simulation box}
 
-\item{bg.col}{background color used to draw the box background}
+\item{bg.col}{background color used showw the box background}
 
-\item{clipping}{logical: if true clip to the bounding box}
+\item{clipping}{logical, whether to clip all lateral planes of the simulation box}
 
-\item{...}{further material properties passed to 3d plotting functions}
+\item{...}{further material properties passed to 3D plotting functions}
 }
 \description{
 Draw a spheroid system in 3D
 }
 \details{
-The function requires the package \code{rgl} to be installed. For a full example
+The function requires the package '\code{rgl}' to be installed. For a full example
 please see the file 'simSpheroids.R'.
 }
 \author{

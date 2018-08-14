@@ -2,7 +2,7 @@
 % Please edit documentation in R/spheroid.R
 \name{cylinders3d}
 \alias{cylinders3d}
-\title{Draw a cylinder system in 3D}
+\title{Cylinder system 3D}
 \usage{
 cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE, clipping = FALSE,
   ...)
@@ -12,11 +12,11 @@ cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE, clipping = FALSE,
 
 \item{box}{simulation box}
 
-\item{draw.axes}{logical, if \code{TRUE}, draw the axes}
+\item{draw.axes}{logical, whether to show the axes}
 
-\item{draw.box}{logical, if \code{TRUE}, draw the bounding box}
+\item{draw.box}{logical, whether to show the bounding box}
 
-\item{clipping}{logical, if \code{TRUE}, clip to the bounding box}
+\item{clipping}{logical, whether to clip all lateral planes of the simulation box}
 
 \item{...}{further material properties passed to 3d plotting functions}
 }
