@@ -1,8 +1,10 @@
 \dontrun{
 
 ## Comment: Trivariate unfolding of spheroid distribution
+# library(unfoldr)
 
 ## set number of cpu cores (optional)
+# library(parallel)
 # options(par.unfoldr=detectCores())
 
 ## Intensity: mean number of spheroids per unit volume
@@ -29,7 +31,9 @@ cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\n")
 param3d <- parameters3d(S)
 paramEst <- parameterEstimates(ret$N_V,ret$breaks)
 
-## Marginal histograms
+## Marginal histograms of
+## size (minor semi-axis), shape and orientation
+
 # pdf("spheroidHist.pdf",width = 8, height = 10)
 op <- par(mfrow = c(3, 2))
 hist(param3d$a[param3d$a<max(ret$breaks$size)],
@@ -55,13 +59,12 @@ hist(paramEst$Theta,
 
 hist(param3d$s,main=expression(paste("3D Histogram ", s)),
  col="gray",breaks=ret$breaks$shape,
- right=FALSE,freq=FALSE,xlab="s")
+ right=FALSE,freq=FALSE,xlab="s",ylim=c(0,10))
 
 hist(paramEst$s,main=expression(paste("Estimated Histogram ", hat(s))),
  breaks=ret$breaks$shape,
-right=FALSE,freq=FALSE,col="gray",xlab=expression(hat(s)))
+right=FALSE,freq=FALSE,col="gray",xlab=expression(hat(s)),ylim=c(0,10))
 par(op)
-
 #dev.off()
 	
 }
