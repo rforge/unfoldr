@@ -7,7 +7,7 @@
 sectionProfiles(size, angle, type = c("prolate", "oblate"))
 }
 \arguments{
-\item{size}{matrix of semi-axes lengths}
+\item{size}{matrix of lengths of the semi-axes}
 
 \item{angle}{angle of section profiles in the plane (see details)}
 
@@ -33,8 +33,8 @@ ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the
  data(data15p)
  AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
 
- # for prolates: selecting the minor semi-axis lengths
- # independent of nomenclature, which is always sp$A
+ # selecting the minor semi-axis for prolate type of spheroids:
+ # independent of nomenclature (always named \\code{A})
  sp <- sectionProfiles(AC,as.numeric(unlist(data15p["alpha"])))
 
  summary(sp$A)			# here minor semi-axis because of prolate

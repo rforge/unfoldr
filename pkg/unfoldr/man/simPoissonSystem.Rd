@@ -60,7 +60,7 @@ The function simulates a Poisson germ-grain process given certain form parameter
 and a predefined simulation box. The positions of the germs are generated independently according to a Poisson
 process with mean intensity parameter \code{lam}. The function either generates \code{type="prolate"} or \code{type="oblate"}
 spheroids, spheres or spherocylinders. The argument \code{size} sets the name of the distribution function of the size
-of the objects, i.e. the semi-major axis lengths in case of spheroids, radii for spheres or the lengths of the main axis
+of the objects, i.e. the major semi-axis lengths in case of spheroids, radii for spheres or the lengths of the main axis
 of rotation for spherocylinders including the caps.
 
 The following directional (orientation) distributions of the spheroid's major-axis or cylinder's main axis are available:
@@ -73,14 +73,14 @@ the example files 'simSpheroids.R' and 'simCylinders.R'.
 
 In addition, the function supports an exact simulation type [2] of the grains. In case of spheroids and spherocylinders setting \code{size="rbinorm"}
 declares a bivariate normal size-shape distribution for which the exact simulation is available setting \code{perfect=TRUE}. More specifically,
-for a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho}, the length of the semi-major axis of a spheroid is given by \eqn{a=exp(x)}
-with a (logit-transformed) shape parameter as \eqn{s=1/(1+exp(-y))} and thus a scaled semi-minor axis length \eqn{c=a*s}. This modification leads to a lognormally
-distributed length of the semi-major axis. In case of spherocylinders, the lognormally distributed length of a cylinder is \eqn{len=h+2*r} where
+for a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho}, the length of the major semi-axis of a spheroid is given by \eqn{a=exp(x)}
+with a (logit-transformed) shape parameter as \eqn{s=1/(1+exp(-y))} and thus a scaled minor semi-axis length \eqn{c=a*s}. This modification leads to a
+log normally distributed length of the major semi-axis. In case of spherocylinders, the lognormally distributed length of a cylinder is \eqn{len=h+2*r} where
 \code{h} is the height and \eqn{r=len/2*s} the radius. The main direction \code{u} of the spheroid or spherocylinder is determined by the
-major axis independent of size and shape. Also, the following univariate distributions of the length \code{a} and, respectively, \code{len},
+major axis independent of size and shape. Also, the following univariate distributions of the length \code{a} and, respectively, \code{len} or
 the shape \code{s} are available: `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. One can also use "\code{const}" for a
 simulation with constant lengths or shapes. Only simulations with size distributions `\code{rbinorm}` or `\code{rlnorm}` can use the exact
-type of simulation (\code{perfect=TRUE}).
+type of simulation.
 
 For spheres any distribution of the radii can be specified as a name of a user-defined function in \code{size} as long as the formal named
 function parameters match the actual named parameters exactly as defined in the parameters given by \code{theta}.
