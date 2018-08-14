@@ -34,7 +34,9 @@ ratio of both semi-axes is given by the shape factor \code{S} between \eqn{(0,1]
  # for prolates: selecting the minor semi-axis lengths
  # independent of nomenclature, which is always sp$A
  sp <- sectionProfiles(AC,as.numeric(unlist(data15p["alpha"])))
- summary(sp$alpha)
+ summary(sp$A)			# here minor semi-axis because of prolate
+ summary(sp$S)			# shape factor
+ summary(sp$alpha)		# angle assumed to be w.r.t. z axis 
  
 }
 \author{

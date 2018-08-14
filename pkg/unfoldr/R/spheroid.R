@@ -65,7 +65,9 @@ updateIntersections <- function(S) {
 #'  # for prolates: selecting the minor semi-axis lengths
 #'  # independent of nomenclature, which is always sp$A
 #'  sp <- sectionProfiles(AC,as.numeric(unlist(data15p["alpha"])))
-#'  summary(sp$alpha)
+#'  summary(sp$A)			# here minor semi-axis because of prolate
+#'  summary(sp$S)			# shape factor
+#'  summary(sp$alpha)		# angle assumed to be w.r.t. z axis 
 #'  
 #' @author M. Baaske
 #' @rdname sectionProfiles
@@ -729,6 +731,8 @@ drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 #'  # simulate only 3D system
 #'  S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
 #'    intersect="original", pl=1)
+#'  # return only objects whose centers are within
+#'  # the intersection window
 #'  sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
 #'  # histogram of diameters
 #'  hist(sp)

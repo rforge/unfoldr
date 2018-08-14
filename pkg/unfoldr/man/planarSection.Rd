@@ -35,6 +35,8 @@ of the corrsponding section profiles.
  # simulate only 3D system
  S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
    intersect="original", pl=1)
+ # return only objects whose centers are within
+ # the intersection window
  sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
  # histogram of diameters
  hist(sp)
