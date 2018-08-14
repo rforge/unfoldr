@@ -4,12 +4,12 @@
 \alias{sectionProfiles}
 \title{Construct section profiles}
 \usage{
-sectionProfiles(size, angle, type = c("prolate", "oblate"))
+sectionProfiles(size, alpha, type = c("prolate", "oblate"))
 }
 \arguments{
 \item{size}{matrix of lengths of the semi-axes}
 
-\item{angle}{angle of section profiles in the plane (see details)}
+\item{alpha}{angle of section profiles in the plane (see details)}
 
 \item{type}{name of the spheroid type, either "\code{prolate}" or "\code{oblate}" from which the
 section profiles are assumed to come from}
@@ -31,6 +31,7 @@ ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the
 }
 \examples{
  data(data15p)
+ # matrix of semi-axes lengths (major,minor)
  AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
 
  # selecting the minor semi-axis for prolate type of spheroids:

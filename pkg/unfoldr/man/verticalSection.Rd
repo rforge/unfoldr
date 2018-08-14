@@ -18,7 +18,7 @@ only those which have their centers inside the correspondig intersection window}
 }
 \value{
 list of sizes \code{A}, shape factors \code{S} and (vertical) angles \code{alpha}
-              of section profiles in the plane w.r.t the 'z' axis between \code{[0,pi/2]}.
+              of section profiles in the plane w.r.t the 'z' axis between \eqn{[0,\pi/2]}.
 }
 \description{
 Compute vertical section profiles of a spheroid system

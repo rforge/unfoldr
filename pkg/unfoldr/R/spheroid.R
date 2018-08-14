@@ -54,7 +54,7 @@ updateIntersections <- function(S) {
 #' ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation/direction angle \code{alpha}.
 #'
 #' @param size	  matrix of lengths of the semi-axes
-#' @param angle   angle of section profiles in the plane (see details)
+#' @param alpha   angle of section profiles in the plane (see details)
 #' @param type    name of the spheroid type, either "\code{prolate}" or "\code{oblate}" from which the
 #'                section profiles are assumed to come from
 #'
@@ -62,6 +62,7 @@ updateIntersections <- function(S) {
 #'
 #' @examples
 #'  data(data15p)
+#'  # matrix of semi-axes lengths (major,minor)
 #'  AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
 #' 
 #'  # selecting the minor semi-axis for prolate type of spheroids:
@@ -75,19 +76,21 @@ updateIntersections <- function(S) {
 #' @author M. Baaske
 #' @rdname sectionProfiles
 #' @export
-sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
+sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 	type <- match.arg(type)
 	stopifnot(is.matrix(size))
 	if(anyNA(size) || any(size<0))
 		stop("'size' must have non-negative values.")
-	if(anyNA(angle) || !is.numeric(angle) || any(angle<0))
-		stop(paste("'angle' must have values between zero and ",quote(pi/2),sep=""))
-	if(max(angle)>pi/2)
-	 angle <- sapply(angle,.getAngle)
-    	
+	if(anyNA(alpha) || !is.numeric(alpha) || any(alpha<0))
+		stop(paste("'alpha' must have non-negative values."))
+	if(max(alpha) > pi/2)
+	 alpha <- try(sapply(alpha,.getAngle),silent=TRUE)
+    if(inherits(alpha,"try-error"))
+	 warning("Could not compute 'alpha'. See its returned list element.")	
+    
     structure(list("A"=if(type=="prolate") size[,2] else size[,1],
 				   "S"=size[,2]/size[,1],
-				   "alpha"=angle),							
+				   "alpha"=alpha),							
 		   class=type)
 }
 
@@ -390,7 +393,7 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 #' 				 only those which have their centers inside the correspondig intersection window
 #' 
 #' @return 	 	 list of sizes \code{A}, shape factors \code{S} and (vertical) angles \code{alpha}
-#'               of section profiles in the plane w.r.t the 'z' axis between \code{[0,pi/2]}.
+#'               of section profiles in the plane w.r.t the 'z' axis between \eqn{[0,\pi/2]}.
 #' 
 #' 
 #' @examples  
@@ -426,14 +429,18 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 		 else sapply(ss,"[[",1)
 	
     ## convert angle 'alpha' in the intersecting plane
-	## which is always between [0,pi/2] and w.r.t z axis
+	## which is always between [0,pi/2] and w.r.t 'z' axis
 	alpha <- sapply(ss,"[[",4)
-	if(max(alpha)>pi/2)
-	 alpha <- sapply(alpha,.getAngle)		# alpha in [0,pi/2]
+	if(max(alpha) > pi/2){
+	 alpha <- try(sapply(alpha,.getAngle),silent=TRUE)		# alpha in [0,pi/2]
+	 if(inherits(alpha,"try-error") || !is.numeric(alpha) || anyNA(alpha) )
+	   warning("Could not compute angle 'alpha'. See the returned list element.")
+   	 else alpha <- 0.5*pi-alpha
+ 	}
 		
 	structure(list("A"=A,
 				   "S"=sapply(ss,"[[",3),
-				   "alpha"=0.5*pi-alpha),	# w.r.t z axis in 3D
+				   "alpha"=alpha),	# w.r.t z axis in 3D
 		   "win"=attr(ss,"win"),"plane"=attr(ss,"plane"),
 		 class=class(S) )
 }
