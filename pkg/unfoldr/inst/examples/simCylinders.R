@@ -74,7 +74,7 @@ draw.segments <- function(E, cyltype=0, x=c(0,1), y=x, angle=0, normal=c(0,0,1),
 					psi0 <- ifelse(x$pS>0,-t0,t0)
 					psi1 <- ifelse(x$pS>0, t0,2*pi-t0)
 					draw.ellipse(x$mPoint1[i],x$mPoint1[j], x$rcaps[2], x$rcaps[2],
-						angle=x$phi,	segment=c(psi0,psi1), deg=FALSE,...)
+						angle=x$phi,segment=c(psi0,psi1), deg=FALSE,...)
 					
 					## second end cap
 					t <- x$psi[1]

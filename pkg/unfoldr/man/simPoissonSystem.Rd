@@ -50,7 +50,7 @@ of section profiles}
 \item{label}{character, a label set to each generated object, '\code{N}' (default)}
 }
 \value{
-list of objects depending on the chosen return type defined by argument \code{intersect}
+list of objects depending on the chosen return type defined by the argument \code{intersect}
 }
 \description{
 Simulation of a Poisson germ-grain process with either spheres, spheroids or spherocylinders as grains
@@ -98,7 +98,6 @@ the joint 3D size-shape-orientation distribution of spherocylinders so far.
 	
 library(rgl)
 library(plotrix)
-library(unfoldr)
 
 drawEllipses <- function(E, x=c(0,1), y=x, xlab="x",ylab="y", bg="gray", angle=0, ...) {
 	Es <- sapply(E,
@@ -117,9 +116,11 @@ drawEllipses <- function(E, x=c(0,1), y=x, xlab="x",ylab="y", bg="gray", angle=0
 	if(angle>0) {
 		M <- matrix( c(cos(angle), -sin(angle), sin(angle), cos(angle)), 2, 2 )
 		XY <- matrix( c(Es["x",],Es["y",]), nc=2)  \%*\% M
-		draw.ellipse(-XY[,1],XY[,2], Es["a",], Es["b",], angle=Es["phi",]+angle, deg=FALSE,...)
+		draw.ellipse(-XY[,1],XY[,2], Es["a",], Es["b",],
+			angle=Es["phi",]+angle, deg=FALSE,...)
 	} else  {
-		draw.ellipse(Es["x",], Es["y",], Es["a",], Es["b",], angle=Es["phi",], deg=FALSE,...)
+		draw.ellipse(Es["x",], Es["y",], Es["a",], Es["b",],
+			angle=Es["phi",], deg=FALSE,...)
 	}
 	
 	ret <- apply(Es,2,function(x) as.list(x))

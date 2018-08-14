@@ -29,7 +29,6 @@ The function performs the EM algorithm.
 
 library(rgl)
 library(plotrix)
-library(unfoldr)
 
 spheres <- function(spheres, box=NULL, draw.box=FALSE, draw.axis=FALSE, ...) {
 	xyz <- apply(sapply(spheres, "[[", "center"),1,function(x) x)

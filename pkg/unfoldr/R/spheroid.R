@@ -380,7 +380,7 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 			sapply(ss,"[[",2)
 		 else sapply(ss,"[[",1)
 	
-    ## convert angle ´alpha´ in the intersecting plane
+    ## convert angle 'alpha' in the intersecting plane
 	## which is always between [0,pi/2] and w.r.t z axis
 	alpha <- sapply(ss,"[[",4)
 	if(max(alpha)>pi/2)
