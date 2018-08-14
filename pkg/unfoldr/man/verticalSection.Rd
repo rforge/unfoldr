@@ -30,6 +30,20 @@ vertical section. Depending on the type of spheroid (either prolate or oblate) t
 lengths are those corresponding to the minor semi-axis and, respectively, major semi-axis in
 the way these are required for unfolding.
 }
+\examples{
+ 
+ box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+ # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
+ theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
+		"orientation"=list("kappa"=1))
+
+ S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
+  "orientation"="rbetaiso",perfect=TRUE,pl=1)
+
+ sp <- verticalSection(S,d=2.5,n=c(0,1,0),intern=TRUE)
+ summary(sp$alpha)  # angle [0,pi/2] in the intersecting plane w.r.t z axis
+
+}
 \author{
 M. Baaske
 }

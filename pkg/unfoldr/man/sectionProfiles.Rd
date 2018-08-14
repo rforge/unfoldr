@@ -28,6 +28,15 @@ and the vertical axis of the coordinate system in the intersection plane. For va
 \code{A} of section profiles corresponding to the type of spheroids which are intended to be reconstructed (by unfolding), the aspect
 ratio of both semi-axes is given by the shape factor \code{S} between \eqn{(0,1]} where the orientation angle is named \code{alpha}.
 }
+\examples{
+ data(data15p)
+ AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
+ # for prolates: selecting the minor semi-axis lengths
+ # independent of nomenclature, which is always sp$A
+ sp <- sectionProfiles(AC,as.numeric(unlist(data15p["alpha"])))
+ summary(sp$alpha)
+ 
+}
 \author{
 M. Baaske
 }

@@ -26,6 +26,25 @@ Planar intersection of spheres
 The function computes the planar intersection of a sphere system and returns the diameters
 of the corrsponding section profiles.
 }
+\examples{
+ lam <- 100
+ # parameter rlnorm distribution (radii)
+ theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
+ # simulation bounding box
+ box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+ # simulate only 3D system
+ S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
+   intersect="original", pl=1)
+ sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
+ # histogram of diameters
+ hist(sp)
+ summary(sp)
+ # distribution of radii
+ mean(log(sp/2))
+ sd(log(sp/2))
+
+
+}
 \author{
 M. Baaske
 }

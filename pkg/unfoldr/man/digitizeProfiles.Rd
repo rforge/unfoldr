@@ -16,7 +16,7 @@ defined by the user as \eqn{[l,u]^2} where \code{l,u} are lower, respectively, u
    bounds of the 2D (intersection) region corresponding to the simulation box}
 }
 \value{
-image as a matrix
+an image as a binary matrix
 }
 \description{
 Digitize 2D section profiles
@@ -25,6 +25,23 @@ Digitize 2D section profiles
 A list of section profiles, e.g. discs, ellipses or segments from intersected spherocylinders, is digitized according
 to a given resolution according to the lattice constant \code{delta} such that the result is an integer matrix which can
 be seen as a binary image.
+}
+\examples{
+ box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+ # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
+ theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
+		"orientation"=list("kappa"=1))
+
+ # return only 3D system
+ S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
+  "intersect"="original","orientation"="rbetaiso",n=c(0,1,0),perfect=TRUE,pl=1)
+
+ # vertical intersection
+ sp <- intersectSystem(S, 2.5)
+  	
+ W <- digitizeProfiles(sp, delta=0.01)
+ image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
+
 }
 \author{
 M. Baaske

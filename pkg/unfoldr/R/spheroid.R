@@ -58,7 +58,15 @@ updateIntersections <- function(S) {
 #' @param type    name of spheroid type, either "\code{prolate}" or "\code{oblate}"
 #'
 #' @return 		  section profiles object, either of class "\code{prolate}" or "\code{oblate}"
-#' 
+#'
+#' @examples
+#'  data(data15p)
+#'  AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
+#'  # for prolates: selecting the minor semi-axis lengths
+#'  # independent of nomenclature, which is always sp$A
+#'  sp <- sectionProfiles(AC,as.numeric(unlist(data15p["alpha"])))
+#'  summary(sp$alpha)
+#'  
 #' @author M. Baaske
 #' @rdname sectionProfiles
 #' @export
@@ -141,8 +149,18 @@ sectionProfiles <- function(size,angle,type=c("prolate","oblate")) {
 #'  
 #' @return 		   list of objects depending on the chosen return type defined by the argument \code{intersect}
 #'
-#' @example inst/examples/simSpheroids.R
-#'
+#' @examples
+#' 	lam <- 100
+#'  # simulation bounding box
+#'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  # log normal size, constant shape, isotropic orientation (rbetaiso) 
+#'  theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
+#'                "shape"=list("s"=0.5),
+#'                "orientation"=list("kappa"=1))
+#' 
+#'  S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="oblate",pl=1) 
+#'	length(S)
+#' 
 #' @references
 #'	 \itemize{
 #'		\item{} {Ohser, J. and Schladitz, K. 3D images of materials structures Wiley-VCH, 2009}
@@ -249,9 +267,9 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 			 stop("`shape` parameters must be given in `theta`.")
 			it <- match(names(theta$shape),fargs)
 			if(length(it)==0 || anyNA(it))
-				stop(paste("Arguments of 'shape' must match formal arguments of function ",shape,sep=""))
+				stop(paste0("Arguments of 'shape' must match formal arguments of function ",shape,sep=""))
 		} else {
-			stop(paste("Undefined `", shape, "` distribution function."))
+			stop(paste0("Undefined `", shape, "` distribution function."))
 		}
 		
 		if(!is.list(theta$size) || length(theta$size)==0L)
@@ -270,10 +288,13 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 			 
 			 it <- match(names(theta$size),fargs)
 			 if(length(it)==0 || anyNA(it))
-				 stop(paste("Arguments of 'size' must match formal arguments of function ",size,sep=""))
+				 stop(paste0("Arguments of 'size' must match formal arguments of function ",size,sep=""))
 			 		
+		 } else if(size == "const"){
+			 if(!is.list(theta$size) || length(theta$size) == 0L)
+				 theta$size <- list(1,1)
 		 } else {
-			stop(paste("Undefined `", size, "` distribution function."))
+			stop(paste0("Undefined `", size, "` distribution function."))
 		 }
 		 
 		 it <- pmatch(orientation,c("runifdir","rbetaiso","rvMisesFisher","const"))
@@ -360,6 +381,19 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 #' @return 	 	 list of sizes \code{A}, shape factors \code{S} and (vertical) angles \code{alpha}
 #'               of section profiles in the plane w.r.t the z-axis between \code{[0,pi/2]}.
 #' 
+#' 
+#' @examples  
+#'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
+#'  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
+#' 		"orientation"=list("kappa"=1))
+#' 
+#'  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
+#'   "orientation"="rbetaiso",perfect=TRUE,pl=1)
+#' 
+#'  sp <- verticalSection(S,d=2.5,n=c(0,1,0),intern=TRUE)
+#'  summary(sp$alpha)  # angle [0,pi/2] in the intersecting plane w.r.t z axis
+#' 
 #' @author M. Baaske
 #' @rdname verticalSection 
 #' @export
@@ -389,8 +423,8 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	structure(list("A"=A,
 				   "S"=sapply(ss,"[[",3),
 				   "alpha"=0.5*pi-alpha),	# w.r.t z axis in 3D
-			class=class(S)
-	)
+		   "win"=attr(ss,"win"),"plane"=attr(ss,"plane"),
+		 class=class(S) )
 }
 
 #' Intersection in 3D
@@ -402,19 +436,30 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 #' The print level \code{pl>=0} sets the type of return value. In case of spheroid intersections, setting \code{pl=10},
 #' the function returns a short version of the full specification list of section profiles with elements \code{A} (major semi-axis),
 #' \code{C} (minor semi-axis), \code{S} (shape factor as the ratio of these two) and the angle in the intersecting plane \code{phi}
-#' between \code{[0,2pi)} relative to the 'x' axis. Otherwise additional components are returned such as the ellipse`s rotation
+#' between \code{[0,2pi]} relative to the 'x' axis. Otherwise additional components are returned such as the ellipse`s rotation
 #' matrix \code{A}, the center point \code{center} and constant \code{type=10} (defining full ellipses and not only segments) of the
 #' section profiles. For sphere intersections only the radii are returned and \code{pl} is ignored in case of cylinder intersections.     
 #'
 #' @param S		 list of spheres, spheroids or spherocylinders, see \code{\link{simPoissonSystem}}
 #' @param d 	 distance of the the box-aligned intersecting plane from the origin
-#' @param n 	 normal vector which defines the intersting plane
+#' @param n 	 normal vector which defines the intersecting plane
 #' @param intern logical, \code{FALSE} (default), return all section profiles otherwise
 #' 				 only those which have their centers inside the intersection window (if the 
 #' 				 intersected spheroid system had been simulated using exact simulation)
-#' @param pl	 integer, \code{pl=0} (default), only return pointer to stored intersections
+#' @param pl	 integer, \code{pl=0} (default)
 #' 				
-#' @return list of size, shape and angle of section profiles
+#' @return list of size, shape and angle of section profiles or a short version of it
+#' 
+#' @examples
+#'   box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'   # constant size-shape orientation distribution (spheroids)
+#'   theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
+#' 
+#'   S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
+#'    "orientation"="rbetaiso",pl=1)
+#'  
+#'  # return short version of section profiles
+#'  sp <- intersectSystem(S, 2.5, pl=10)		
 #' 
 #' @author M. Baaske
 #' @rdname intersectSystem
@@ -443,7 +488,7 @@ intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
 #'
 #' Draw a spheroid system in 3D
 #'
-#' The function requires the package \code{rgl} to be installed.
+#' The function requires the package \code{rgl} to be installed. For a full example please see the file 'simSpheroids.R'.
 #'
 #' @param S				list of spheroids, see \code{\link{simPoissonSystem}}
 #' @param box			simulation box
@@ -534,7 +579,7 @@ spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE,
 #'
 #' Draw spherocylinders in 3D
 #'
-#' The function requires the package \code{rgl} to be installed.
+#' The function requires the package \code{rgl} to be installed. For a full example please see the file 'simCylinders.R'.
 #'
 #' @param S				list of cylinders, see \code{\link{simPoissonSystem}}
 #' @param box			simulation box
@@ -611,7 +656,7 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 #' Drawing section profiles of spheroids in a 3D image
 #'
 #' The function requires the package \code{rgl} to be installed for drawing section profiles (ellipses)
-#' into a 3D image.
+#' into a 3D image. For a full example please see the file 'simSpheroids.R'.
 #'
 #' @param E				a list of spheroid intersections, see \code{\link{intersectSystem}}
 #' @param n 			the normal vector of the intersecting plane
@@ -672,6 +717,24 @@ drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 #' @param pl		print level, \code{pl>0} for verbose output
 #'
 #' @return 			numeric vector of planar section diameters
+#' 
+#' @examples
+#'  lam <- 100
+#'  # parameter rlnorm distribution (radii)
+#'  theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
+#'  # simulation bounding box
+#'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  # simulate only 3D system
+#'  S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
+#'    intersect="original", pl=1)
+#'  sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
+#'  # histogram of diameters
+#'  hist(sp)
+#'  summary(sp)
+#'  # distribution of radii
+#'  mean(log(sp/2))
+#'  sd(log(sp/2))
+#' 
 #' 
 #' @author M. Baaske
 #' @rdname planarSection
@@ -816,7 +879,23 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #'                  defined by the user as \eqn{[l,u]^2} where \code{l,u} are lower, respectively, upper
 #' 					bounds of the 2D (intersection) region corresponding to the simulation box 
 #' 
-#' @return 			image as a matrix
+#' @examples
+#'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
+#'  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
+#' 		"orientation"=list("kappa"=1))
+#' 
+#'  # return only 3D system
+#'  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
+#'   "intersect"="original","orientation"="rbetaiso",n=c(0,1,0),perfect=TRUE,pl=1)
+#' 
+#'  # vertical intersection
+#'  sp <- intersectSystem(S, 2.5)
+#'   	
+#'  W <- digitizeProfiles(sp, delta=0.01)
+#'  image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
+#' 
+#' @return 			an image as a binary matrix
 #'
 #' @author M. Baaske
 #' @rdname digitizeProfiles

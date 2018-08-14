@@ -11,16 +11,16 @@ intersectSystem(S, d, n = c(0, 1, 0), intern = FALSE, pl = 0)
 
 \item{d}{distance of the the box-aligned intersecting plane from the origin}
 
-\item{n}{normal vector which defines the intersting plane}
+\item{n}{normal vector which defines the intersecting plane}
 
 \item{intern}{logical, \code{FALSE} (default), return all section profiles otherwise
 only those which have their centers inside the intersection window (if the 
 intersected spheroid system had been simulated using exact simulation)}
 
-\item{pl}{integer, \code{pl=0} (default), only return pointer to stored intersections}
+\item{pl}{integer, \code{pl=0} (default)}
 }
 \value{
-list of size, shape and angle of section profiles
+list of size, shape and angle of section profiles or a short version of it
 }
 \description{
 Intersect a system of spheres, spheroids or spherocylinders by a given plane
@@ -31,9 +31,21 @@ normal vector, e.g. \code{n=c(0,1,0)}, and thus perpendicular to one of the late
 The print level \code{pl>=0} sets the type of return value. In case of spheroid intersections, setting \code{pl=10},
 the function returns a short version of the full specification list of section profiles with elements \code{A} (major semi-axis),
 \code{C} (minor semi-axis), \code{S} (shape factor as the ratio of these two) and the angle in the intersecting plane \code{phi}
-between \code{[0,2pi)} relative to the 'x' axis. Otherwise additional components are returned such as the ellipse`s rotation
+between \code{[0,2pi]} relative to the 'x' axis. Otherwise additional components are returned such as the ellipse`s rotation
 matrix \code{A}, the center point \code{center} and constant \code{type=10} (defining full ellipses and not only segments) of the
 section profiles. For sphere intersections only the radii are returned and \code{pl} is ignored in case of cylinder intersections.
+}
+\examples{
+  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+  # constant size-shape orientation distribution (spheroids)
+  theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
+
+  S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
+   "orientation"="rbetaiso",pl=1)
+ 
+ # return short version of section profiles
+ sp <- intersectSystem(S, 2.5, pl=10)		
+
 }
 \author{
 M. Baaske

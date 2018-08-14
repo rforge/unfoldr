@@ -1,14 +1,10 @@
-\dontrun{
-
 ## Comment: Trivariate unfolding of spheroid distribution
-# library(unfoldr)
 
 ## set number of cpu cores (optional)
-# library(parallel)
-# options(par.unfoldr=detectCores())
+options(par.unfoldr=2L)
 
 ## Intensity: mean number of spheroids per unit volume
-lam <- 2500
+lam <- 2000
 
 ## simulation parameters
 theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
@@ -34,7 +30,6 @@ paramEst <- parameterEstimates(ret$N_V,ret$breaks)
 ## Marginal histograms of
 ## size (minor semi-axis), shape and orientation
 
-# pdf("spheroidHist.pdf",width = 8, height = 10)
 op <- par(mfrow = c(3, 2))
 hist(param3d$a[param3d$a<max(ret$breaks$size)],
  main=expression(paste("3D Histogram ", c)),
@@ -65,6 +60,4 @@ hist(paramEst$s,main=expression(paste("Estimated Histogram ", hat(s))),
  breaks=ret$breaks$shape,
 right=FALSE,freq=FALSE,col="gray",xlab=expression(hat(s)),ylim=c(0,10))
 par(op)
-#dev.off()
-	
-}
+

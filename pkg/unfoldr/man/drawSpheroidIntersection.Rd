@@ -18,7 +18,7 @@ Drawing section profiles of spheroids in a 3D image
 }
 \details{
 The function requires the package \code{rgl} to be installed for drawing section profiles (ellipses)
-into a 3D image.
+into a 3D image. For a full example please see the file 'simSpheroids.R'.
 }
 \author{
 M. Baaske
