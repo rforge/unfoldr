@@ -27,6 +27,7 @@ to a given resolution according to the lattice constant \code{delta} such that t
 be seen as a binary image.
 }
 \examples{
+ # simulation box
  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),

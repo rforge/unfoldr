@@ -451,12 +451,12 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 #' @return list of size, shape and angle of section profiles or a short version of it
 #' 
 #' @examples
-#'   box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
-#'   # constant size-shape orientation distribution (spheroids)
-#'   theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
+#'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  # constant size-shape orientation distribution (spheroids)
+#'  theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
 #' 
-#'   S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
-#'    "orientation"="rbetaiso",pl=1)
+#'  S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
+#'   "orientation"="rbetaiso",pl=1)
 #'  
 #'  # return short version of section profiles
 #'  sp <- intersectSystem(S, 2.5, pl=10)		
@@ -488,7 +488,8 @@ intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
 #'
 #' Draw a spheroid system in 3D
 #'
-#' The function requires the package \code{rgl} to be installed. For a full example please see the file 'simSpheroids.R'.
+#' The function requires the package \code{rgl} to be installed. For a full example
+#' please see the file 'simSpheroids.R'.
 #'
 #' @param S				list of spheroids, see \code{\link{simPoissonSystem}}
 #' @param box			simulation box
@@ -579,7 +580,8 @@ spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE,
 #'
 #' Draw spherocylinders in 3D
 #'
-#' The function requires the package \code{rgl} to be installed. For a full example please see the file 'simCylinders.R'.
+#' The function requires the package \code{rgl} to be installed. For a full example please see
+#' the file 'simCylinders.R'.
 #'
 #' @param S				list of cylinders, see \code{\link{simPoissonSystem}}
 #' @param box			simulation box
@@ -880,6 +882,7 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #' 					bounds of the 2D (intersection) region corresponding to the simulation box 
 #' 
 #' @examples
+#'  # simulation box
 #'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
 #'  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
 #'  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),

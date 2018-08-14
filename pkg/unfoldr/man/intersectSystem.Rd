@@ -36,12 +36,12 @@ matrix \code{A}, the center point \code{center} and constant \code{type=10} (def
 section profiles. For sphere intersections only the radii are returned and \code{pl} is ignored in case of cylinder intersections.
 }
 \examples{
-  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
-  # constant size-shape orientation distribution (spheroids)
-  theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
+ box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+ # constant size-shape orientation distribution (spheroids)
+ theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
 
-  S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
-   "orientation"="rbetaiso",pl=1)
+ S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
+  "orientation"="rbetaiso",pl=1)
  
  # return short version of section profiles
  sp <- intersectSystem(S, 2.5, pl=10)		

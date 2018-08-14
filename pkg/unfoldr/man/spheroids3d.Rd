@@ -28,7 +28,8 @@ spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
 Draw a spheroid system in 3D
 }
 \details{
-The function requires the package \code{rgl} to be installed. For a full example please see the file 'simSpheroids.R'.
+The function requires the package \code{rgl} to be installed. For a full example
+please see the file 'simSpheroids.R'.
 }
 \author{
 M. Baaske
