@@ -613,7 +613,8 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    {
 
 	      // size parameters
-	      SEXP R_tmp = VECTOR_ELT( R_args, 0);
+	      SEXP R_tmp = R_NilValue;
+	      PROTECT(R_tmp = VECTOR_ELT( R_args, 0));
 	      if(isNull(R_tmp) || LENGTH(R_tmp) != 5)
 	    	error(_("Number of arguments required for bivariate normal is invalid."));
 
@@ -622,6 +623,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	      double sdx = REAL(getListElement( R_tmp, "sdx"))[0];
 	      double sdy = REAL(getListElement( R_tmp, "sdy"))[0];
 	      double rho = REAL(getListElement( R_tmp, "rho"))[0];
+	      UNPROTECT(1);
 
 	      if(isPerfect) {
 
@@ -635,6 +637,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    	 }
 
 	    	 GetRNGstate();
+
 			 if(!std::strcmp(ftype_dir, "runifdir" ))
 			 {
 				 runidir_t rdirect;
@@ -643,10 +646,11 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 			 } else {
 
 				// direction parameters
-				SEXP R_tmp = getListElement( R_args, "orientation" );
+				PROTECT(R_tmp = getListElement( R_args, "orientation" ));
 				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)									/* only one parameter required */
 				  error(_("Argument `orientation` must have length equal to one."));
-				double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
+				double kappa = REAL(VECTOR_ELT(R_tmp,0))[0];
+				UNPROTECT(1);
 
 				if(!std::strcmp( ftype_dir, "rbetaiso" )) {
 
@@ -668,6 +672,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				}
 
 			}
+
 		    PutRNGstate();
 
 	      }  else { /* end isPerfect */
@@ -690,10 +695,11 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 			 } else {
 
 				// direction parameters
-				SEXP R_tmp = getListElement( R_args, "orientation" );
+				PROTECT(R_tmp = getListElement( R_args, "orientation" ));
 				if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
 				  error(_("Argument `orientation` must have length equal to one."));
 				double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
+				UNPROTECT(1);
 
 				if(!std::strcmp( ftype_dir, "rbetaiso" )) {
 
@@ -722,18 +728,21 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 	    	 */
 
 	    	/// size
-	    	SEXP R_tmp = getListElement( R_args, "size" );
+	    	SEXP R_tmp = R_NilValue;
+	    	PROTECT(R_tmp = getListElement( R_args, "size" ));
 	       	if(isNull(R_tmp) || LENGTH(R_tmp) == 0)
 	    	 error(_("Parameters for `size` cannot have length zero."));
 	    	double p1 = REAL(VECTOR_ELT( R_tmp ,0))[0];
 	    	double p2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);	  /* could be constant then only one parameter */
+	    	UNPROTECT(1);
 
 	    	// shape
-	    	R_tmp = getListElement( R_args, "shape" );
+	    	PROTECT(R_tmp = getListElement( R_args, "shape" ));
 			if(isNull(R_tmp) || LENGTH(R_tmp) == 0)
 			 error(_("Parameters for `shape` cannot have length zero."));
 			double s1 = REAL(VECTOR_ELT( R_tmp ,0))[0];
 			double s2 = (LENGTH(R_tmp) > 1 ? REAL(VECTOR_ELT( R_tmp,1))[0] : 0.0);
+			UNPROTECT(1);
 
 			if( isPerfect && !std::strcmp( ftype_size, "rlnorm")) {
 
@@ -756,10 +765,11 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				} else {
 
 					// direction parameters
-					R_tmp = getListElement( R_args, "orientation" );
+					PROTECT(R_tmp = getListElement( R_args, "orientation" ));
 					if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
 					  error(_("Argument `orientation` must have length equal to one."));
-					double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
+					double kappa = REAL(VECTOR_ELT(R_tmp,0))[0];
+					UNPROTECT(1);
 
 					if(!std::strcmp( ftype_dir, "rbetaiso" )) {
 
@@ -775,6 +785,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 					   error(_("Direction distribution type is not supported."));
 					}
 				}
+
 				PutRNGstate();
 
 			} else  {
@@ -798,10 +809,11 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 				} else {
 
 					// direction parameters
-					R_tmp = getListElement( R_args, "orientation" );
+					PROTECT(R_tmp = getListElement( R_args, "orientation" ));
 					if(isNull(R_tmp) || LENGTH(R_tmp) != 1)
 					  error(_("Argument `orientation` must have length equal to one."));
 					double kappa = REAL(VECTOR_ELT(R_tmp ,0))[0];
+					UNPROTECT(1);
 
 					if(!std::strcmp( ftype_dir, "rbetaiso" )) {
 
@@ -817,6 +829,7 @@ void CPoissonSystem<T>::simSystem(SEXP R_args, SEXP R_cond) {
 					   error(_("Direction distribution type is not supported."));
 					}
 				}
+
 				PutRNGstate();
 			}
 	    }
@@ -857,9 +870,9 @@ void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
      for (size_t niter=0; niter<m_num; niter++)
      {
          PROTECT(Reval = R_tryEval(R_call,R_rho,&info));
-         if(info != 0)
-           error(_("simJoint(): R `try` error in user defined distribution function."));
-
+         if(info != 0){
+           error(_("simJoint(): R 'try-error' in evaluation of user-defined distribution function."));
+         }
          a = REAL(getListElement(Reval,"a"))[0];			// 2nd. semi-minor
          b = REAL(getListElement(Reval,"b"))[0];			// 		semi-major
          c = REAL(getListElement(Reval,"c"))[0];			// 1st. semi-minor
@@ -906,7 +919,8 @@ void CPoissonSystem<CSpheroid>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 		   Rprintf("Spheroid simulation with `%s` (perfect=%d): \n", type, perfect);
 		   if(perfect)
 			   Rprintf("Mean number: %f (exact simulation: %f) \n", m_lam, mu);
-		   else Rprintf("Mean number: %f (Box volume %f) \n", m_lam, mu);
+		   else
+			   Rprintf("Mean number: %f (Box volume %f) \n", m_lam, mu);
 		   Rprintf("Number of spheroids: %d \n", m_num);
 		   Rprintf("Set label '%s'. \n",label);
 		   Rprintf("\n\n");
@@ -980,7 +994,7 @@ void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
      {
          Reval = R_tryEval(R_call,R_rho,&info);
          if(info != 0)
-           error(_("simJoint(): `try` error in user defined distribution function."));
+           error(_("simJoint(): R 'try-error' error in evaluation of user-defined distribution function."));
 
          h = REAL(getListElement(Reval,"h"))[0]; 				/* height of cylinder! */
          r = REAL(getListElement(Reval,"r"))[0];				/* radius */
@@ -1018,7 +1032,8 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
 	   Rprintf("Cylinder simulation with `%s` (perfect=%d): \n", type, perfect);
 	   if(perfect)
 		   Rprintf("Mean number: %f (exact simulation: %f) \n", m_lam, mu);
-	   else Rprintf("Mean number: %f (Box volume %f) \n", m_lam, mu);
+	   else
+		   Rprintf("Mean number: %f (Box volume %f) \n", m_lam, mu);
 	   Rprintf("Number of cylinders: %d \n", m_num);
 	   Rprintf("Set label '%s'. \n",label);
 	   Rprintf("\n");
@@ -1028,10 +1043,11 @@ void CPoissonSystem<CCylinder>::simBivariate(T1 &rdist, DIR &rdir, const char *l
     double r=0, 					/* radius and half length */
     	   h=0,s=1,phi=0,theta=0;
 
-    if(perfect) {
+    if(perfect)
+    {
     	  double len2=0;			/* exact simulation radius */
 
-      	  for (size_t niter=0; niter<m_num; niter++)
+    	  for (size_t niter=0; niter<m_num; niter++)
       	  {
       		  rdist(s,h,r);				/* h is full length of cylinder including caps */
 			  len2 = 0.5*h;				/* half length is `radius` for exact simulation */
@@ -1478,17 +1494,17 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 
 STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid)
 {
-  STGM::CVector3d ctr(REAL(AS_NUMERIC( VECTOR_ELT( R_spheroid, 1))));
-  STGM::CVector3d   u(REAL(AS_NUMERIC( VECTOR_ELT( R_spheroid, 2))));
+  STGM::CVector3d ctr(REAL(VECTOR_ELT( R_spheroid, 1)));
+  STGM::CVector3d   u(REAL(VECTOR_ELT( R_spheroid, 2)));
 
   SEXP R_acb, R_angles;
-  PROTECT( R_acb     = AS_NUMERIC( VECTOR_ELT( R_spheroid, 3)));
-  PROTECT( R_angles = AS_NUMERIC( VECTOR_ELT( R_spheroid, 4)));
+  PROTECT( R_acb    = VECTOR_ELT(R_spheroid, 3));
+  PROTECT( R_angles = VECTOR_ELT(R_spheroid, 4));
   UNPROTECT(2);
 
   return STGM::CSpheroid(ctr,REAL(R_acb)[0],REAL(R_acb)[1],REAL(R_acb)[2],u,
 			  REAL(R_angles)[0],REAL(R_angles)[1],
-			  INTEGER(AS_INTEGER( getListElement( R_spheroid, "id")))[0],
+			  INTEGER(getListElement( R_spheroid, "id"))[0],
 			  translateChar(asChar(getAttrib(R_spheroid, install("label")))),
 			  INTEGER(getAttrib(R_spheroid, install("interior")))[0]);
 }
@@ -1510,10 +1526,10 @@ STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids)
 
 STGM::CSphere convert_C_Sphere(SEXP R_sphere)
 {
-	STGM::CVector3d ctr(REAL(AS_NUMERIC(getListElement( R_sphere, "center"))));
+	STGM::CVector3d ctr(REAL(getListElement( R_sphere, "center")));
 
-	return STGM::CSphere(ctr,REAL(AS_NUMERIC(getListElement(R_sphere, "r")))[0],
-			INTEGER(AS_INTEGER( getListElement( R_sphere, "id")))[0],
+	return STGM::CSphere(ctr,REAL(getListElement(R_sphere, "r"))[0],
+			INTEGER(getListElement( R_sphere, "id"))[0],
 			translateChar(asChar(getAttrib(R_sphere, install("label")))),
 			INTEGER(getAttrib(R_sphere, install("interior")))[0]);
 }
@@ -1525,47 +1541,12 @@ STGM::Spheres convert_C_Spheres(SEXP R_spheres)
   spheres.reserve(num);
 
   for(size_t i=0; i < num; i++) {
-      spheres.push_back( convert_C_Sphere( VECTOR_ELT(R_spheres,i) ) );
+      spheres.push_back(convert_C_Sphere( VECTOR_ELT(R_spheres,i) ) );
   }
 
   return spheres;
 }
 
-
-/**
- * Needed for digitization only
- */
-/*
-STGM::Ellipses convert_C_Ellipses(SEXP R_ellipses)
-{
-  STGM::Ellipses ellipses;
-  SEXP R_tmp, R_ctr,R_ab, R_minor, R_major;
-
-  for(int i=0; i<length(R_ellipses); i++) {
-     PROTECT(R_tmp   = VECTOR_ELT(R_ellipses,i));
-     PROTECT(R_ctr   = AS_NUMERIC( getListElement( R_tmp, "center")));
-     PROTECT(R_minor = AS_NUMERIC( getListElement( R_tmp, "minor")));
-     PROTECT(R_major = AS_NUMERIC( getListElement( R_tmp, "major")));
-     PROTECT(R_ab    = AS_NUMERIC( getListElement( R_tmp, "ab")));
-
-    //BUG: Constructor with matrix A has a bug to determine the correct angle phi
-
-     STGM::CPoint2d ctr(REAL(R_ctr)[0],REAL(R_ctr)[1]);
-     STGM::CPoint2d minorAxis(REAL(R_minor)[0],REAL(R_minor)[1]);
-     STGM::CPoint2d majorAxis(REAL(R_major)[0],REAL(R_major)[1]);
-
-     // m_A is re-computed
-     ellipses.push_back(STGM::CEllipse2(ctr,majorAxis,minorAxis,
-    		 	 	 	REAL(R_ab)[0],REAL(R_ab)[1],
-						INTEGER(AS_INTEGER( getListElement( R_tmp, "id")))[0],
-						REAL(AS_NUMERIC(getListElement( R_tmp, "A")))[0]));
-
-     UNPROTECT(5);
-  }
-
-  return ellipses;
-}
-*/
 
 SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp) {
   int nProtected=0, ncomps=6, dim=3;
@@ -1618,12 +1599,14 @@ SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp) {
     REAL(R_angles)[0]=spheroid.theta();
     REAL(R_angles)[1]=spheroid.phi();
 
+    const STGM::CMatrix3d &M = spheroid.rotationMatrix();
+    COPY_C2R_MATRIX(M,R_rotM,dim);
+
+    /*
     for (int i = 0; i < dim; i++)
       for (int j = 0; j < dim; j++)
-        REAL(R_rotM)[i + dim *j] = (spheroid.rotationMatrix())[i][j];
-
-    //STGM::CMatrix3d &M = spheroid.rotationMatrix();
-    //COPY_C2R_MATRIX(M,R_rotM,dim);
+        REAL(R_rotM)[i + dim *j] = M[i][j];
+    */
 
     SET_VECTOR_ELT(R_tmp,0,ScalarInteger(spheroid.Id()));
     SET_VECTOR_ELT(R_tmp,1,R_center);
@@ -1639,6 +1622,7 @@ SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp) {
     SET_STRING_ELT(names, 3, mkChar("acb"));
     SET_STRING_ELT(names, 4, mkChar("angles"));
     SET_STRING_ELT(names, 5, mkChar("rotM"));
+
     setAttrib(R_tmp, R_NamesSymbol, names);
     setAttrib(R_tmp, install("label"), mkString(spheroid.label()) );
     setAttrib(R_tmp, install("interior"), ScalarLogical(interior));
@@ -1678,10 +1662,6 @@ SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes, STGM
 
   REAL(R_angles)[0]=cyl.theta();
   REAL(R_angles)[1]=cyl.phi();
-
-  //for (size_t i = 0; i < 3; i++)
-  //  for (size_t j = 0; j < 3; j++)
-  //    REAL(R_rotM)[i + 3 *j] = (cyl.rotationMatrix())[i][j];
 
   const STGM::CMatrix3d &M = cyl.rotationMatrix();
   COPY_C2R_MATRIX(M,R_rotM,dim);
@@ -1750,8 +1730,8 @@ STGM::CCylinder convert_C_Cylinder(SEXP R_cyl)
 
   if(!std::strcmp(label,"F")) {		/* Ferrit - actually a sphere as a cylinder because of application of FBA */
       SEXP R_ctr;
-      PROTECT( R_ctr = AS_NUMERIC( getListElement( R_cyl, "center")));
-      STGM::CVector3d ctr(REAL(R_ctr)),u(0,0,1);
+      PROTECT( R_ctr = getListElement( R_cyl, "center"));
+      STGM::CVector3d ctr(REAL(R_ctr)), u(0,0,1);
 
       UNPROTECT(1);
       return STGM::CCylinder(ctr,u,0,REAL(getListElement(R_cyl, "r"))[0],0,0,
@@ -1759,9 +1739,9 @@ STGM::CCylinder convert_C_Cylinder(SEXP R_cyl)
 
   } else {
       SEXP R_ctr, R_u, R_angles;
-      PROTECT( R_ctr    = AS_NUMERIC( getListElement( R_cyl, "center")));
-      PROTECT( R_u      = AS_NUMERIC( getListElement( R_cyl, "u")));
-      PROTECT( R_angles = AS_NUMERIC( getListElement( R_cyl, "angles")));
+      PROTECT( R_ctr    =  getListElement( R_cyl, "center"));
+      PROTECT( R_u      =  getListElement( R_cyl, "u"));
+      PROTECT( R_angles =  getListElement( R_cyl, "angles"));
       STGM::CVector3d ctr(REAL(R_ctr)), u(REAL(R_u));
 
       UNPROTECT(3);
@@ -1895,9 +1875,9 @@ STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n)
 	STGM::CVector3d mPoint0(REAL(VECTOR_ELT(R_E,7)));
 	STGM::CVector3d mPoint1(REAL(VECTOR_ELT(R_E,8)));
 
-	double *ab = REAL(VECTOR_ELT(R_E,9));
-	double *psi= REAL(VECTOR_ELT(R_E,12));
-	double *rcaps= REAL(VECTOR_ELT(R_E,13));
+	double *ab    = REAL(VECTOR_ELT(R_E,9));
+	double *psi   = REAL(VECTOR_ELT(R_E,12));
+	double *rcaps = REAL(VECTOR_ELT(R_E,13));
 
 	return STGM::CEllipse3(ctr,
 					n,											// plane normal
@@ -1923,10 +1903,13 @@ SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp )
   SEXP R_ret = R_NilValue;
   PROTECT(R_ret = allocVector(VECSXP, num) );
 
-  if(PL == 10) {
+  if(PL == 10)
+  {
 	    const char *nms[] = {"id", "h", "r", "angles", ""};
 	    SEXP R_tmp, R_angles;
-	    for(size_t k=0;k<num;++k){
+
+	    for(size_t k=0;k<num;++k)
+	    {
 	  	    PROTECT(R_tmp = mkNamed(VECSXP, nms));
 	  	    PROTECT(R_angles = allocVector(REALSXP,2));
 
@@ -1946,7 +1929,8 @@ SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp )
 	  // get lateral bounding planes
 	  STGM::CBox3 &box = sp.box();
 	  STGM::LateralPlanes &planes = box.getLateralPlanes();
-  	  for(size_t k=0;k<num;++k)
+
+	  for(size_t k=0;k<num;++k)
 	 	 SET_VECTOR_ELT(R_ret,k,convert_R_Cylinder(cyls[k],planes,box));
   }
 
@@ -1979,11 +1963,11 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
           PROTECT(R_obj = allocVector(VECSXP, ncomps) ); ++nLoopProtected;
           PROTECT(R_names = allocVector(STRSXP, ncomps));++nLoopProtected;
 
-          PROTECT(R_center = allocVector(REALSXP, 3) );  ++nLoopProtected;
-          PROTECT(R_minor = allocVector(REALSXP, 3) );   ++nLoopProtected;
-          PROTECT(R_major = allocVector(REALSXP, 3) );   ++nLoopProtected;
-          PROTECT(R_ipt0 = allocVector(REALSXP, 3) );    ++nLoopProtected;
-          PROTECT(R_ipt1 = allocVector(REALSXP, 3) );    ++nLoopProtected;
+          PROTECT(R_center  = allocVector(REALSXP, 3) ); ++nLoopProtected;
+          PROTECT(R_minor   = allocVector(REALSXP, 3) ); ++nLoopProtected;
+          PROTECT(R_major   = allocVector(REALSXP, 3) ); ++nLoopProtected;
+          PROTECT(R_ipt0    = allocVector(REALSXP, 3) ); ++nLoopProtected;
+          PROTECT(R_ipt1    = allocVector(REALSXP, 3) ); ++nLoopProtected;
           PROTECT(R_mPoint0 = allocVector(REALSXP, 3) ); ++nLoopProtected;
           PROTECT(R_mPoint1 = allocVector(REALSXP, 3) ); ++nLoopProtected;
 
@@ -2078,7 +2062,6 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
       setAttrib(R_obj, R_NamesSymbol, R_names);
 
       SET_VECTOR_ELT(R_result,i,R_obj);
-
       UNPROTECT(nLoopProtected);
   }
 

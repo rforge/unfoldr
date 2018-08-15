@@ -1069,7 +1069,7 @@ namespace STGM {
        /**
         * @return rotation matrix
         */
-       const CMatrix3d &rotationMatrix() const { return m_R; }
+       const CMatrix3d & rotationMatrix() const { return m_R; }
 
        double distance(CSpheroid &s) {  return spheroidDistanceAsCylinder(s);  }
 
