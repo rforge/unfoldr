@@ -112,17 +112,17 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 	PL = INTEGER(AS_INTEGER(getListElement( R_cond,"pl")))[0];
 
 	SEXP R_exact;
-	PROTECT(R_exact = AS_INTEGER(getListElement( R_cond,"perfect"))); ++nprotect;
-	int perfect = INTEGER(R_exact)[0];
+	PROTECT(R_exact = getListElement( R_cond,"perfect")); ++nprotect;
+	int perfect = INTEGER(AS_INTEGER(R_exact))[0];
 
 	SEXP R_lam;
-	PROTECT(R_lam = AS_NUMERIC(getListElement( R_cond, "lam"))); ++nprotect;
-	double lam = REAL(R_lam)[0];
+	PROTECT(R_lam = getListElement( R_cond, "lam")); ++nprotect;
+	double lam = REAL(AS_NUMERIC(R_lam))[0];
 
 	/* set up spheroid system */
 	SEXP R_mu;
-	PROTECT(R_mu = AS_NUMERIC(getListElement( R_cond, "mu"))); ++nprotect;
-	STGM::CVector3d maxis(REAL(R_mu));
+	PROTECT(R_mu = getListElement( R_cond, "mu")); ++nprotect;
+	STGM::CVector3d maxis(REAL(AS_NUMERIC(R_mu)));
 
 	if( !std::strcmp(type_str, "prolate" ) ||
 		!std::strcmp(type_str, "oblate" ))
@@ -160,7 +160,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
 										  (int) std::floor(win.m_size[1]/delta));
 
-				SEXP R_tmp;
+				SEXP R_tmp = R_NilValue;
 				PROTECT(R_tmp = allocMatrix(INTSXP,nPix[0],nPix[1]));
 				STGM::CDigitizer digitizer(INTEGER(R_tmp),win.m_low,nPix,delta);
 				digitizer.start<STGM::CSpheroid>(intersected);
@@ -232,7 +232,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
 										  (int) std::floor(win.m_size[1]/delta));
 
-				SEXP R_tmp;
+				SEXP R_tmp = R_NilValue;
 				PROTECT(R_tmp = allocMatrix(INTSXP,nPix[0],nPix[1]));
 				STGM::CDigitizer digitizer(INTEGER(R_tmp),win.m_low,nPix,delta);
 				digitizer.start<STGM::CCylinder>(intersected);
@@ -304,7 +304,7 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
 				STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
 										  (int) std::floor(win.m_size[1]/delta));
 
-				SEXP R_tmp;
+				SEXP R_tmp = R_NilValue;
 				PROTECT(R_tmp = allocMatrix(INTSXP,nPix[0],nPix[1]));
 				STGM::CDigitizer digitizer(INTEGER(R_tmp),win.m_low,nPix,delta);
 				digitizer.start<STGM::CSphere>(intersected);
@@ -510,10 +510,12 @@ SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
 		if(isNull(R_win))
 		 error(_("Intersection window must be given as an attribute."));
 	}
+
+	/** intersection window */
 	STGM::CWindow win(REAL(VECTOR_ELT(R_win,0)),REAL(VECTOR_ELT(R_win,1)));
-    /** spacing */
-	PROTECT(R_delta = AS_NUMERIC(R_delta)); ++nprotect;
-	double delta = REAL(R_delta)[0];
+
+	/** spacing */
+	double delta = REAL(AS_NUMERIC(R_delta))[0];
 	STGM::CVector<int,2> nPix((int) std::floor(win.m_size[0]/delta),
 							  (int) std::floor(win.m_size[1]/delta));
 
