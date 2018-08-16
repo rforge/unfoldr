@@ -486,7 +486,10 @@ namespace STGM {
 
     array_t m = m_center.ptr();
     STGM::CVector2d center(m[0],m[1]);
-    return STGM::CEllipse2(A_new, center, m_id, 0.5*M_PI);
+
+    // TODO: check! phi.
+    //return STGM::CEllipse2(A_new, center, m_id, 0.5*M_PI);
+    return STGM::CEllipse2(A_new, center, m_id);
   }
 
   STGM::CEllipse2 crackProjection(STGM::CVector3d &center, STGM::CVector3d &u, double a, double phi, int id)
