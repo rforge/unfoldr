@@ -39,38 +39,15 @@ do {										\
 } while(0)
 
 
-using namespace std;
-
-// cylinder: REAL((R))[_i+DIM*_j] = (M)[_i][_j];
-//			 (M)[_i][_j] = REAL((R))[_i+DIM*_j];
-
-// spheroid: REAL((R))[_j+DIM*_i] = (M)[_i][_j];
-// 			 (M)[_i][_j] = REAL((R))[_j+DIM*_i];
-
-
-
 #define GET_OBJECT_CLASS(RS) translateChar(asChar(getAttrib( (RS), R_ClassSymbol)))
 
-/* spheroids */
-STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid);
-STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids);
 
-SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp);
-SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box);
-
-/* R to C ellipse conversions */
-STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E);
-STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n);
-
-/* spheres */
-STGM::CSphere convert_C_Sphere(SEXP R_sphere);
-STGM::Spheres convert_C_Spheres(SEXP R_spheres);
+/* converter functions */
 SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp);
 SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type& objects, STGM::CBox3 &box);
 
-/* cylinders */
-STGM::CCylinder convert_C_Cylinder(SEXP R_cyl);
-STGM::Cylinders convert_C_Cylinders(SEXP R_cyls);
+SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp);
+SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box);
 
 SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes , STGM::CBox3 &box);
 SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp);
@@ -80,10 +57,13 @@ SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &
 STGM::CBox3 setBox(SEXP R_box);
 void setWindow(SEXP R_win, STGM::CBox3 &box, STGM::CPlane &plane);
 
+
+using namespace std;
+
 namespace STGM {
 
-	template<typename T>
-	void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &intersected, SEXP R_cond);
+ template<typename T>
+ void IntersectWithPlane(CPoissonSystem<T> &sp, typename Intersectors<T>::Type &intersected, SEXP R_cond);
 
 }
 
