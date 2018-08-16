@@ -42,17 +42,6 @@ do {										\
 #define GET_OBJECT_CLASS(RS) translateChar(asChar(getAttrib( (RS), R_ClassSymbol)))
 
 
-/* converter functions */
-SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp);
-SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type& objects, STGM::CBox3 &box);
-
-SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp);
-SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box);
-
-SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes , STGM::CBox3 &box);
-SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp);
-SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects, STGM::CBox3 &box);
-
 /* auxiliary functions */
 STGM::CBox3 setBox(SEXP R_box);
 void setWindow(SEXP R_win, STGM::CBox3 &box, STGM::CPlane &plane);
@@ -1387,6 +1376,18 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 						  rot);								// rot
 
    */
+}
+
+STGM::Ellipses2 convert_C_Ellipses2(SEXP R_E) {
+	STGM::Ellipses2 ellipses2;
+	size_t num = (size_t) LENGTH(R_E);
+
+	ellipses2.reserve(num);
+	for(size_t i=0; i < num; i++)  {
+		  ellipses2.push_back( convert_C_Ellipse2( VECTOR_ELT(R_E,i) ) );
+	}
+
+	return ellipses2;
 }
 
 

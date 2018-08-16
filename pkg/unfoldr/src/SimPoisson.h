@@ -31,12 +31,14 @@ extern "C" {
 }
 #endif
 
+
 /* spheroids */
 STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid);
 STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids);
 
 /* R to C ellipse conversions */
 STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E);
+STGM::Ellipses2 convert_C_Ellipses2(SEXP R_E);
 STGM::CEllipse3 convert_C_Ellipse3(SEXP R_E, STGM::CVector3d &n);
 
 /* spheres */
@@ -46,6 +48,7 @@ STGM::Spheres convert_C_Spheres(SEXP R_spheres);
 /* cylinders */
 STGM::CCylinder convert_C_Cylinder(SEXP R_cyl);
 STGM::Cylinders convert_C_Cylinders(SEXP R_cyls);
+
 
 namespace STGM {
 
@@ -390,56 +393,20 @@ struct rbinorm_t {
 } /* namespace STGM */
 
 
-/*
-template<class T>
-struct ConverterFunction { ConverterFunction(); };
 
-template<>
-struct ConverterFunction<CSpheroid> {
-  typedef Spheroids Type;
-  typedef Intersectors<CSpheroid>::Type intersector_t;
+/**
+ *  Converter functions interface,
+ *  also used in R package simLife
+ */
 
-  //intersector_t get2DObjects(SEXP R_sp) { };
+SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp);
+SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type& objects, STGM::CBox3 &box);
 
-  SEXP set2DObjects(intersector_t &objects) { return R_NilValue; };
+SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp);
+SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box);
 
-  Type get3DObjects(SEXP Rs) { return convert_C_Spheroids(Rs); };
-
-  SEXP set3DObjects(CPoissonSystem<CSpheroid> &sp, int pl){ return convert_R_Ellipsoids(sp); };
-
-};
-
-template<>
-struct ConverterFunction<CCylinder> {
-  typedef CCylinder Type;
-  typedef Intersectors<CCylinder>::Type intersector_t;
-
-
-    //intersector_t get2DObjects(SEXP R_sp) { };
-
-    SEXP set2DObjects(intersector_t &objects) { return R_NilValue; };
-
-    Type get3DObjects(SEXP Rs) { return convert_C_Cylinders(Rs); };
-
-    SEXP set3DObjects(CPoissonSystem<CCylinder> &sp) { return convert_R_Cylinders(sp); };
-};
-
-
-template<>
-struct ConverterFunction<CSphere> {
-  typedef CSphere Type;
-  typedef Intersectors<CSphere>::Type intersector_t;
-
-
-    //intersector_t get2DObjects(SEXP R_sp)  { };
-
-    SEXP set2DObjects(intersector_t &objects) { return R_NilValue; };
-
-    Type get3DObjects(SEXP Rs)   {	  return convert_C_Spheres(Rs);  };
-
-    SEXP set3DObjects(CPoissonSystem<CSphere> &sp, int pl) { return convert_R_Spheres(sp); };
-};
-
-*/
+SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes , STGM::CBox3 &box);
+SEXP convert_R_Cylinders( STGM::CPoissonSystem<STGM::CCylinder> &sp);
+SEXP convert_R_CylinderIntersections(STGM::Intersectors<STGM::CCylinder>::Type &objects, STGM::CBox3 &box);
 
 #endif /* SIMPOISSON_H_ */

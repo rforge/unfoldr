@@ -669,8 +669,7 @@ void R_init_unfoldr(DllInfo *info) {
   R_registerRoutines(info, CEntries,CallEntries, NULL, NULL);
   R_useDynamicSymbols(info, FALSE);
 
-  /* used by other packages */
-
+  /** functions which can be linked to by other packages */
   //unfolding routines (spheroids)
   R_RegisterCCallable("unfoldr","EMS",(DL_FUNC) &EMS);
   R_RegisterCCallable("unfoldr","CoefficientMatrixSpheroids",(DL_FUNC) &CoefficientMatrixSpheroids);
@@ -684,9 +683,16 @@ void R_init_unfoldr(DllInfo *info) {
   R_RegisterCCallable("unfoldr","IntersectPoissonSystem",(DL_FUNC) &IntersectPoissonSystem);
   R_RegisterCCallable("unfoldr","DigitizeProfiles",(DL_FUNC) &DigitizeProfiles);
 
-  //converter functions (see simLife)
+  //converter functions (e.g. for R package 'simLife')
   R_RegisterCCallable("unfoldr","convert_C_Sphere",(DL_FUNC) &convert_C_Sphere);
+  R_RegisterCCallable("unfoldr","convert_C_Spheroid",(DL_FUNC) &convert_C_Spheroid);
+  R_RegisterCCallable("unfoldr","convert_C_Cylinder",(DL_FUNC) &convert_C_Cylinder);
 
+  R_RegisterCCallable("unfoldr","convert_C_Spheres",(DL_FUNC) &convert_C_Spheres);
+  R_RegisterCCallable("unfoldr","convert_R_Ellipses",(DL_FUNC) &convert_R_Ellipses);
+  R_RegisterCCallable("unfoldr","convert_C_Spheroids",(DL_FUNC) &convert_C_Spheroids);
+  R_RegisterCCallable("unfoldr","convert_C_Cylinders",(DL_FUNC) &convert_C_Cylinders);
+  R_RegisterCCallable("unfoldr","convert_C_Ellipses2",(DL_FUNC) &convert_C_Ellipses2);
 
 
 }
