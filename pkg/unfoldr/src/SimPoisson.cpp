@@ -868,6 +868,11 @@ void CPoissonSystem<CSpheroid>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
      CVector3d u;
      SEXP Reval = R_NilValue;
 
+     if(PL>0) {
+    	 Rprintf("\n");
+    	 Rprintf("Spheroid (joint) simulation with `%s` \n", type);
+     }
+
      int info = 0;
      for (size_t niter=0; niter<m_num; niter++)
      {
@@ -990,6 +995,11 @@ void CPoissonSystem<CCylinder>::simJoint(SEXP R_call, SEXP R_rho, const char* ty
 
      CVector3d u;
      SEXP Reval = R_NilValue;
+
+     if(PL>0) {
+      	 Rprintf("\n");
+      	 Rprintf("Cylinder (joint) simulation with `%s` \n", type);
+     }
 
      int info = 0;
      for (size_t niter=0; niter<m_num; niter++)

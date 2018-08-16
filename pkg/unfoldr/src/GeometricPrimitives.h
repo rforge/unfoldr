@@ -165,10 +165,18 @@ namespace STGM {
   public:
     CGeometry() {};
     virtual ~CGeometry() {};
-    virtual bool isInWindow(CWindow &win) { return false; };
-    virtual bool isInside(double x, double y) { return false; };
 
-    virtual void move(CVector2d &v) { return; }								/* move 2D object relative to window [0,0] */
+    /** not really meaningful, but overloaded anyway! */
+    virtual bool isInWindow(CWindow &win)
+     { return win.PointInWindow(CVector2d(0,0)) == 0; };
+
+    virtual bool isInside(double x=0.0, double y=0.0)
+     { return x != y; };
+
+    virtual void move(CVector2d &v)
+     { v[0]=0; v[1]=0;
+       return;
+     }								/* move 2D object relative to window [0,0] */
 
     virtual PointVector2d getMinMaxPoints() { return PointVector2d(); }
   };
@@ -336,7 +344,7 @@ namespace STGM {
      const CVector3d center() const { return m_center; }
 
      double & r() { return m_radius; }
-     const double r() const { return m_radius; }
+     double r() const { return m_radius; }
 
      CVector3d& n() { return m_n; }
      const CVector3d n() const { return m_n; }
@@ -1138,8 +1146,6 @@ namespace STGM {
 
        const char * label() const { return m_label; }
 
-       inline bool isInWindow(STGM::CWindow &win) {   return false;   }
-
 
     private:
       CVector3d m_center, m_u;
@@ -1248,7 +1254,6 @@ namespace STGM {
         int &interior() { return m_interior; }
 
         const char * label() const { return m_label; }
-        inline bool isInWindow(STGM::CWindow &win) {   return false;   }
 
         /**
          * @brief Update origins of cylinder after rotation
