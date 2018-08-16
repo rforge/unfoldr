@@ -694,6 +694,9 @@ void R_init_unfoldr(DllInfo *info) {
   R_RegisterCCallable("unfoldr","convert_C_Cylinders",(DL_FUNC) &convert_C_Cylinders);
   R_RegisterCCallable("unfoldr","convert_C_Ellipses2",(DL_FUNC) &convert_C_Ellipses2);
 
+  // others
+  R_RegisterCCallable("unfoldr","sdm",(DL_FUNC) &sdm);
+  R_RegisterCCallable("unfoldr","ContactRadius",(DL_FUNC) &ContactRadius);
 
 }
 
