@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 
+
 /* spheroids */
 STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid);
 STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids);
@@ -48,7 +49,6 @@ STGM::Spheres convert_C_Spheres(SEXP R_spheres);
 /* cylinders */
 STGM::CCylinder convert_C_Cylinder(SEXP R_cyl);
 STGM::Cylinders convert_C_Cylinders(SEXP R_cyls);
-
 
 namespace STGM {
 
