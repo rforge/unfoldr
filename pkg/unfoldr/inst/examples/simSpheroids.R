@@ -72,13 +72,13 @@ theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
 
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="prolate",
 		intersect="full", ,n=c(0,0,1), mu=c(0,0,1),
-		"orientation"="rbetaiso", dz=2.5,perfect=TRUE,pl=101)
+		"orientation"="rbetaiso",dz=2.5,perfect=TRUE,pl=1)
 
 ## 3D intersected objects
 sp <- S$sp
 id <- sapply(sp,"[[","id") 
 open3d()
-spheroids3d(S$S[id], FALSE, TRUE, box=box, col=col)
+spheroids3d(S$S[id], TRUE, TRUE, box=box, col=col)
 planes3d(0,0,-1,2.5,col="black",alpha=1)
 
 ## angle always w.r.t to x axis after simulation
@@ -86,14 +86,14 @@ phi <- sapply(sp,"[[","phi")
 summary(phi)
 
 ## check rotation matrix ellipses
-#E <- sp[[10]]
-#V <- eigen(E$A)
-#1/sqrt(V$values)
-#
-#A <- diag(c(1/E$ab[1]^2,1/E$ab[2]^2))
-#B <- cbind(E$major,E$minor)
-#t(B) %*% A %*% B
-#E$A
+E <- sp[[10]]
+V <- eigen(E$A)
+1/sqrt(V$values)
+
+A <- diag(c(1/E$ab[1]^2,1/E$ab[2]^2))
+B <- cbind(E$major,E$minor)
+t(B) %*% A %*% B
+E$A
 
 dev.new()
 Es <- drawEllipses(sp, x=box$xrange, y=box$yrange, border="black",xlab="[mm]", ylab="[mm]",
@@ -108,8 +108,8 @@ image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 # general intersections (should be same as above)
 ##################################################################################
 
-S <- S$S
-SP <- intersectSystem(S, 2.5, n=c(0,0,1), intern=FALSE, pl=1)
+Sp <- S$S
+SP <- intersectSystem(Sp, 2.5, n=c(0,0,1), intern=FALSE, pl=1)
 
 ## check compare 
 str(sp[[100]])
@@ -127,7 +127,7 @@ theta$orientation$kappa <- 10	# random planar in xy plane
 
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,
 		type="prolate", intersect="full", ,n=n, mu=c(0,0,1),
-		"orientation"="rbetaiso", dz=dz, perfect=TRUE, intern=TRUE, pl=101)
+		"orientation"="rbetaiso", dz=dz, perfect=TRUE, intern=TRUE, pl=1)
 
 sp <- S$sp # sections
 id <- sapply(sp,"[[","id") 
@@ -210,7 +210,7 @@ planes3d(0,0,-1,2.5,col="black",alpha=1)
 # in 2D
 dev.new()
 Es <- drawEllipses(sp, x=box$xrange, border="black",xlab="[mm]", ylab="[mm]",
-		rot=0, bg="gray",col=col,	cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
+		rot=0, bg="gray", col=col, cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
 
 # digitized
 W <- S$W

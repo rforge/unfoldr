@@ -167,6 +167,21 @@ open3d()
 cylinders3d(S[1:1000], draw.box=TRUE, box=box, col=col)
 
 
+####################################################################
+## constant size and shape distribution 
+####################################################################
+
+# log normal size, constant shape, isotropic orientation (rbetaiso) 
+theta <- list("size"=list(0.15),"shape"=list("s"=0.25), "orientation"=list("kappa"=1))
+
+# only simulate 3D system of spheroccylinders
+S <- simPoissonSystem(theta,lam,box=box,type="cylinders",pl=1)
+
+## show some objects to get an impression
+open3d()
+cylinders3d(S[1:1000], draw.box=TRUE, box=box, col=col)
+
+
 #################################################################
 ## simulate bivariate size/shape distribution
 #################################################################
@@ -175,13 +190,14 @@ cylinders3d(S[1:1000], draw.box=TRUE, box=box, col=col)
 theta <- list("size"=list("mx"=-1.45,"my"=-2.0, "sdx"=0.15,"sdy"=0.25,"rho"=0.0),
 			  "orientation"=list("kappa"=5))
 
+## 3D system, intersections, digitization
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="cylinders",
 		intersect="full", n=c(0,1,0), "orientation"="rbetaiso", dz=1.5,
 		perfect=TRUE, intern=TRUE, delta=0.005, pl=101)
 
-#open3d()
-#cylinders3d(S$S[1:1000], draw.box=TRUE, box=box, col=col)
-#planes3d(0,0,-1,2.5,col="black",alpha=1)
+# open3d()
+# cylinders3d(S$S[1:1000], draw.box=TRUE, box=box, col=col)
+# planes3d(0,0,-1,2.5,col="black",alpha=1)
 
 ## 3D intersected objects
 sp <- S$sp
@@ -202,9 +218,9 @@ W <- S$W
 dev.new()
 image(1:nrow(W),1:ncol(W),W,col=gray(1:0))
 
-##################################################################################
-# general intersections (should be same as above)
-##################################################################################
+###################################################################
+# again (same as above) as general intersections 
+###################################################################
 
 Sp <- S$S
 SP <- intersectSystem(Sp, 1.5, n=c(0,1,0), intern=TRUE, pl=1)

@@ -30,7 +30,9 @@ named \code{A} of section profiles corresponding to the type of spheroids which 
 ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation/direction angle \code{alpha}.
 }
 \examples{
+ # load data set
  data(data15p)
+ 
  # matrix of semi-axes lengths (major,minor)
  AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
 

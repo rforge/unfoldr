@@ -61,7 +61,9 @@ updateIntersections <- function(S) {
 #' @return 		  list of section profiles, either of class "\code{prolate}" or "\code{oblate}"
 #'
 #' @examples
+#'  # load data set
 #'  data(data15p)
+#'  
 #'  # matrix of semi-axes lengths (major,minor)
 #'  AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
 #' 
@@ -908,9 +910,10 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #' 
 #'  # return only 3D system
 #'  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
-#'   "intersect"="original","orientation"="rbetaiso",n=c(0,1,0),perfect=TRUE,pl=1)
+#'   "intersect"="original","orientation"="rbetaiso",n=c(0,1,0),mu=c(0,0,1),
+#'     perfect=TRUE,pl=1)
 #' 
-#'  # vertical intersection
+#'  # vertical intersection w.r.t. 'mu' (z axis, see above)
 #'  sp <- intersectSystem(S, 2.5)
 #' 
 #'  # show intersecting window
