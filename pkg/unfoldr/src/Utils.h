@@ -29,8 +29,8 @@ extern "C" {
 /* pointer to some R's random generators */
 typedef double (*rdist2_t)(double, double);
 
-/* a const dummy function */
-inline double rconst(double x, double dummy=0) { return x; }
+/* a const function */
+inline double rconst(double x, double dummy=0) {  return (dummy=x); }
 
 /* bivariate normal random x,y*/
 void rbinorm(double mx, double sdx, double my, double sdy,double rho, double &x, double &y);
