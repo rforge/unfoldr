@@ -690,6 +690,8 @@ void R_init_unfoldr(DllInfo *info) {
 
   R_RegisterCCallable("unfoldr","convert_C_Spheres",(DL_FUNC) &convert_C_Spheres);
   R_RegisterCCallable("unfoldr","convert_R_Ellipses",(DL_FUNC) &convert_R_Ellipses);
+  R_RegisterCCallable("unfoldr","convert_R_Ellipse2",(DL_FUNC) &convert_R_Ellipse2);
+
   R_RegisterCCallable("unfoldr","convert_C_Spheroids",(DL_FUNC) &convert_C_Spheroids);
   R_RegisterCCallable("unfoldr","convert_C_Cylinders",(DL_FUNC) &convert_C_Cylinders);
   R_RegisterCCallable("unfoldr","convert_C_Ellipses2",(DL_FUNC) &convert_C_Ellipses2);

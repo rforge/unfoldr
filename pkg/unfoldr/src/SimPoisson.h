@@ -403,6 +403,8 @@ SEXP convert_R_Spheres(STGM::CPoissonSystem<STGM::CSphere> &sp);
 SEXP convert_R_Circles(STGM::Intersectors<STGM::CSphere>::Type& objects, STGM::CBox3 &box);
 
 SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp);
+
+SEXP convert_R_Ellipse2(STGM::CEllipse2 &ellipse);
 SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM::CBox3 &box);
 
 SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes , STGM::CBox3 &box);

@@ -1391,6 +1391,51 @@ STGM::Ellipses2 convert_C_Ellipses2(SEXP R_E) {
 }
 
 
+SEXP convert_R_Ellipse2(STGM::CEllipse2 &ellipse) {
+  SEXP R_tmp = R_NilValue;
+  SEXP R_center, R_minor, R_major, R_ab, R_A;
+  const char *nms[] = {"id", "type", "center", "A", "ab", "minor", "major", "phi", "S", "rot", ""};
+
+  PROTECT(R_tmp = mkNamed(VECSXP,nms));
+  PROTECT(R_center = allocVector(REALSXP, 2));
+  PROTECT(R_ab = allocVector(REALSXP, 2));
+  PROTECT(R_A = allocMatrix(REALSXP,2,2));
+  PROTECT(R_minor = allocVector(REALSXP, 2));
+  PROTECT(R_major = allocVector(REALSXP, 2));
+
+  STGM::CVector2d &center = ellipse.center();
+  SET_REAL_VECTOR(R_center,center);
+
+  STGM::CVector2d &minor = ellipse.minorAxis();
+  SET_REAL_VECTOR(R_minor,minor);
+
+  STGM::CVector2d &major = ellipse.majorAxis();
+  SET_REAL_VECTOR(R_major,major);
+
+  REAL(R_ab)[0] = ellipse.a();    // major semi-axis (for both prolate/oblate)
+  REAL(R_ab)[1] = ellipse.b();	  // minor semi-axis (for both prolate/oblate)
+
+  const STGM::CMatrix2d &A = ellipse.MatrixA();
+  COPY_C2R_MATRIX(A,R_A,2);
+
+  SET_VECTOR_ELT(R_tmp,0,ScalarInteger(ellipse.Id()));
+  SET_VECTOR_ELT(R_tmp,1,ScalarInteger(STGM::ELLIPSE_2D));
+  SET_VECTOR_ELT(R_tmp,2,R_center);
+  SET_VECTOR_ELT(R_tmp,3,R_A);
+  SET_VECTOR_ELT(R_tmp,4,R_ab);
+  SET_VECTOR_ELT(R_tmp,5,R_minor);
+  SET_VECTOR_ELT(R_tmp,6,R_major);
+
+  /* return angle between [0,2pi] */
+  SET_VECTOR_ELT(R_tmp,7,ScalarReal(ellipse.phi()));
+  SET_VECTOR_ELT(R_tmp,8,ScalarReal(ellipse.b()/ellipse.a()));
+  SET_VECTOR_ELT(R_tmp,9,ScalarReal(ellipse.rot()));
+
+  UNPROTECT(6);
+  return(R_tmp);
+
+}
+
 /**
  * @brief Convert ellipses to R objects
  * 		  Need angle between [0,2pi] for

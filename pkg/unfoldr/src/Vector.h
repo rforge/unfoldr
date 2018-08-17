@@ -50,6 +50,7 @@ struct CPoint {
   const value_t &operator[](size_t i) const { return p[i]; }
 
   bool operator== (const CPoint &p_) const;
+  bool operator <(const CPoint &q) const;
 
   void Normalize();
   value_t Length() const;
