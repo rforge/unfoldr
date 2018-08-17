@@ -289,13 +289,13 @@ namespace STGM {
 
      ~CCircle3 (){};
 
-     CCircle3(CVector3d &_center, double &_radius, CVector3d &_n, int id = 0)
+     CCircle3(CVector3d &_center, double _radius, CVector3d &_n, int id = 0)
        : m_center(_center), m_n(_n), m_plane(STGM::CPlane(_n)), m_radius(_radius), m_id(id)
      {
        setPlaneIdx();
      }
 
-     CCircle3(CVector3d &_center, double &_radius )
+     CCircle3(CVector3d &_center, double _radius )
        : m_center(_center), m_n(CVector3d(0,0,1)), m_plane(STGM::CPlane()), m_radius(_radius), m_id(0)
       {
         setPlaneIdx();
