@@ -31,8 +31,6 @@ extern "C" {
 }
 #endif
 
-
-
 /* spheroids */
 STGM::CSpheroid convert_C_Spheroid(SEXP R_spheroid);
 STGM::Spheroids convert_C_Spheroids(SEXP R_spheroids);

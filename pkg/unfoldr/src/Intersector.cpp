@@ -174,7 +174,7 @@ namespace STGM
          } else {
              int id = 1;
              m_type = DISC;
-             m_circle1 = STGM::CCircle3(m_cylinder.center(),m_cylinder.r(),m_plane.n,id);
+             m_circle1 = CCircle3(m_cylinder.center(),m_cylinder.r(),m_plane.n,id);
 
          }
 
@@ -201,11 +201,12 @@ namespace STGM
 
 
   CCircle3 Intersector<STGM::CCylinder>::GetCircle(STGM::CVector3d &spherecenter, double sDist) {
-    STGM::CVector3d ctr(spherecenter[0] - sDist*m_plane.n[0],
-                        spherecenter[1] - sDist*m_plane.n[1],
-                        spherecenter[2] - sDist*m_plane.n[2]);
+    CVector3d ctr(spherecenter[0] - sDist*m_plane.n[0],
+                  spherecenter[1] - sDist*m_plane.n[1],
+                  spherecenter[2] - sDist*m_plane.n[2]);
+
     double radius = sqrt( SQR(m_cylinder.r()) - SQR(sDist) );
-    return STGM::CCircle3(ctr,radius, m_plane.n,1);
+    return CCircle3(ctr,radius, m_plane.n,1);
   }
 
 

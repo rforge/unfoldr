@@ -273,7 +273,7 @@ namespace STGM {
         double c;
    };
 
-   typedef std::vector<STGM::CPlane> LateralPlanes;
+   typedef std::vector<CPlane> LateralPlanes;
 
    /**
     * @brief Circle 3d
@@ -282,7 +282,7 @@ namespace STGM {
    {
    public:
      CCircle3 () :
-       m_center(CVector3d(0,0,0)), m_n(CVector3d(0,0,1)), m_plane(STGM::CPlane()), m_radius(0), m_id(0)
+       m_center(CVector3d(0,0,0)), m_n(CVector3d(0,0,1)), m_plane(CPlane()), m_radius(0), m_id(0)
      {
        setPlaneIdx();
      };
@@ -290,13 +290,13 @@ namespace STGM {
      ~CCircle3 (){};
 
      CCircle3(CVector3d &_center, double _radius, CVector3d &_n, int id = 0)
-       : m_center(_center), m_n(_n), m_plane(STGM::CPlane(_n)), m_radius(_radius), m_id(id)
+       : m_center(_center), m_n(_n), m_plane(CPlane(_n)), m_radius(_radius), m_id(id)
      {
        setPlaneIdx();
      }
 
      CCircle3(CVector3d &_center, double _radius )
-       : m_center(_center), m_n(CVector3d(0,0,1)), m_plane(STGM::CPlane()), m_radius(_radius), m_id(0)
+       : m_center(_center), m_n(CVector3d(0,0,1)), m_plane(CPlane()), m_radius(_radius), m_id(0)
       {
         setPlaneIdx();
       }
@@ -330,7 +330,7 @@ namespace STGM {
       * @param P         Point vector of sampled points
       * @param np        number of points to sample
       */
-     void samplePoints(STGM::PointVector2d &P, int np) {
+     void samplePoints(PointVector2d &P, int np) {
        double t=0.0, s=2.0*M_PI / (double)np;
        for(int k=0; k<np; ++k) {
            P.push_back( PointOnCircle(t) );
@@ -359,8 +359,8 @@ namespace STGM {
 
      CBoundingRectangle & getBoundingRectangle() { return m_br; };
 
-     inline bool isInWindow(STGM::CWindow &win) {
-      if( win.PointInWindow( STGM::CVector2d(m_center[m_i],m_center[m_j])) == 0)
+     inline bool isInWindow(CWindow &win) {
+      if( win.PointInWindow(CVector2d(m_center[m_i],m_center[m_j])) == 0)
        return true;
       return false;
      }
@@ -368,7 +368,7 @@ namespace STGM {
      inline double area() { return M_PI*m_radius*m_radius; }
 
      CVector3d m_center, m_n;
-     STGM::CPlane m_plane;
+     CPlane m_plane;
      double m_radius;
      int m_i, m_j;
      CBoundingRectangle m_br;
@@ -1035,8 +1035,8 @@ namespace STGM {
      int m_type;                                // ellipse type
      int m_side;                                // side of origin0 to the plane
      int m_side0;                               // side, where extreme points of the ellipse are not cut off by angle psi
-     STGM::CCircle3 m_circle1, m_circle2;       // circle caps if type {ELLIPSE_ARC | ELLIPSE_SEG }
-     STGM::CBoundingRectangle m_br;
+     CCircle3 m_circle1, m_circle2;       // circle caps if type {ELLIPSE_ARC | ELLIPSE_SEG }
+     CBoundingRectangle m_br;
   };
 
   /**
