@@ -142,7 +142,7 @@ sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 #' @param size  	name of the size distribution function 
 #' @param shape 	name of the shape distribution function  
 #' @param orientation name of direction distribution function
-#' @param type     spheroid type, either "\code{prolate}" or "\code{oblate}" can be used
+#' @param type     type of grain, either "\code{prolate}" or "\code{oblate}", "\code{spheres}", "\code{cylinders}"
 #' @param rjoint   user-defined function, which specifies the (joint) distribution of the size, shape and orientation 
 #' @param box	   simulation box
 #' @param mu	   main orientation axis, \code{mu=c(0,0,1)} (default), as the alignment of the coordinate system
