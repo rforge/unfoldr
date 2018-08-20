@@ -22,7 +22,7 @@ and digitization of section profiles.
 	   \item Ohser, J. and Muecklich, F. Statistical analysis of microstructures in materials science J. Wiley & Sons, 2000
     \item C. Lantu\eqn{\acute{\textrm{e}}}joul. Geostatistical simulation. Models and algorithms.
 					Springer, Berlin, 2002. Zbl 0990.86007
-	   \item M{\"u}ller, A., Weidner, A., and Biermann, H. (2015). Influence of reinforcement
+	   \item M\eqn{\textrm{\"u}}ller, A., Weidner, A., and Biermann, H. (2015). Influence of reinforcement
            geometry on the very high-cycle fatigue behavior of aluminum-matrix-composites.
 			   Materials Science Forum, 825/826:150-157 
  }
