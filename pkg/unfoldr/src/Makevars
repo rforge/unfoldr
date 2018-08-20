@@ -1,12 +1,10 @@
-SOURCES_C = $(wildcard ./*.cpp)
-
-OBJECTS = $(SOURCES_C:.cpp=.o)
-
 PKG_LIBS =  $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 PKG_CXXFLAGS =  $(SHLIB_OPENMP_CXXFLAGS) -I../inst/include  
 
 #PKG_CPPFLAGS = -I../inst/include -Wall -Wextra -pedantic -O0 -ggdb
 #PKG_CXXFLAGS = -I../inst/include
+
+OBJECTS = directions.o GeometricPrimitives.o Intersector.o ellipt.o SimPoisson.o Utils.o unfold.o
 
 all: $(SHLIB) cleanlibs
 cleanlibs:
