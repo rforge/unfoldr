@@ -1,6 +1,6 @@
 ###############################################################################
 # Author:  M. Baaske
-# Date:	   2018/08/13	
+# Date:	   2018-08-13	
 # File:    spheroid.R: 
 # 
 # Comment: simulation, intersections and visualization of spheroid systems

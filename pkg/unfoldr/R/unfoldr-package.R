@@ -1,6 +1,6 @@
 ###############################################################################
 # Author:  M. Baaske
-# Date:	   2018/06/15	
+# Date:	   2018-08-20	
 # File:    unfoldr-package.R: 
 # 
 # Comment: General description of the package
@@ -9,14 +9,14 @@
 
 #' Stereological Unfolding for Spheroidal Particles
 #'
-#' Stereological unfolding as implemented in this package consists in the estimation of the joint size-shape-orientation
+#' Stereological unfolding as implemented in this package consists of the estimation of the joint size-shape-orientation
 #' distribution of spheroidal shaped particles based on the same measured quantities of corresponding vertical
-#' section profiles. A single trivariate discretized version of the (stereological)
-#' integral equation in the case of prolate and oblate spheroids is solved numerically by the well-known
-#' EM algorithm. Routines for estimating the empirical diameter distribution of spheres from planar sections
-#' (better known as the Wicksell's corpuscle problem) is also implemented. Further, the package provides routines
-#' for the simulation of a Poisson germ-grain process with either spheroids, spherocylinders or spheres as grains
-#' together with functions for planar and vertical sections and digitization of section profiles.
+#' section profiles. A single trivariate discretized version of the (stereological) integral equation in the case of prolate
+#' and oblate spheroids is solved numerically by a variant of the well-known Expectation Maximization (EM) algorithm. In addition,
+#' routines for estimating the empirical diameter distribution of spheres from planar sections (better known as the Wicksell's
+#' corpuscle problem) is also implemented. The package also provides functions for the simulation of Poisson germ-grain
+#' processes with either spheroids, spherocylinders or spheres as grains including functions for planar and vertical sections
+#' and digitization of section profiles.
 #' 
 #' @docType package
 #' @name unfoldr-package

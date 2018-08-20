@@ -22,7 +22,7 @@ simPoissonSystem(theta, lam, size = "const", shape = "const",
 
 \item{orientation}{name of direction distribution function}
 
-\item{type}{spheroid type, either "\code{prolate}" or "\code{oblate}" can be used}
+\item{type}{type of grain, either "\code{prolate}" or "\code{oblate}", "\code{spheres}", "\code{cylinders}"}
 
 \item{rjoint}{user-defined function, which specifies the (joint) distribution of the size, shape and orientation}
 
