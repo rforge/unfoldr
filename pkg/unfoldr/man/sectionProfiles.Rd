@@ -11,7 +11,7 @@ sectionProfiles(size, alpha, type = c("prolate", "oblate"))
 
 \item{alpha}{angle of section profiles in the plane (see details)}
 
-\item{type}{name of the spheroid type, either "\code{prolate}" or "\code{oblate}" from which the
+\item{type}{name of the spheroid  type, either "\code{prolate}" or "\code{oblate}" from which the
 section profiles are assumed to come from}
 }
 \value{
