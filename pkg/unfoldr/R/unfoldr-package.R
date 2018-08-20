@@ -48,9 +48,9 @@ NULL
 #' @keywords datasets
 #' @name data15p
 #' @usage data(data15p)
-#' @format A matrix of columns: \code{A} (major semi-axis length), \code{C} (minor semi-axis length),
-#' 	\code{S=C/A} (shape factor), \code{alpha} (polar angle in intersecting plane) and coordinates in the
-#'  intersection plane \code{x,y}.
+#' @format A matrix of columns named \code{A} (major semi-axis length), \code{C} (minor semi-axis length),
+#' 	\code{S=C/A} (shape factor), \code{alpha} (polar angle in the intersecting plane) and coordinates \code{(x,y)}
+#'  of the centers of fitted ellipses.
 #' 
 #' @author M. Baaske
 NULL
