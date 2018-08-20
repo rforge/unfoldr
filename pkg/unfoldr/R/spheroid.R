@@ -108,11 +108,12 @@ sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 #' 
 #' The following directional (orientation) distributions of the spheroid's major-axis, respectively, cylinder's main axis are available:
 #' a uniform distribution ("\code{runifdir}"), isotropic random planar distribution ("\code{rbetaiso}"), see the reference below)
-#' and the "\emph{von Mises-Fisher}" ("\code{rvMisesFisher}") distribution. The simulation box consists of a list containing the ranges of each box
-#' dimension as elements corresponding to the lower and upper limits in each direction. If the argument \code{box} contains only a single range,
-#' i.e. \code{list(c(0,1)}, the same limits are assumed for the remaining dimensions which is then simply replicated. The optional argument \code{rjoint}
-#' defines a (joint) distribution function which can be any function provided by the user in order to generate the required random parameters for
-#' spheroids or spherocylinders. An in-depth example of such usage is given in the example files 'simSpheroids.R' and 'simCylinders.R'. 
+#' and the "\emph{von Mises-Fisher}" ("\code{rvMisesFisher}") distribution. The simulations are always performed within a bounding 3D box which
+#' consists of a list specifying the ranges of each dimension corresponding to the lower and upper limits of the box in each direction. If the
+#' argument \code{box} contains only a single range, i.e. \code{box=list(c(0,1))}, this limit isassumed for the remaining dimensions which is then simply replicated.
+#' The optional argument \code{rjoint} defines a (joint) distribution function which can be any function provided by the user in order to generate
+#' the required distributional parameters for the spheroids or spherocylinders. For an in-depth example of usage please see the workflow in 'simSpheroids.R'
+#' and 'simCylinders.R'. 
 #' 
 #' In addition, the function supports an exact simulation type [2] of the grains. In case of spheroids and spherocylinders setting \code{size="rbinorm"}
 #' declares a bivariate size-shape distribution for which the exact simulation is available. More specifically, for a bivariate normal random vector \eqn{[X,Y]}
