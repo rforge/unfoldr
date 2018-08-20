@@ -1,9 +1,0 @@
-SOURCES_C =  \
-	     directions.cpp \
-	     SimPoisson.cpp \
-	     ellipt.cpp \
-		 GeometricPrimitives.cpp \
-		 Intersector.cpp \
-		 Utils.cpp \
-		 unfold.cpp		 
-		 

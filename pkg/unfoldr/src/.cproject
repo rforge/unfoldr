@@ -29,6 +29,7 @@
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="/usr/share/R/include"/>
 									<listOptionValue builtIn="false" value="/usr/share/R/include/R_ext"/>
+									<listOptionValue builtIn="false" value="/home/bahama/workspace/unfoldr-rforge/inst/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.464667857" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
