@@ -1,8 +1,7 @@
-PKG_LIBS =  $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-PKG_CXXFLAGS =  $(SHLIB_OPENMP_CXXFLAGS) 
+PKG_CPPFLAGS = -I../inst/include -Wall -Wextra -pedantic -O0 -ggdb
 
-PKG_CFLAGS=-Wall -Wextra -pedantic -O0 -ggdb 
-PKG_CPPFLAGS=-Wall -Wextra -pedantic -O0 -ggdb 
+PKG_LIBS =  $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+PKG_CXXFLAGS =  $(SHLIB_OPENMP_CXXFLAGS)
 
 include ./SOURCES_C.mkf
 OBJECTS = $(SOURCES_C:.cpp=.o)
