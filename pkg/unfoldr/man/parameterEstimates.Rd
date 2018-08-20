@@ -2,25 +2,26 @@
 % Please edit documentation in R/unfolding.R
 \name{parameterEstimates}
 \alias{parameterEstimates}
-\title{Estimated spatial histogram data}
+\title{Spatial histogram}
 \usage{
 parameterEstimates(H, breaks)
 }
 \arguments{
-\item{H}{trivariate histogram}
+\item{H}{trivariate (output) histogram, estimated by \code{\link{unfold}}}
 
-\item{breaks}{breaks as obtained from \code{\link{setbreaks}}}
+\item{breaks}{breaks vector from \code{\link{setbreaks}}}
 }
 \value{
-list of size, angle and shape parameters, see \code{\link{parameters3d}}
+list of the following entries: either major or minor semi-axis length \code{a},
+        (polar) angle \code{Theta} and shape factor \code{s}, see \code{\link{parameters3d}}
 }
 \description{
-Get histogram data from estimated joint distribution
+Characteristics for a spatial histogram
 }
 \details{
-Given the estimated joint distribution in histogram form the function
-returns a list of \code{breaks} replicates which equals the number of
-estimated count data for each class. For an example please see the file 'unfold.R'.
+Based on the estimated joint distribution after unfolding the function replicates
+the entries of the vector \code{breaks}, see \code{\link{setbreaks}}, equal to the
+number of estimated count data for each class. For an example please see the file 'unfold.R'.
 }
 \author{
 M. Baaske

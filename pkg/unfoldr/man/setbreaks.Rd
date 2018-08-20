@@ -26,11 +26,15 @@ Construct class limits vectors
 }
 \details{
 The function constructs the class limits for the size, shape and orientation parameters.
-One can either define \code{linear} class limits of 'size' as
-\eqn{a_i=i\delta, \delta=maxSize/M } or using exponentially increasing limits: \eqn{base^i, i=1,\dots,M}.
-The orientation classes are defined as \eqn{\theta_j=j\omega, \omega=\pi/(2N), j=1,\dots,N} in the range
-\eqn{[0,\pi/2]}, where \eqn{M,N} are the number of size classes and the number of orientation classes, respectively.
-Argument \code{base} must not be \code{NULL} if \code{sizeType} equals "exp". For an example please see the file 'unfold.R'.
+One can either define "\code{linear}" class limits of the sizes as \eqn{a_i=i\delta, \delta=maxSize/M } or
+using exponentially increasing limits like \eqn{base^i, i=1,\dots,M}.
+The orientation classes are defined by \eqn{\theta_j=j\omega, \omega=\pi/(2N), j=1,\dots,N} in the range
+\eqn{[0,\pi/2]}, where \eqn{M,N} are the number of size classes and, respectively, the number of orientation classes.
+The argument \code{base} must not be \code{NULL} if \code{sizeType} equals "\code{exp}".
+}
+\examples{
+  setbreaks(c(8,5,7),0.935,base=0.5,kap=1.25,sizeType="exp")
+  
 }
 \author{
 M. Baaske

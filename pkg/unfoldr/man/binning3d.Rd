@@ -11,26 +11,24 @@ binning3d(size, angle, shape, breaks, check = TRUE, na.rm = TRUE)
 
 \item{angle}{vector of angles}
 
-\item{shape}{vector of aspect ratios}
+\item{shape}{vector of shape factors}
 
 \item{breaks}{list of bin vectors}
 
 \item{check}{logical, default is \code{TRUE}}
 
-\item{na.rm}{logical, if NAs are to be removed in the data vectors, default is \code{TRUE}}
+\item{na.rm}{logical, whether \code{NAs} should be removed, default \code{TRUE}}
 }
 \value{
-3d array of count data
+3D array of binned count data
 }
 \description{
-Count data of size, shape and orientation values.
+Count data of size, shape and orientation
 }
 \details{
-For each value of planar or spatial measured quantities \code{size,shape,orientation}
-the function counts the number of observations falling into each class.
-The \code{breaks} list is either obtained from function \code{setbreaks} or the
-user supplies his own variant, see \code{\link{setbreaks}} for details.
-If \code{check} is \code{TRUE} some checks on the \code{breaks} list are done.
+For each value of planar or spatial measured quantities \code{size}, \code{shape} and \code{orientation}
+the function counts the number of observations falling into each class (bin). The list \code{breaks} can be
+obtained by the function \code{\link{setbreaks}}. If \code{check=TRUE}, some checks on \code{breaks} are done.
 For an example please see the file 'almmc.R'.
 }
 \author{

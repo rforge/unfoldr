@@ -16,17 +16,17 @@
 #'
 #' Estimate the joint size-shape-orientation distribution of spheroids
 #'
-#' Given an array of coefficients \code{P} and the input histogram \code{F} of
-#' measured planar section profiles, see \code{\link{binning3d}}, the function
-#' estimates the spatial joint size-shape-orientation distribution of spheroids
-#' as a trivariate histogram, \code{triHist}, by the EM algorithm.
-#' If the option 'par.unfoldr' is set to a user chosen amount of cores then
-#' parts of the EM iterations are done in parallel.
+#' Given an array of coefficients \code{P}, see \code{\link{coefficientMatrixSpheroids}} and an input histogram
+#' \code{F} of measured planar characteristics of section profiles, the function estimates the spatial joint
+#' size-shape-orientation distribution of the corresponding spheroids in 3D by a discretized version of the
+#' \emph{Expectation Maximization} (EM) algorithm. A number of cpu cores can be set by the option '\code{par.unfoldr}'
+#' for parallel computations. The function is also internally called by \code{\link{unfold}} in case of spheroids.
 #'
-#' @param P coefficient array
-#' @param F input histogram
-#' @param maxIt maximum number of EM iterations
-#' @param nCores number of cpu cores used
+#' @param P 		coefficient array
+#' @param F 		input histogram
+#' @param maxIt 	maximum number of EM iterations
+#' @param nCores 	number of cpu cores
+#' 
 #' @return trivariate histogram
 #'
 #' @example inst/examples/unfold.R
@@ -45,19 +45,16 @@ em.spheroids <- function(P,F,maxIt,nCores=getOption("par.unfoldr",2L)) {
 #'
 #' Unfolding the (joint) distribution of planar parameters
 #'
-#' This is a S3 method for either trivariate stereological unfolding or
-#' estimation of 3d diameter distribution of spheres (Wicksell's corpuscle problem). The function
-#' aggregates all intermediate calculation steps required for the unfolding procedure given the data
-#' in the prescribed format and returning the parameters as count data in histogram form.
-#' The section profiles object \code{sp}, see \code{\link{sectionProfiles}}, is either of class
-#' \code{prolate} or \code{oblate} for the reconstruction of spheroids or in case of spheres
-#' the \code{sp} is simply a numeric vector of circle diameters. Here, the class of section profiles
-#' corresponds to the type of objects that will be reconstructed. The number of bin classes is set
-#' by the argument \code{nclass} which is either a scalar value in case of Wicksell's corpuscle problem
-#' or a vector of length three defined in the order of the number of size, angle and shape class limits.
-#' Using multiple cpu cores during the calculations is controlled by either setting the option 'par.unfoldr'
-#' to a user chosen amount of cores or by the argument \code{nCores} directly.
-#' The return value of the function is an object of class \code{unfold} whose arguments are as follows
+#' This is a S3 method for either trivariate stereological unfolding or estimation of the 3D diameter distribution
+#' of spheres which is better known as the \emph{Wicksell's corpuscle problem}. The function aggregates all intermediate
+#' computations required for the unfolding procedure given the data in the prescribed format, see reference of functions below,
+#' and returning the characteristics as count data in form of a \emph{trivariate} histogram. The section profile objects \code{sp},
+#' see \code{\link{sectionProfiles}}, are either of class \code{prolate} or \code{oblate} for the reconstruction of the corresponding
+#' spheroids or, respectively, spheres. The result of the latter is simply a numeric vector of circle diameters. The number of bin
+#' classes for discretization of the underlying integral equations which must be solved is set by the argument \code{nclass}.
+#' In case of Wicksell's corpuscle problem this is simply a scalar value denoting the number of bins for the diameter. For spheroids it 
+#' it refers to a vector of length three defined in the order of size, angle and shape class limits.
+#' The return value of the function is an object of class "\code{unfold}" with elements as follows
 #' \itemize{
 #' 	\item{N_A}{ (trivariate) histogram of section profile parameters}
 #'  \item{N_V}{ (trivariate) histogram of reconstructed parameters}
@@ -65,14 +62,14 @@ em.spheroids <- function(P,F,maxIt,nCores=getOption("par.unfoldr",2L)) {
 #'  \item{breaks}{ list of class limits for binning the parameter values}
 #' }
 #'
-#' @param sp 	  section profiles
-#' @param nclass  number of classes
+#' @param sp 	  section profiles, see \code{\link{sectionProfiles}}
+#' @param nclass  number of classes, see details 
 #' @param maxIt   maximum number of EM iterations
-#' @param nCores  number of cpu cores used
+#' @param nCores  number of cpu cores
 #' @param ...	  optional arguments passed to \code{\link{setbreaks}}
-#' @return        object of class \code{unfold}
+#' @return        object of class "\code{unfold}", see details
 #'
-#' @seealso \code{\link{setbreaks}}, \code{\link{binning3d}}
+#' @seealso \code{\link{setbreaks}}, \code{\link{binning3d}} 
 #' 
 #' @author M. Baaske
 #' @rdname unfold
@@ -128,23 +125,21 @@ unfold.numeric <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L)
 
 #' Histogram data
 #'
-#' Count data of size, shape and orientation values.
+#' Count data of size, shape and orientation
 #'
-#' For each value of planar or spatial measured quantities \code{size,shape,orientation}
-#' the function counts the number of observations falling into each class.
-#' The \code{breaks} list is either obtained from function \code{setbreaks} or the
-#' user supplies his own variant, see \code{\link{setbreaks}} for details.
-#' If \code{check} is \code{TRUE} some checks on the \code{breaks} list are done.
+#' For each value of planar or spatial measured quantities \code{size}, \code{shape} and \code{orientation}
+#' the function counts the number of observations falling into each class (bin). The list \code{breaks} can be
+#' obtained by the function \code{\link{setbreaks}}. If \code{check=TRUE}, some checks on \code{breaks} are done.
 #' For an example please see the file 'almmc.R'.
 #'
 #' @param size  vector of sizes
 #' @param angle vector of angles
-#' @param shape	vector of aspect ratios
+#' @param shape	vector of shape factors
 #' @param breaks list of bin vectors
 #' @param check logical, default is \code{TRUE}
-#' @param na.rm logical, if NAs are to be removed in the data vectors, default is \code{TRUE}
+#' @param na.rm logical, whether \code{NAs} should be removed, default \code{TRUE}
 #' 
-#' @return 3d array of count data
+#' @return 3D array of binned count data
 #' 
 #' @author M. Baaske
 #' @rdname binning3d
@@ -186,11 +181,11 @@ binning3d <- function(size,angle,shape,breaks,check=TRUE,na.rm = TRUE) {
 #' Construct class limits vectors
 #'
 #' The function constructs the class limits for the size, shape and orientation parameters.
-#' One can either define \code{linear} class limits of 'size' as
-#' \eqn{a_i=i\delta, \delta=maxSize/M } or using exponentially increasing limits: \eqn{base^i, i=1,\dots,M}.
-#' The orientation classes are defined as \eqn{\theta_j=j\omega, \omega=\pi/(2N), j=1,\dots,N} in the range
-#' \eqn{[0,\pi/2]}, where \eqn{M,N} are the number of size classes and the number of orientation classes, respectively.
-#' Argument \code{base} must not be \code{NULL} if \code{sizeType} equals "exp". For an example please see the file 'unfold.R'.
+#' One can either define "\code{linear}" class limits of the sizes as \eqn{a_i=i\delta, \delta=maxSize/M } or
+#' using exponentially increasing limits like \eqn{base^i, i=1,\dots,M}.
+#' The orientation classes are defined by \eqn{\theta_j=j\omega, \omega=\pi/(2N), j=1,\dots,N} in the range
+#' \eqn{[0,\pi/2]}, where \eqn{M,N} are the number of size classes and, respectively, the number of orientation classes.
+#' The argument \code{base} must not be \code{NULL} if \code{sizeType} equals "\code{exp}".
 #'
 #' @param nclass 	number of classes
 #' @param maxSize 	maximum of \code{size} values
@@ -198,6 +193,9 @@ binning3d <- function(size,angle,shape,breaks,check=TRUE,na.rm = TRUE) {
 #' @param kap  	    constant for shape class construction
 #' @param sizeType 	either \code{linear} or \code{exp}, default is \code{linear}
 #' 
+#' @examples 
+#'   setbreaks(c(8,5,7),0.935,base=0.5,kap=1.25,sizeType="exp")
+#'   
 #' @return 			list of class limits vectors
 #' 
 #' @author M. Baaske
@@ -222,16 +220,16 @@ setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp"))
 		"shape"=unlist(lapply(0:nclass[3],function(i) (i/nclass[3])^kap))))
 }
 
-#' Get 3D characteristics of spheroids
+#' 3D characteristics of spheroids
 #'
-#' Extract the original 3D size-shape-orientation characteristics
+#' Extract size, shape and orientation angle
 #'
-#' The function simply extracts the characteristics of a 3D spheroid system
-#' either as oblate or prolate type and returns a list which consists of entries
-#' named 'a' (major semi-axis length), 's' (shape factor) and polar angle 'Theta'.
-#' For an example please see the file 'unfold.R'.
+#' The function extracts the characteristics of a 3D spheroid system, either oblate or prolate spheroids,
+#' and returns a list of the following elements: major semi-axis length '\code{a}', shape factor '\code{s}'
+#' and polar angle '\code{Theta}'. For a full example please see the file 'unfold.R'.
 #'
 #' @param   S list of spheroids
+#' 
 #' @return  a list of spheroids` 3D characteristics
 #'  
 #' @author M. Baaske
@@ -245,18 +243,19 @@ parameters3d <- function(S) {
 		 
 }
 
-#' Estimated spatial histogram data
+#' Spatial histogram
 #'
-#' Get histogram data from estimated joint distribution
+#' Characteristics for a spatial histogram
 #'
-#' Given the estimated joint distribution in histogram form the function
-#' returns a list of \code{breaks} replicates which equals the number of
-#' estimated count data for each class. For an example please see the file 'unfold.R'.
+#' Based on the estimated joint distribution after unfolding the function replicates
+#' the entries of the vector \code{breaks}, see \code{\link{setbreaks}}, equal to the
+#' number of estimated count data for each class. For an example please see the file 'unfold.R'.
 #'
-#' @param H trivariate histogram
-#' @param breaks breaks as obtained from \code{\link{setbreaks}}
+#' @param H 	  	trivariate (output) histogram, estimated by \code{\link{unfold}}
+#' @param breaks 	breaks vector from \code{\link{setbreaks}}
 #' 
-#' @return list of size, angle and shape parameters, see \code{\link{parameters3d}}
+#' @return list of the following entries: either major or minor semi-axis length \code{a},
+#'         (polar) angle \code{Theta} and shape factor \code{s}, see \code{\link{parameters3d}}
 #' 
 #' @author M. Baaske
 #' @rdname parameterEstimates
@@ -272,19 +271,20 @@ parameterEstimates <- function(H,breaks) {
 
 #' Trivariate histogram
 #'
-#' Plot trivariate histogram of joint size-shape-orientation distribution
+#' 3D plot of a trivariate histogram
 #' 
 #' The (estimated spatial) joint size-shape-orientation distribution is plotted in a 3D
-#' histogram with corresponding axesn. The axes intersect in the first class number.
+#' histogram with corresponding axes. The axes intersect in the first class number.
 #' The ball volumes visualize the relative frequencies of count data for each class which
-#' can be scaled by the user for non-overlapping spheres. Balls within the same size class
-#' have the same color. For an example please see the file 'almmc.R'.
+#' can be scaled by the user in order to make the spheres non-overlapping. Balls within the
+#' same size class have the same color. For an example please see the file 'almmc.R'.
 #'
-#' @param A 		3d array of count data
+#' @param A 		3D array of count data (estimated histogram), see \code{\link{unfold}}
 #' @param main 		main title of the plot
-#' @param scale 	factor to scale the spheres
-#' @param col 		vector of color values repeatedly used
-#' @param ... 		optional argumentspassed to function \code{rgl::spheres3d}
+#' @param scale 	scaling factor for non-overlapping spheres
+#' @param col 		vector of color values repeatedly used for all classes
+#' @param ... 		graphical parameters passed to \code{rgl::spheres3d}
+#' 
 #' @return 			NULL
 #' 
 #' @author M. Baaske

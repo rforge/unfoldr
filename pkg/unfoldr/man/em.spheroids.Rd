@@ -13,7 +13,7 @@ em.spheroids(P, F, maxIt, nCores = getOption("par.unfoldr", 2L))
 
 \item{maxIt}{maximum number of EM iterations}
 
-\item{nCores}{number of cpu cores used}
+\item{nCores}{number of cpu cores}
 }
 \value{
 trivariate histogram
@@ -22,12 +22,11 @@ trivariate histogram
 Estimate the joint size-shape-orientation distribution of spheroids
 }
 \details{
-Given an array of coefficients \code{P} and the input histogram \code{F} of
-measured planar section profiles, see \code{\link{binning3d}}, the function
-estimates the spatial joint size-shape-orientation distribution of spheroids
-as a trivariate histogram, \code{triHist}, by the EM algorithm.
-If the option 'par.unfoldr' is set to a user chosen amount of cores then
-parts of the EM iterations are done in parallel.
+Given an array of coefficients \code{P}, see \code{\link{coefficientMatrixSpheroids}} and an input histogram
+\code{F} of measured planar characteristics of section profiles, the function estimates the spatial joint
+size-shape-orientation distribution of the corresponding spheroids in 3D by a discretized version of the
+\emph{Expectation Maximization} (EM) algorithm. A number of cpu cores can be set by the option '\code{par.unfoldr}'
+for parallel computations. The function is also internally called by \code{\link{unfold}} in case of spheroids.
 }
 \examples{
 ## Comment: Trivariate unfolding of spheroid distribution
@@ -49,7 +48,7 @@ S <- simPoissonSystem(theta,lam,size="rlnorm",
 
 ## unfolding
 sp <- verticalSection(S,2.5)
-ret <- unfold(sp,c(10,6,8),kap=1.25)
+ret <- unfold(sp,c(8,6,5),kap=1.25)
 
 ## even more accurate
 # ret <- unfold(sp,c(15,12,11),kap=1.25)
