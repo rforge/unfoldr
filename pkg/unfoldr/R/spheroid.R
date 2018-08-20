@@ -47,11 +47,11 @@ updateIntersections <- function(S) {
 #'
 #' The function aggregates the necessary information for trivariate unfolding of spheroids' joint size-shape orientation distribution.
 #' of type either "\code{prolate}" or "\code{oblate}". The argument \code{size} is a numeric matrix of semi-axis lengths (first column
-#' corresponds to the major semi-axis, second one to minor semi-axis). The orientation of the ellipse is seen as the angle between its major axis
-#' and the vertical axis (usually 'z' axis) of the coordinate system in the intersection plane. For values in \eqn{[0,2\pi]} these are transformed to
-#' \eqn{[0,\pi/2]} as required by the unfolding procedure. The function returns a list which consists of either the longer or shorter axis
-#' named \code{A} of section profiles corresponding to the type of spheroids which are intended to be reconstructed (by unfolding), the aspect
-#' ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation/direction angle \code{alpha}.
+#' corresponds to the major semi-axis, second one to minor semi-axis). The orientation of an ellipse is assumed to be the angle between
+#' its major axis and vertical axis in the intersection plane (compared to the 'z' axis in 3D). For values in \eqn{[0,2\pi]} these angles are
+#' transformed to \eqn{[0,\pi/2]} as required by the unfolding procedure. The function returns a list which consists of either the longer or shorter
+#' axis named \code{A} of section profiles corresponding to the type of spheroids whose joint distribution is to be reconstructed (by unfolding),
+#' the aspect ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation angle \code{alpha}.
 #'
 #' @param size	  matrix of lengths of the semi-axes
 #' @param alpha   angle of section profiles in the plane (see details)
@@ -65,11 +65,11 @@ updateIntersections <- function(S) {
 #'  data(data15p)
 #'  
 #'  # matrix of semi-axes lengths (major,minor)
-#'  AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
+#'  AC <- data.matrix(data15p[c("A","C")])/1000	
 #' 
 #'  # selecting the minor semi-axis for prolate type of spheroids:
 #'  # independent of nomenclature (always named \code{A})
-#'  sp <- sectionProfiles(AC,as.numeric(unlist(data15p["alpha"])))
+#'  sp <- sectionProfiles(AC,unlist(data15p["alpha"]))
 #' 
 #'  summary(sp$A)			# here minor semi-axis because of prolate
 #'  summary(sp$S)			# shape factor
@@ -98,43 +98,38 @@ sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 
 #' Poisson germ-grain process
 #'
-#' Simulation of a Poisson germ-grain process with either spheres, spheroids or spherocylinders as grains
+#' Simulation of Poisson germ-grain processes with either spheres, spheroids or spherocylinders as grains
 #'
-#' The function simulates a Poisson germ-grain process given certain form parameters in the argument \code{theta}
-#' and a predefined simulation box. The positions of the germs are generated independently according to a Poisson
-#' process with mean intensity parameter \code{lam}. The function either generates \code{type="prolate"} or \code{type="oblate"}
-#' spheroids, spheres or spherocylinders. The argument \code{size} sets the name of the distribution function of the size
-#' of the objects, i.e. the major semi-axis lengths in case of spheroids, radii for spheres or the lengths of the main axis
-#' of rotation for spherocylinders including the caps. 
+#' The function can simulate a Poisson germ-grain process according to the parameter \code{theta} within a predefined (3D) box.
+#' The positions of the germs follow a uniform distribution according to a Poisson process with mean intensity parameter \code{lam}.
+#' The function either randomly generates \code{type="prolate"} or \code{type="oblate"} spheroids, spheres or spherocylinders.
+#' The argument \code{size} sets the name of the distribution function for the size/length of the objects, i.e. the major semi-axis
+#' lengths in case of spheroids, radii for spheres or the lengths of the main axis of rotation for spherocylinders including the end caps. 
 #' 
-#' The following directional (orientation) distributions of the spheroid's major-axis or cylinder's main axis are available:
-#' a uniform distribution (\code{runifdir}), isotropic random planar distribution (\code{rbetaiso}, see the reference below)
-#' and a "von Mises-Fisher" (\code{rvMisesFisher}) distribution. The simulation box is a list containing the ranges of each box dimension
-#' corresponding to the lower and upper limits in each direction. If the argument \code{box} contains only a single range, i.e. \code{list(c(0,1)}, the
-#' same limits are assumed for the remaining dimensions. The argument \code{rjoint} defines a (joint) distribution function which can be any function
-#' provided by the user in order to generate the required random parameters for spheroids or spherocylinders. An in-depth example of usage is given in
-#' the example files 'simSpheroids.R' and 'simCylinders.R'. 
+#' The following directional (orientation) distributions of the spheroid's major-axis, respectively, cylinder's main axis are available:
+#' a uniform distribution ("\code{runifdir}"), isotropic random planar distribution ("\code{rbetaiso"}, see the reference below)
+#' and the "\emph{von Mises-Fisher}" ("\code{rvMisesFisher}") distribution. The simulation box consists of a list containing the ranges of each box
+#' dimension as elements corresponding to the lower and upper limits in each direction. If the argument \code{box} contains only a single range,
+#' i.e. \code{list(c(0,1)}, the same limits are assumed for the remaining dimensions which is then simply replicated. The optional argument \code{rjoint}
+#' defines a (joint) distribution function which can be any function provided by the user in order to generate the required random parameters for
+#' spheroids or spherocylinders. An in-depth example of such usage is given in the example files 'simSpheroids.R' and 'simCylinders.R'. 
 #' 
 #' In addition, the function supports an exact simulation type [2] of the grains. In case of spheroids and spherocylinders setting \code{size="rbinorm"}
-#' declares a bivariate normal size-shape distribution for which the exact simulation is available setting \code{perfect=TRUE}. More specifically,
-#' for a bivariate normal vector \eqn{[X,Y]} with correlation parameter \eqn{\rho}, the length of the major semi-axis of a spheroid is given by \eqn{a=exp(x)}
-#' with a (logit-transformed) shape parameter as \eqn{s=1/(1+exp(-y))} and thus a scaled minor semi-axis length \eqn{c=a*s}. This modification leads to a
-#' log normally distributed length of the major semi-axis. In case of spherocylinders, the lognormally distributed length of a cylinder is \eqn{len=h+2*r} where
-#' \code{h} is the height and \eqn{r=len/2*s} the radius. The main direction \code{u} of the spheroid or spherocylinder is determined by the
-#' major axis independent of size and shape. Also, the following univariate distributions of the length \code{a} and, respectively, \code{len} or
-#' the shape \code{s} are available: `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. One can also use "\code{const}" for a
-#' simulation with constant lengths or shapes. Only simulations with size distributions `\code{rbinorm}` or `\code{rlnorm}` can use the exact
-#' type of simulation.
+#' declares a bivariate size-shape distribution for which the exact simulation is available. More specifically, for a bivariate normal random vector \eqn{[X,Y]}
+#' with correlation parameter \eqn{\rho}, the length of the major semi-axis of a spheroid is given by \eqn{a=exp(x)} with a (logit-transformed) shape parameter
+#' as \eqn{s=1/(1+exp(-y))} and thus a scaled minor semi-axis length \eqn{c=a*s}. The modification leads to a log-normally distributed length of the
+#' major semi-axis. Consequently, in case of spherocylinders, the log-normally distributed length is \eqn{len=h+2*r} where \code{h} is the height and
+#' \eqn{r=len/2*s} the radius. The main direction \code{u} of a spheroid or spherocylinder is determined by the major axis independent of size and shape.
+#' Further, the following univariate distributions of the major semi-axis \code{a}, respectively, length \code{len} and shape \code{s} are available:
+#' `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. One can also use "\code{const}" for simulations with constant lengths or shapes.
+#' Note that only simulations with size distributions `\code{rbinorm}` or `\code{rlnorm}` can use the exact type of simulation.
 #'
-#' For spheres any distribution of the radii can be specified as a name of a user-defined function in \code{size} as long as the formal named
-#' function parameters match the actual named parameters exactly as defined in the parameters given by \code{theta}.
-#' Besides this, all other distributions given above are also available. In particular, setting \code{size="rlnorm"} leads to lognormally distributed
-#' radii of the spheres in which case the exact simulation is available as an option (\code{perfect=TRUE}). Use "\code{const}" for a constant
-#' radius of simulated spheres. 
+#' For spheres any distribution of the radii can be specified as a name of a user-defined function in the argument \code{size} as long as the formal named
+#' function parameters match the actual names of the parameters exactly as defined in \code{theta}. Besides this, all other distributions given above are also available. Using "\code{const}" simulates spheres of constant radii. 
 #'  
-#' The argument \code{pl>=0} denotes both the print level of intermediate output and the type of return value. If \code{pl=10}, then a shorter list
-#' of spheroids or spheres is returned to speed up computation. Note that, the current implementation does not include routines for unfolding
-#' the joint 3D size-shape-orientation distribution of spherocylinders so far. 
+#' The argument \code{pl>=0} denotes both the print level of intermediate output and by the same time the type of the return value. If \code{pl=10},
+#' then an abbreviated list of spheroids or spheres is returned to speed up computation. Note that, the current implementation does not include routines
+#' for unfolding the joint size-shape-orientation distribution of spherocylinders so far. 
 #' 
 #'
 #' @param theta 	list of simulation parameters which must consist of elements: \code{size}, \code{shape} and \code{orientation}

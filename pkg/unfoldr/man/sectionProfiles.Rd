@@ -23,22 +23,22 @@ Get storing structure for section profiles of spheroids for unfolding
 \details{
 The function aggregates the necessary information for trivariate unfolding of spheroids' joint size-shape orientation distribution.
 of type either "\code{prolate}" or "\code{oblate}". The argument \code{size} is a numeric matrix of semi-axis lengths (first column
-corresponds to the major semi-axis, second one to minor semi-axis). The orientation of the ellipse is seen as the angle between its major axis
-and the vertical axis (usually 'z' axis) of the coordinate system in the intersection plane. For values in \eqn{[0,2\pi]} these are transformed to
-\eqn{[0,\pi/2]} as required by the unfolding procedure. The function returns a list which consists of either the longer or shorter axis
-named \code{A} of section profiles corresponding to the type of spheroids which are intended to be reconstructed (by unfolding), the aspect
-ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation/direction angle \code{alpha}.
+corresponds to the major semi-axis, second one to minor semi-axis). The orientation of an ellipse is assumed to be the angle between
+its major axis and vertical axis in the intersection plane (compared to the 'z' axis in 3D). For values in \eqn{[0,2\pi]} these angles are
+transformed to \eqn{[0,\pi/2]} as required by the unfolding procedure. The function returns a list which consists of either the longer or shorter
+axis named \code{A} of section profiles corresponding to the type of spheroids whose joint distribution is to be reconstructed (by unfolding),
+the aspect ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation angle \code{alpha}.
 }
 \examples{
  # load data set
  data(data15p)
  
  # matrix of semi-axes lengths (major,minor)
- AC <- data.matrix(data15p[c("A","C")])/1000 # unit: micro meter	
+ AC <- data.matrix(data15p[c("A","C")])/1000	
 
  # selecting the minor semi-axis for prolate type of spheroids:
  # independent of nomenclature (always named \\code{A})
- sp <- sectionProfiles(AC,as.numeric(unlist(data15p["alpha"])))
+ sp <- sectionProfiles(AC,unlist(data15p["alpha"]))
 
  summary(sp$A)			# here minor semi-axis because of prolate
  summary(sp$S)			# shape factor

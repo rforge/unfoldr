@@ -4,8 +4,8 @@
 \alias{cylinders3d}
 \title{Cylinder system 3D}
 \usage{
-cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE, clipping = FALSE,
-  ...)
+cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE,
+  clipping = FALSE, ...)
 }
 \arguments{
 \item{S}{list of cylinders, see \code{\link{simPoissonSystem}}}

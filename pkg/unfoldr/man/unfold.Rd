@@ -4,7 +4,8 @@
 \alias{unfold}
 \title{Stereological unfolding}
 \usage{
-unfold(sp, nclass, maxIt = 64, nCores = getOption("par.unfoldr", 2L), ...)
+unfold(sp, nclass, maxIt = 64, nCores = getOption("par.unfoldr", 2L),
+  ...)
 }
 \arguments{
 \item{sp}{section profiles}

@@ -4,8 +4,8 @@
 \alias{spheroids3d}
 \title{Spheroid system 3D}
 \usage{
-spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE, draw.bg = TRUE,
-  bg.col = "white", clipping = FALSE, ...)
+spheroids3d(S, box, draw.axes = FALSE, draw.box = TRUE,
+  draw.bg = TRUE, bg.col = "white", clipping = FALSE, ...)
 }
 \arguments{
 \item{S}{list of spheroids, see \code{\link{simPoissonSystem}}}
