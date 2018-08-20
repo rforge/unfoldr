@@ -63,7 +63,7 @@ The argument \code{size} sets the name of the distribution function for the size
 lengths in case of spheroids, radii for spheres or the lengths of the main axis of rotation for spherocylinders including the end caps.
 
 The following directional (orientation) distributions of the spheroid's major-axis, respectively, cylinder's main axis are available:
-a uniform distribution ("\code{runifdir}"), isotropic random planar distribution ("\code{rbetaiso"}, see the reference below)
+a uniform distribution ("\code{runifdir}"), isotropic random planar distribution ("\code{rbetaiso}"), see the reference below)
 and the "\emph{von Mises-Fisher}" ("\code{rvMisesFisher}") distribution. The simulation box consists of a list containing the ranges of each box
 dimension as elements corresponding to the lower and upper limits in each direction. If the argument \code{box} contains only a single range,
 i.e. \code{list(c(0,1)}, the same limits are assumed for the remaining dimensions which is then simply replicated. The optional argument \code{rjoint}
@@ -81,7 +81,8 @@ Further, the following univariate distributions of the major semi-axis \code{a},
 Note that only simulations with size distributions `\code{rbinorm}` or `\code{rlnorm}` can use the exact type of simulation.
 
 For spheres any distribution of the radii can be specified as a name of a user-defined function in the argument \code{size} as long as the formal named
-function parameters match the actual names of the parameters exactly as defined in \code{theta}. Besides this, all other distributions given above are also available. Using "\code{const}" simulates spheres of constant radii. 
+function parameters match the actual names of the parameters exactly as defined in \code{theta}. Besides this, all other distributions given above are
+also available. Using "\code{const}" simulates spheres of constant radii. 
  
 The argument \code{pl>=0} denotes both the print level of intermediate output and by the same time the type of the return value. If \code{pl=10},
 then an abbreviated list of spheroids or spheres is returned to speed up computation. Note that, the current implementation does not include routines
@@ -101,7 +102,7 @@ for unfolding the joint size-shape-orientation distribution of spherocylinders s
                "orientation"=list("kappa"=1))
 
  S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="oblate",pl=1) 
-length(S)
+ length(S)
 
 }
 \references{
