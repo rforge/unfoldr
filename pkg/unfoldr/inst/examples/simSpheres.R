@@ -2,6 +2,7 @@
 ## Comment: Simulate a Poisson sphere system,
 ## 			intersect, discretize and display results
 
+library(unfoldr)
 library(rgl)
 library(plotrix)
 

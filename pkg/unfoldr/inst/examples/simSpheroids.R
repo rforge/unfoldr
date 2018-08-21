@@ -1,7 +1,8 @@
 \dontrun{
 ## Comment: Simulate a Poisson spheroid system,
 ## 			intersect, discretize and display results
-	
+
+library(unfoldr)	
 library(rgl)
 library(plotrix)
 
@@ -41,9 +42,6 @@ lam <- 100
 # simulation bounding box
 box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
 
-# show how to call
-head(simPoissonSystem)
-
 ####################################################################
 ## `rlnorm` distribution 
 ####################################################################
@@ -56,11 +54,12 @@ theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
 ## simulate and return full spheres system
 ## intersect with XZ plane and return full list of intersection profiles
 S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="oblate",
-		intersect="original",mu=c(0,1,0),n=c(0,0,1),dz=0,perfect=TRUE,pl=101)
+		intersect="original",mu=c(0,1,0),n=c(0,0,1),perfect=TRUE,pl=1)
 
 ## show some objects to get an impression
 open3d()
 spheroids3d(S[1:1000], FALSE, TRUE, box=box, col=col)
+planes3d(0,-1,0,2.5,col="black",alpha=1)
 
 ###################################################################
 ## simulate bivariate size-shape distribution for prolate spheroids
@@ -71,8 +70,7 @@ theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
 		"orientation"=list("kappa"=1))
 
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="prolate",
-		intersect="full", ,n=c(0,0,1), mu=c(0,0,1),
-		"orientation"="rbetaiso",dz=2.5,perfect=TRUE,pl=1)
+		intersect="full",n=c(0,0,1),mu=c(0,0,1),dz=2.5,perfect=TRUE,pl=1)
 
 ## 3D intersected objects
 sp <- S$sp
@@ -123,11 +121,11 @@ str(SP[[100]])
 dz <- 2.5		# distance to origin of box [0,5]^3
 n <- c(0,1,0)	# normal in y direction (xz plane)
 
-theta$orientation$kappa <- 10	# random planar in xy plane
+theta$orientation$kappa <- 0	# random planar in xy plane
 
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,
-		type="prolate", intersect="full", ,n=n, mu=c(0,0,1),
-		"orientation"="rbetaiso", dz=dz, perfect=TRUE, intern=TRUE, pl=1)
+		type="prolate", intersect="full",n=n, mu=c(1,0,0),
+		 orientation="rbetaiso",dz=dz,perfect=TRUE, intern=TRUE, pl=1)
 
 sp <- S$sp # sections
 id <- sapply(sp,"[[","id") 
@@ -145,10 +143,11 @@ Es <- drawEllipses(sp, x=box$xrange, y=box$yrange, border="black",xlab="[mm]", y
  
 # intersect 3D system
 Sp <- S$S   # spheroids
-spv <- verticalSection(Sp,d=dz,n=n,intern=TRUE)
+spv <- verticalSection(Sp,d=dz,n=n,intern=TRUE) # section profiles
 
-# angle in the intersecting plane always
-# w.r.t. to mu=(0,0,1) used for unfolding
+# angle in the intersecting plane is always w.r.t. to the 'vertical direction' (0,0,1)
+# used for unfolding and not! w.r.t the reference direction 'mu' which is used for
+# simulating the orientation of the spheroids or spherocylinders 
 summary(spv$alpha) 
 
 #################################################################
@@ -167,9 +166,9 @@ spheroids3d(Sp[id], FALSE, TRUE, box=box, col=col)
 ## user-defined simulation function
 #################################################################
 
-# no perfect simualtion here for 'rmulti'
-# multivariate size distribution,
-# independent orientation distribution 
+# No perfect simualtion here for 'rmulti'
+# A multivariate size distribution, independent orientation distribution
+
 rmulti <- function(m,s,kappa) {	
 	# directional distribution
 	# (implemented `rbetaiso` distribution)

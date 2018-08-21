@@ -2,6 +2,7 @@
 ## Comment: Simulate a Poisson spherocylinder system,
 ## 			intersect, discretize and display results
 
+library(unfoldr)
 library(rgl)
 library(plotrix)
 
@@ -171,7 +172,7 @@ cylinders3d(S[1:1000], draw.box=TRUE, box=box, col=col)
 ## constant size and shape distribution 
 ####################################################################
 
-# log normal size, constant shape, isotropic orientation (rbetaiso) 
+# log-normal size, constant shape, isotropic orientation (rbetaiso) 
 theta <- list("size"=list(0.15),"shape"=list("s"=0.25), "orientation"=list("kappa"=1))
 
 # only simulate 3D system of spheroccylinders
@@ -192,7 +193,7 @@ theta <- list("size"=list("mx"=-1.45,"my"=-2.0, "sdx"=0.15,"sdy"=0.25,"rho"=0.0)
 
 ## 3D system, intersections, digitization
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="cylinders",
-		intersect="full", n=c(0,1,0), "orientation"="rbetaiso", dz=1.5,
+		intersect="full", n=c(0,1,0), orientation="rbetaiso", dz=1.5,
 		perfect=TRUE, intern=TRUE, delta=0.005, pl=101)
 
 # open3d()

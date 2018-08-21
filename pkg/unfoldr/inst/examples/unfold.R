@@ -13,11 +13,11 @@ theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
 set.seed(1234)
 
 S <- simPoissonSystem(theta,lam,size="rlnorm",
-		orientation="rbetaiso",box=list(c(0,5)),type="prolate",pl=101)
+		orientation="rbetaiso",box=list(c(0,5)),type="prolate",pl=1)
 
 ## unfolding
 sp <- verticalSection(S,2.5)
-ret <- unfold(sp,c(8,6,5),kap=1.25)
+ret <- unfold(sp,c(7,6,5),kap=1.25)
 
 ## even more accurate
 # ret <- unfold(sp,c(15,12,11),kap=1.25)
