@@ -33,8 +33,8 @@ given class limits are also used for binning the spatial values. One can define 
 \examples{
 \dontrun{
 
-#options(par.unfoldr=4)
-breaks <- setbreaks(c(8,6,7),maxSize=0.37,kap=1.25)
+options(par.unfoldr=2L)
+breaks <- setbreaks(c(6,5,6),maxSize=0.37,kap=1.25)
 breaks
 
 P <- coefficientMatrixSpheroids(breaks,check=FALSE)
