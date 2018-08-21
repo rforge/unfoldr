@@ -11,14 +11,14 @@ drawSpheroidIntersection(E, n = c(0, 1, 0), np = 25)
 
 \item{n}{the normal vector of the intersecting plane}
 
-\item{np}{number of points for polygon approximation of the ellipses}
+\item{np}{number of points for a polygon approximation of the ellipses}
 }
 \description{
-Draw section profiles of spheroids in 3
+Draw section profiles of spheroids in 3D
 }
 \details{
-The function requires the package \code{rgl} to be installed for drawing section profiles (ellipses)
-into a 3D image. For a full example please see the file 'simSpheroids.R'.
+The function requires the package '\code{rgl}' for drawing section profiles (ellipses)
+into a 3D '\code{rgl}' image. For a full example please see the file 'simSpheroids.R'.
 }
 \author{
 M. Baaske

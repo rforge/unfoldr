@@ -24,15 +24,15 @@ list of sizes \code{A}, shape factors \code{S} and (vertical) angles \code{alpha
 Compute vertical section profiles of a spheroid system
 }
 \details{
-The function intersects a spheroid system by a plane defined by the normal 
-vector \code{n} either equal to \code{c(0,1,0)} (default) or \code{c(1,0,0)} which is then
-called a vertical section. Depending on the type of spheroid (either prolate or oblate) the
-returned lengths are those corresponding to the minor semi-axis and, respectively, major semi-axis
-in the way these are required for unfolding.
+The function intersects a spheroid system by a plane defined by the normal vector \code{n} either
+equal to \code{c(0,1,0)} (default) or \code{c(1,0,0)}, which is called a vertical section. Depending on
+the type of spheroid (either "\code{prolate} or "\code{oblate}") the returned semi-axis lengths are those
+corresponding to the minor semi-axis or, respectively, major semi-axis in the way these are required for unfolding.
 }
 \examples{
  
  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+ 
  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
 		"orientation"=list("kappa"=1))

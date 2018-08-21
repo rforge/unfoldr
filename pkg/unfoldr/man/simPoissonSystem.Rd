@@ -78,12 +78,12 @@ as \eqn{s=1/(1+exp(-y))} and thus a scaled minor semi-axis length \eqn{c=a*s}. T
 major semi-axis. Consequently, in case of spherocylinders, the log-normally distributed length is \eqn{len=h+2*r} where \code{h} is the height and
 \eqn{r=len/2*s} the radius. The main direction \code{u} of a spheroid or spherocylinder is determined by the major axis independent of size and shape.
 Further, the following univariate distributions of the major semi-axis \code{a}, respectively, length \code{len} and shape \code{s} are available:
-`\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. One can also use "\code{const}" for simulations with constant lengths or shapes.
-Note that only simulations with size distributions `\code{rbinorm}` or `\code{rlnorm}` can use the exact type of simulation.
+'\code{rbeta}', '\code{rgamma}', '\code{rlnorm}' and '\code{runif}'. One can also use '\code{const}' for simulations with constant lengths or shapes.
+Note that only simulations with size distributions '\code{rbinorm}' or '\code{rlnorm}' can use the exact type of simulation.
 
 For spheres any distribution of the radii can be specified as a name of a user-defined function in the argument \code{size} as long as the formal named
 function parameters match the actual names of the parameters exactly as defined in \code{theta}. Besides this, all other distributions given above are
-also available. Using "\code{const}" simulates spheres of constant radii. 
+also available. Using '\code{const}' simulates spheres of constant radii. 
  
 The argument \code{pl>=0} denotes both the print level of intermediate output and by the same time the type of the return value. If \code{pl=10},
 then an abbreviated list of spheroids or spheres is returned to speed up computation. Note that, the current implementation does not include routines

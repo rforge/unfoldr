@@ -15,29 +15,32 @@ intersectSystem(S, d, n = c(0, 1, 0), intern = FALSE, pl = 0)
 
 \item{intern}{logical, \code{FALSE} (default), return all section profiles otherwise
    only those which have their centers inside the corresponding intersection window
-(if the intersected system had been simulated using exact simulation)}
+(if the intersected system had been simulated using exact simulation this makes sense)}
 
-\item{pl}{integer, \code{pl=0} (default), for no verbose output and full specification list of section profiles}
+\item{pl}{integer, \code{pl=0} (default), for no verbose output and otherwise a full specification list of
+section profiles in case of sphere and spheroid intersections}
 }
 \value{
-list of size, shape and angle of section profiles or a short version of it, see above
+For spheroid intersections the function returns a list of size, shape and angle of section profiles or a short version
+				of it; for sphere intersections either radii or lists containing the centers of discs and the object number.
 }
 \description{
-Intersect a system of spheres, spheroids or spherocylinders by a given plane
+Intersect a system of spheres, spheroids or spherocylinders by a plane
 }
 \details{
-The function intersects a given (Poisson) system of spheres, spheroids or cylinders by a plane defined by a
+The function intersects a given (Poisson) system made of spheres, spheroids or cylinders as grains by a plane defined by a
 normal vector, e.g. \code{n=c(0,1,0)}, perpendicular to one of the bounding planes of the simulation box. 
 For a print level \code{pl>=0} some verbose output is given. Also it sets the type of return value. In case of spheroid
-intersections, setting \code{pl=10}, the function returns a short version of the full specification list of section profiles
-with elements named \code{A} (major semi-axis), \code{C} (minor semi-axis), \code{S} (shape factor as the ratio of these two)
-and \code{phi} as the angle in the intersecting plane between \code{[0,2pi]} w.r.t. the 'x' axis. Otherwise additional components
+intersections, setting \code{pl=10}, leads to a short version of the full specification return list of section profiles
+with elements named \code{A} (major semi-axis), \code{C} (minor semi-axis), \code{S} (the shape factor as the ratio of these two)
+and \code{phi} as the angle in the intersecting plane between \eqn{[0,2\pi]} w.r.t. the 'x' axis. Otherwise additional components
 are returned such as the ellipse`s rotation matrix, also named \code{A}, the center point \code{center} and a constant \code{type=10}
-(defining full ellipses among other types of intersection objects) of the section profiles. For sphere intersections only the
-radii are returned and \code{pl} is ignored in case of cylinder intersections because there is no short version.
+(defining the object of full ellipses among other types of intersection objects) of the section profiles. For sphere intersections only
+a numeric vector of disc radii are returned as a short version of return values.
 }
 \examples{
  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+ 
  # constant size-shape orientation distribution (spheroids)
  theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
 

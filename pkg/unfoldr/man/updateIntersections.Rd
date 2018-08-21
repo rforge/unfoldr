@@ -10,10 +10,10 @@ updateIntersections(S)
 \item{S}{list of spheres, spheroids or spherocylinders, see \code{\link{simPoissonSystem}}}
 }
 \value{
-binary integer vector of length equal to the length of \code{S}.
+binary integer vector of length equal to the length of \code{S}
 }
 \description{
-Check itersection of either spheres, spheroids or spherocylinders with the simulation box
+Check itersection of either spheres, spheroids or spherocylinders
 }
 \details{
 For a given list of spheres, spheroids or spherocylinders the function tests whether an object intersects

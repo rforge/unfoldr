@@ -15,19 +15,20 @@ sectionProfiles(size, alpha, type = c("prolate", "oblate"))
 section profiles are assumed to come from}
 }
 \value{
-list of section profiles, either of class "\code{prolate}" or "\code{oblate}"
+The function returns a list which consists of either the longer or shorter
+				semi-axis length named \code{A} of section profiles corresponding to the type of spheroids used before and whose joint
+				joint distribution is to be estimated (by unfolding), the shape factor \code{S} of both semi-axes as the shape factor
+				between \eqn{(0,1]} and the orientation	angle \code{alpha}, either of class "\code{prolate}" or "\code{oblate}".
 }
 \description{
-Get storing structure for section profiles of spheroids for unfolding
+Set up section profiles of spheroids for unfolding
 }
 \details{
-The function aggregates the necessary information for trivariate unfolding of spheroids' joint size-shape orientation distribution.
-of type either "\code{prolate}" or "\code{oblate}". The argument \code{size} is a numeric matrix of semi-axis lengths (first column
-corresponds to the major semi-axis, second one to minor semi-axis). The orientation of an ellipse is assumed to be the angle between
-its major axis and vertical axis in the intersection plane (compared to the 'z' axis in 3D). For values in \eqn{[0,2\pi]} these angles are
-transformed to \eqn{[0,\pi/2]} as required by the unfolding procedure. The function returns a list which consists of either the longer or shorter
-axis named \code{A} of section profiles corresponding to the type of spheroids whose joint distribution is to be reconstructed (by unfolding),
-the aspect ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation angle \code{alpha}.
+The function aggregates the necessary information for trivariate unfolding of spheroids' joint size-shape orientation distribution
+of type either "\code{prolate}" or "\code{oblate}". The argument \code{size} is a numeric matrix of semi-axis lengths where the first column
+corresponds to the major semi-axis and the second one to minor semi-axis. The orientation of an ellipse is assumed to be measured as the angle
+between its major axis and vertical axis of the coordinate system in the intersection plane ('z' axis in 3D). For values in \eqn{[0,2\pi]} these
+angles are automatically transformed to \eqn{[0,\pi/2]} as required by the unfolding procedure.
 }
 \examples{
  # load data set

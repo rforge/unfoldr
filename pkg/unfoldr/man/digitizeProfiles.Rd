@@ -11,9 +11,7 @@ digitizeProfiles(sp, delta = 0.01, win = NULL)
 
 \item{delta}{lattice constant for discretization of section profiles}
 
-\item{win}{window as a list of length two, default \code{NULL}, either taken from the attribute of \code{sp} or
-defined by the user as \eqn{[l,u]^2} where \code{l,u} are lower, respectively, upper
-   bounds of the 2D (intersection) region corresponding to the simulation box}
+\item{win}{list of length two, the intersection window, default \code{NULL}}
 }
 \value{
 binary (integer) matrix as an image
@@ -24,7 +22,9 @@ Digitize 2D section profiles
 \details{
 A list of section profiles, e.g. discs, ellipses or segments from intersected spherocylinders, is digitized according
 to a given resolution according to the lattice constant \code{delta} such that the result is an integer matrix 
-which can be interpretated as a binary image.
+which can be interpretated as a binary image. An intersection window can be either provided by the user w.r.t. \eqn{[l,u]^2}
+where \code{l,u}	are lower, respectively, upper bounds of corresponding to a simulation box, or, it is taken from the section
+profiles \code{sp} which stores the intersection window as an attribute.
 }
 \examples{
  # simulation box

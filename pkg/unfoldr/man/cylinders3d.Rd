@@ -24,8 +24,8 @@ cylinders3d(S, box, draw.axes = FALSE, draw.box = TRUE,
 Draw spherocylinders in 3D
 }
 \details{
-The function requires the package \code{rgl} to be installed. For a full example please see
-the file 'simCylinders.R'.
+The function requires the package '\code{rgl}' to draw spherocylinders into a 3D '\code{rgl}' image.
+For an example please see the file 'simCylinders.R'.
 }
 \author{
 M. Baaske

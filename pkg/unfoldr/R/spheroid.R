@@ -22,7 +22,7 @@
 
 #' Check intersection
 #'
-#' Check itersection of either spheres, spheroids or spherocylinders with the simulation box
+#' Check itersection of either spheres, spheroids or spherocylinders
 #'
 #' For a given list of spheres, spheroids or spherocylinders the function tests whether an object intersects
 #' one of the lateral planes (bottom, top plane included) of the simulation box. The vector returned is of length
@@ -31,7 +31,7 @@
 #'
 #' @param S 	list of spheres, spheroids or spherocylinders, see \code{\link{simPoissonSystem}}
 #'  
-#' @return 		binary integer vector of length equal to the length of \code{S}.
+#' @return 		binary integer vector of length equal to the length of \code{S}
 #'  
 #' @author M. Baaske
 #' 
@@ -43,22 +43,23 @@ updateIntersections <- function(S) {
 
 #' Construct section profiles
 #'
-#' Get storing structure for section profiles of spheroids for unfolding
+#' Set up section profiles of spheroids for unfolding
 #'
-#' The function aggregates the necessary information for trivariate unfolding of spheroids' joint size-shape orientation distribution.
-#' of type either "\code{prolate}" or "\code{oblate}". The argument \code{size} is a numeric matrix of semi-axis lengths (first column
-#' corresponds to the major semi-axis, second one to minor semi-axis). The orientation of an ellipse is assumed to be the angle between
-#' its major axis and vertical axis in the intersection plane (compared to the 'z' axis in 3D). For values in \eqn{[0,2\pi]} these angles are
-#' transformed to \eqn{[0,\pi/2]} as required by the unfolding procedure. The function returns a list which consists of either the longer or shorter
-#' axis named \code{A} of section profiles corresponding to the type of spheroids whose joint distribution is to be reconstructed (by unfolding),
-#' the aspect ratio \code{S} of both semi-axes as the shape factor between \eqn{(0,1]} and the orientation angle \code{alpha}.
+#' The function aggregates the necessary information for trivariate unfolding of spheroids' joint size-shape orientation distribution
+#' of type either "\code{prolate}" or "\code{oblate}". The argument \code{size} is a numeric matrix of semi-axis lengths where the first column
+#' corresponds to the major semi-axis and the second one to minor semi-axis. The orientation of an ellipse is assumed to be measured as the angle
+#' between its major axis and vertical axis of the coordinate system in the intersection plane ('z' axis in 3D). For values in \eqn{[0,2\pi]} these
+#' angles are automatically transformed to \eqn{[0,\pi/2]} as required by the unfolding procedure.
 #'
 #' @param size	  matrix of lengths of the semi-axes
 #' @param alpha   angle of section profiles in the plane (see details)
 #' @param type    name of the spheroid type, either "\code{prolate}" or "\code{oblate}" from which the
 #'                section profiles are assumed to come from
 #'
-#' @return 		  list of section profiles, either of class "\code{prolate}" or "\code{oblate}"
+#' @return		The function returns a list which consists of either the longer or shorter
+#' 				semi-axis length named \code{A} of section profiles corresponding to the type of spheroids used before and whose joint
+#' 				joint distribution is to be estimated (by unfolding), the shape factor \code{S} of both semi-axes as the shape factor
+#' 				between \eqn{(0,1]} and the orientation	angle \code{alpha}, either of class "\code{prolate}" or "\code{oblate}".
 #'
 #' @examples
 #'  # load data set
@@ -122,12 +123,12 @@ sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 #' major semi-axis. Consequently, in case of spherocylinders, the log-normally distributed length is \eqn{len=h+2*r} where \code{h} is the height and
 #' \eqn{r=len/2*s} the radius. The main direction \code{u} of a spheroid or spherocylinder is determined by the major axis independent of size and shape.
 #' Further, the following univariate distributions of the major semi-axis \code{a}, respectively, length \code{len} and shape \code{s} are available:
-#' `\code{rbeta}`, `\code{rgamma}`, `\code{rlnorm}` and `\code{runif}`. One can also use "\code{const}" for simulations with constant lengths or shapes.
-#' Note that only simulations with size distributions `\code{rbinorm}` or `\code{rlnorm}` can use the exact type of simulation.
+#' '\code{rbeta}', '\code{rgamma}', '\code{rlnorm}' and '\code{runif}'. One can also use '\code{const}' for simulations with constant lengths or shapes.
+#' Note that only simulations with size distributions '\code{rbinorm}' or '\code{rlnorm}' can use the exact type of simulation.
 #'
 #' For spheres any distribution of the radii can be specified as a name of a user-defined function in the argument \code{size} as long as the formal named
 #' function parameters match the actual names of the parameters exactly as defined in \code{theta}. Besides this, all other distributions given above are
-#' also available. Using "\code{const}" simulates spheres of constant radii. 
+#' also available. Using '\code{const}' simulates spheres of constant radii. 
 #'  
 #' The argument \code{pl>=0} denotes both the print level of intermediate output and by the same time the type of the return value. If \code{pl=10},
 #' then an abbreviated list of spheroids or spheres is returned to speed up computation. Note that, the current implementation does not include routines
@@ -331,19 +332,18 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 #' Compute coefficients of the discretized integral equation for unfolding
 #'
 #' In order to apply the Expectation Maximization (EM) algorithm to the stereological unfolding procedure for the joint
-#' size-shape-orientation distribution in 3D one first has to compute the coefficients of the
-#' discretized integral equation. This step is the most time consuming part of unfolding and
-#' therefore has been separated in its own function. The number of bin classes for the size, shape and orientation
-#' do not need to be the same, but the given class limits are also used for binning the spatial values. One can define
-#' the number of cpu cores by the global option \code{par.unfoldr} or passing the number of cores \code{nCores} directly
-#' as an argument.
+#' size-shape-orientation distribution in 3D one first has to compute the coefficients of a discretized integral equation.
+#' This step is the most time consuming part of unfolding and therefore has been separated in its own function and can be called
+#' separately if needed. The number of bin classes for the size, shape and orientation do not need to be the same, but the
+#' given class limits are also used for binning the spatial values. One can define the number of cpu cores by the global option
+#' \code{par.unfoldr} or passing the number of cores \code{nCores} directly to the function.
 #'
-#' @param   breaks  list of bin vectors
+#' @param   breaks  list of bin vectors, see \code{\link{setbreaks}}
 #' @param   stype   type of spheroid, either "\code{prolate}" or "\code{oblate}"
 #' @param   check   logical, whether to run some input checks
 #' @param   nCores  number of cpu cores used to compute the coefficients
 #' 
-#' @return  coefficient 6D array
+#' @return  numeric 6D array of coefficients
 #'
 #' @example inst/examples/coeffarray.R
 #' 
@@ -379,11 +379,10 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 #'
 #' Compute vertical section profiles of a spheroid system
 #'
-#' The function intersects a spheroid system by a plane defined by the normal 
-#' vector \code{n} either equal to \code{c(0,1,0)} (default) or \code{c(1,0,0)} which is then
-#' called a vertical section. Depending on the type of spheroid (either prolate or oblate) the
-#' returned lengths are those corresponding to the minor semi-axis and, respectively, major semi-axis
-#' in the way these are required for unfolding. 
+#' The function intersects a spheroid system by a plane defined by the normal vector \code{n} either
+#' equal to \code{c(0,1,0)} (default) or \code{c(1,0,0)}, which is called a vertical section. Depending on
+#' the type of spheroid (either "\code{prolate} or "\code{oblate}") the returned semi-axis lengths are those
+#' corresponding to the minor semi-axis or, respectively, major semi-axis in the way these are required for unfolding. 
 #'
 #' @param S		 list of spheroids, see \code{\link{simPoissonSystem}}
 #' @param d 	 distance of the intersecting plane from the origin of the box
@@ -397,6 +396,7 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 #' 
 #' @examples  
 #'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  
 #'  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
 #'  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
 #' 		"orientation"=list("kappa"=1))
@@ -443,30 +443,34 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 
 #' Intersection in 3D
 #'
-#' Intersect a system of spheres, spheroids or spherocylinders by a given plane
+#' Intersect a system of spheres, spheroids or spherocylinders by a plane
 #'
-#' The function intersects a given (Poisson) system of spheres, spheroids or cylinders by a plane defined by a
+#' The function intersects a given (Poisson) system made of spheres, spheroids or cylinders as grains by a plane defined by a
 #' normal vector, e.g. \code{n=c(0,1,0)}, perpendicular to one of the bounding planes of the simulation box. 
 #' For a print level \code{pl>=0} some verbose output is given. Also it sets the type of return value. In case of spheroid
-#' intersections, setting \code{pl=10}, the function returns a short version of the full specification list of section profiles
-#' with elements named \code{A} (major semi-axis), \code{C} (minor semi-axis), \code{S} (shape factor as the ratio of these two)
-#' and \code{phi} as the angle in the intersecting plane between \code{[0,2pi]} w.r.t. the 'x' axis. Otherwise additional components
+#' intersections, setting \code{pl=10}, leads to a short version of the full specification return list of section profiles
+#' with elements named \code{A} (major semi-axis), \code{C} (minor semi-axis), \code{S} (the shape factor as the ratio of these two)
+#' and \code{phi} as the angle in the intersecting plane between \eqn{[0,2\pi]} w.r.t. the 'x' axis. Otherwise additional components
 #' are returned such as the ellipse`s rotation matrix, also named \code{A}, the center point \code{center} and a constant \code{type=10}
-#' (defining full ellipses among other types of intersection objects) of the section profiles. For sphere intersections only the
-#' radii are returned and \code{pl} is ignored in case of cylinder intersections because there is no short version.     
+#' (defining the object of full ellipses among other types of intersection objects) of the section profiles. For sphere intersections only
+#' a numeric vector of disc radii are returned as a short version of return values.     
 #'
 #' @param S		 list of spheres, spheroids or spherocylinders, see \code{\link{simPoissonSystem}}
 #' @param d 	 distance of the the box-aligned intersecting plane from the origin
 #' @param n 	 normal vector which defines the intersecting plane
 #' @param intern logical, \code{FALSE} (default), return all section profiles otherwise
 #' 				 only those which have their centers inside the corresponding intersection window
-#'               (if the intersected system had been simulated using exact simulation)
-#' @param pl	 integer, \code{pl=0} (default), for no verbose output and full specification list of section profiles
+#'               (if the intersected system had been simulated using exact simulation this makes sense)
+#' @param pl	 integer, \code{pl=0} (default), for no verbose output and otherwise a full specification list of
+#'				 section profiles in case of sphere and spheroid intersections
 #' 				
-#' @return list of size, shape and angle of section profiles or a short version of it, see above
+#' @return 		For spheroid intersections the function returns a list of size, shape and angle of section profiles or a short version
+#' 				of it; for sphere intersections either radii or lists containing the centers of discs and the object number.
+#' 
 #' 
 #' @examples
 #'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  
 #'  # constant size-shape orientation distribution (spheroids)
 #'  theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
 #' 
@@ -503,7 +507,7 @@ intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
 #'
 #' Draw a spheroid system in 3D
 #'
-#' The function requires the package '\code{rgl}' to be installed. For a full example
+#' The function requires the package '\code{rgl}' to draw spheroids. For an example
 #' please see the file 'simSpheroids.R'.
 #'
 #' @param S				list of spheroids, see \code{\link{simPoissonSystem}}
@@ -595,8 +599,8 @@ spheroids3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, draw.bg=TRUE,
 #'
 #' Draw spherocylinders in 3D
 #'
-#' The function requires the package \code{rgl} to be installed. For a full example please see
-#' the file 'simCylinders.R'.
+#' The function requires the package '\code{rgl}' to draw spherocylinders into a 3D '\code{rgl}' image.
+#' For an example please see the file 'simCylinders.R'.
 #'
 #' @param S				list of cylinders, see \code{\link{simPoissonSystem}}
 #' @param box			simulation box
@@ -670,14 +674,14 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 
 #' Spheroid intersections 3D
 #'
-#' Draw section profiles of spheroids in 3
+#' Draw section profiles of spheroids in 3D
 #'
-#' The function requires the package \code{rgl} to be installed for drawing section profiles (ellipses)
-#' into a 3D image. For a full example please see the file 'simSpheroids.R'.
+#' The function requires the package '\code{rgl}' for drawing section profiles (ellipses)
+#' into a 3D '\code{rgl}' image. For a full example please see the file 'simSpheroids.R'.
 #'
 #' @param E				a list of spheroid intersections, see \code{\link{intersectSystem}}
 #' @param n 			the normal vector of the intersecting plane
-#' @param np			number of points for polygon approximation of the ellipses
+#' @param np			number of points for a polygon approximation of the ellipses
 #' 
 #' @return NULL
 #' 
@@ -685,7 +689,8 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 #' @rdname drawSpheroidIntersection
 #' @export
 drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
-	ind <- which(n==0)
+	ind <- which(n == 0)
+	
 	.pointsOnEllipse <- function(E,t) {
 		E$phi <- E$phi + 0.5*pi
 		xt <- E$center[1] + E$ab[1]*cos(t)*cos(E$phi)-E$ab[2]*sin(t)*sin(E$phi)
@@ -724,8 +729,8 @@ drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 #'
 #' Planar intersection of spheres
 #'
-#' The function computes the planar intersection of a sphere system and returns the diameters
-#' of the corrsponding discs.
+#' The function computes the planar intersection of a sphere system, i.e. an intersection with the plane whose normal
+#' vector is given by \code{c(0,0,1)} and returns the diameters of the resulting discs.
 #'
 #' @param S 		list of spheres of class \code{sphere}, see \code{\link{simPoissonSystem}}
 #' @param d 		distance of the (planar) xy-plane to the origin
@@ -737,19 +742,25 @@ drawSpheroidIntersection <- function(E, n=c(0,1,0), np=25) {
 #' 
 #' @examples
 #'  lam <- 100
+#'  
 #'  # parameter rlnorm distribution (radii)
 #'  theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
+#'  
 #'  # simulation bounding box
 #'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  
 #'  # simulate only 3D system
 #'  S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
 #'    intersect="original", pl=1)
+#'  
 #'  # return only objects whose centers are within
 #'  # the intersection window
 #'  sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
+#'  
 #'  # histogram of diameters
 #'  hist(sp)
 #'  summary(sp)
+#'  
 #'  # distribution of radii
 #'  mean(log(sp/2))
 #'  sd(log(sp/2))
@@ -890,13 +901,13 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #'
 #' A list of section profiles, e.g. discs, ellipses or segments from intersected spherocylinders, is digitized according
 #' to a given resolution according to the lattice constant \code{delta} such that the result is an integer matrix 
-#' which can be interpretated as a binary image.  
+#' which can be interpretated as a binary image. An intersection window can be either provided by the user w.r.t. \eqn{[l,u]^2}
+#' where \code{l,u}	are lower, respectively, upper bounds of corresponding to a simulation box, or, it is taken from the section
+#' profiles \code{sp} which stores the intersection window as an attribute.
 #'
 #' @param sp   		list of section profiles, see \code{\link{intersectSystem}}
 #' @param delta		lattice constant for discretization of section profiles
-#' @param win		window as a list of length two, default \code{NULL}, either taken from the attribute of \code{sp} or
-#'                  defined by the user as \eqn{[l,u]^2} where \code{l,u} are lower, respectively, upper
-#' 					bounds of the 2D (intersection) region corresponding to the simulation box 
+#' @param win		list of length two, the intersection window, default \code{NULL} 
 #' 
 #' @examples
 #'  # simulation box

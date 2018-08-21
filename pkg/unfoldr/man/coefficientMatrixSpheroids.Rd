@@ -8,7 +8,7 @@ coefficientMatrixSpheroids(breaks, stype = c("prolate", "oblate"),
   check = TRUE, nCores = getOption("par.unfoldr", 1))
 }
 \arguments{
-\item{breaks}{list of bin vectors}
+\item{breaks}{list of bin vectors, see \code{\link{setbreaks}}}
 
 \item{stype}{type of spheroid, either "\code{prolate}" or "\code{oblate}"}
 
@@ -17,19 +17,18 @@ coefficientMatrixSpheroids(breaks, stype = c("prolate", "oblate"),
 \item{nCores}{number of cpu cores used to compute the coefficients}
 }
 \value{
-coefficient 6D array
+numeric 6D array of coefficients
 }
 \description{
 Compute coefficients of the discretized integral equation for unfolding
 }
 \details{
 In order to apply the Expectation Maximization (EM) algorithm to the stereological unfolding procedure for the joint
-size-shape-orientation distribution in 3D one first has to compute the coefficients of the
-discretized integral equation. This step is the most time consuming part of unfolding and
-therefore has been separated in its own function. The number of bin classes for the size, shape and orientation
-do not need to be the same, but the given class limits are also used for binning the spatial values. One can define
-the number of cpu cores by the global option \code{par.unfoldr} or passing the number of cores \code{nCores} directly
-as an argument.
+size-shape-orientation distribution in 3D one first has to compute the coefficients of a discretized integral equation.
+This step is the most time consuming part of unfolding and therefore has been separated in its own function and can be called
+separately if needed. The number of bin classes for the size, shape and orientation do not need to be the same, but the
+given class limits are also used for binning the spatial values. One can define the number of cpu cores by the global option
+\code{par.unfoldr} or passing the number of cores \code{nCores} directly to the function.
 }
 \examples{
 \dontrun{
