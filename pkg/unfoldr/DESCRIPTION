@@ -1,7 +1,7 @@
 Package: unfoldr
 Title: Stereological Unfolding for Spheroidal Particles
 Version: 0.6.8
-Date: 2018-08-20
+Date: 2018-08-21
 Authors@R: c(person("Markus Baaske", role = c("aut", "cre"),
 			 email = "markus.baaske@uni-jena.de"),
 			 person("Felix", "Ballani", role = "ctb",
