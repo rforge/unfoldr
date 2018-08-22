@@ -1,0 +1,19 @@
+This file is intended for further news about bug fixes and further modifications of the package.
+
+
+Changes with 0.6.8
+-------------------
+1) With this current version there is only a single function for simulation of Poisson germ-grain processes with
+spheres, spheroids and spherocylinders. Functions 'simSpheroidSystem', 'simSphereSystem' and simCylinderSystem'
+are no further available.
+
+2) Added routines for digitization of all types of section profiles 
+
+3) The lengths of the major, minor and second minor axis of spheroids are now all stored where both shorter
+lengths are still equal since up to now only spheroids are available for simulation. This might be changed in the future
+for the simulation of general ellipsoids. 
+
+TODO:
+-----
+
+o Add polyeder or prisms as grains for simulation, intersection and ...  	

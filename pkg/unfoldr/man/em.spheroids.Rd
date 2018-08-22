@@ -13,7 +13,7 @@ em.spheroids(P, F, maxIt, nCores = getOption("par.unfoldr", 2L))
 
 \item{maxIt}{maximum number of EM iterations}
 
-\item{nCores}{number of cpu cores}
+\item{nCores}{number of cpu cores to be used}
 }
 \value{
 trivariate histogram

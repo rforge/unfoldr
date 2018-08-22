@@ -44,8 +44,7 @@ a numeric vector of disc radii are returned as a short version of return values.
  # constant size-shape orientation distribution (spheroids)
  theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
 
- S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
-  "orientation"="rbetaiso",pl=1)
+ S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",pl=1)
  
  # return short version of section profiles
  sp <- intersectSystem(S, 2.5, pl=10)		

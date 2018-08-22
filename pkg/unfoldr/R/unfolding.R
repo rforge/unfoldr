@@ -1,15 +1,9 @@
-###############################################################################
-# Author:  M. Baaske
-# Date:	   2018-08-16	
-# File:    unfolding.R: 
-# 
-# Comment: - Functions to estimate the joint size-sjape-orientation distribution
-#		   of prolate or oblate spheroids (ellipsoids of revolution),
-#		   - visualization of the trivariate 'unfolded' histogram of size, shape
-#		   and orientation,
-# 		   - implements the EM algorithm for binned data
-# 
-###############################################################################
+## Comment: 
+## Functions to estimate the joint size-sjape-orientation distribution
+## of prolate or oblate spheroids (ellipsoids of revolution),
+## visualization of the trivariate 'unfolded' histogram of size, shape
+## and orientation, implements the EM algorithm for binned data for 
+## spheres and spheroids (not yet for spherocylinders)
 
 
 #' Trivariate stereological unfolding
@@ -25,7 +19,7 @@
 #' @param P 		coefficient array
 #' @param F 		input histogram
 #' @param maxIt 	maximum number of EM iterations
-#' @param nCores 	number of cpu cores
+#' @param nCores 	number of cpu cores to be used
 #' 
 #' @return trivariate histogram
 #'
@@ -52,8 +46,10 @@ em.spheroids <- function(P,F,maxIt,nCores=getOption("par.unfoldr",2L)) {
 #' see \code{\link{sectionProfiles}}, are either of class \code{prolate} or \code{oblate} for the reconstruction of the corresponding
 #' spheroids or, respectively, spheres. The result of the latter is simply a numeric vector of circle diameters. The number of bin
 #' classes for discretization of the underlying integral equations which must be solved is set by the argument \code{nclass}.
-#' In case of Wicksell's corpuscle problem this is simply a scalar value denoting the number of bins for the diameter. For spheroids it 
-#' it refers to a vector of length three defined in the order of size, angle and shape class limits.
+#' In case of Wicksell's corpuscle problem (spheres as grains) this is simply a scalar value denoting the number of bins for the diameter.
+#' For spheroids it refers to a vector of length three defined in the order of the number of size, angle and shape class limits which are used.
+#' If \code{sp} is a numeric vector (such as for the estimation of the 3D diameter distribution from a 2D section of spheres) the function calls
+#' the EM algorithm as described in [3].
 #' The return value of the function is an object of class "\code{unfold}" with elements as follows
 #' \itemize{
 #' 	\item{N_A}{ (trivariate) histogram of section profile parameters}
@@ -67,9 +63,28 @@ em.spheroids <- function(P,F,maxIt,nCores=getOption("par.unfoldr",2L)) {
 #' @param maxIt   maximum number of EM iterations
 #' @param nCores  number of cpu cores
 #' @param ...	  optional arguments passed to \code{\link{setbreaks}}
+#' 
 #' @return        object of class "\code{unfold}", see details
 #'
 #' @seealso \code{\link{setbreaks}}, \code{\link{binning3d}} 
+#' 
+#' @examples
+#'  lam <- 100
+#'  # parameter rlnorm distribution (radii)
+#'  theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
+#' 
+#'  # simulation bounding box
+#'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+#'  # simulate only 3D system
+#'  S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
+#'    perfect=TRUE, pl=1)
+#' 
+#'  # intersect
+#'  sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
+#' 
+#'  # unfolding
+#'  ret <- unfold(sp,nclass=25)
+#'  cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\n")
 #' 
 #' @author M. Baaske
 #' @rdname unfold
@@ -102,9 +117,12 @@ unfold.prolate <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L)
 #' @method unfold numeric 
 #' @export
 unfold.numeric <- function(sp,nclass,maxIt=64,nCores=getOption("par.unfoldr",2L),...) {
+	## The function calls the saltykov algorithm for spheres
+	## (Wicksell's corpuscle problem)
+	
 	if(anyNA(sp))
 		stop("Vector of radii 'sp' has NAs.")
-	if(!is.numeric(nclass) || length(nclass)!=1)
+	if(!is.numeric(nclass) || length(nclass) != 1L)
 		stop("Expected numeric value 'nclass' as number of classes.")
 	breaks <- seq(0,max(sp), length.out=nclass)
 
@@ -236,6 +254,7 @@ setbreaks <- function(nclass,maxSize,base=NULL,kap=1,sizeType=c("linear","exp"))
 #' @rdname parameters3d
 #' @export
 parameters3d <- function(S) {
+	stopifnot(class(S) %in% c("oblate","prolate"))
 	idx <- if(class(S)=="prolate") c(1,3) else c(3,1)  			
 	list("a"=unlist(lapply(S,function(x) x$acb[1])),
 		 "Theta"=unlist(lapply(S,function(x) .getAngle(x$angles[1]))),

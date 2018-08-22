@@ -35,8 +35,7 @@ profiles \code{sp} which stores the intersection window as an attribute.
 
  # return only 3D system
  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
-  "intersect"="original","orientation"="rbetaiso",n=c(0,1,0),mu=c(0,0,1),
-    perfect=TRUE,pl=1)
+       intersect="original",n=c(0,1,0),mu=c(0,0,1),perfect=TRUE,pl=1)
 
  # vertical intersection w.r.t. 'mu' (z axis, see above)
  sp <- intersectSystem(S, 2.5)

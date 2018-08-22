@@ -1,11 +1,5 @@
-###############################################################################
-# Author:  M. Baaske
-# Date:	   2018-08-13	
-# File:    spheroid.R: 
-# 
-# Comment: simulation, intersections and visualization of spheroid systems
-# 
-###############################################################################
+## Comment: simulation, intersections and visualization of
+## spheroid, sphere and spherocylinder 3D systems
 
 ## angle in the section plane relative to z axis in 3D
 .getAngle <- function(phi) {
@@ -401,8 +395,8 @@ coefficientMatrixSpheroids <- function(breaks, stype=c("prolate","oblate"),
 #'  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
 #' 		"orientation"=list("kappa"=1))
 #' 
-#'  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
-#'   "orientation"="rbetaiso",perfect=TRUE,pl=1)
+#'  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,
+#'   type="prolate",perfect=TRUE,pl=1)
 #' 
 #'  sp <- verticalSection(S,d=2.5,n=c(0,1,0),intern=TRUE)
 #'  summary(sp$alpha)
@@ -474,8 +468,7 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 #'  # constant size-shape orientation distribution (spheroids)
 #'  theta <- list("size"=list(0.1),"shape"=list(0.5), "orientation"=list("kappa"=10))
 #' 
-#'  S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",
-#'   "orientation"="rbetaiso",pl=1)
+#'  S <- simPoissonSystem(theta,lam=100,box=box,type="prolate",pl=1)
 #'  
 #'  # return short version of section profiles
 #'  sp <- intersectSystem(S, 2.5, pl=10)		
@@ -918,8 +911,7 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #' 
 #'  # return only 3D system
 #'  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
-#'   "intersect"="original","orientation"="rbetaiso",n=c(0,1,0),mu=c(0,0,1),
-#'     perfect=TRUE,pl=1)
+#'        intersect="original",n=c(0,1,0),mu=c(0,0,1),perfect=TRUE,pl=1)
 #' 
 #'  # vertical intersection w.r.t. 'mu' (z axis, see above)
 #'  sp <- intersectSystem(S, 2.5)

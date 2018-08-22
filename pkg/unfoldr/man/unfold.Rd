@@ -32,8 +32,10 @@ and returning the characteristics as count data in form of a \emph{trivariate} h
 see \code{\link{sectionProfiles}}, are either of class \code{prolate} or \code{oblate} for the reconstruction of the corresponding
 spheroids or, respectively, spheres. The result of the latter is simply a numeric vector of circle diameters. The number of bin
 classes for discretization of the underlying integral equations which must be solved is set by the argument \code{nclass}.
-In case of Wicksell's corpuscle problem this is simply a scalar value denoting the number of bins for the diameter. For spheroids it 
-it refers to a vector of length three defined in the order of size, angle and shape class limits.
+In case of Wicksell's corpuscle problem (spheres as grains) this is simply a scalar value denoting the number of bins for the diameter.
+For spheroids it refers to a vector of length three defined in the order of the number of size, angle and shape class limits which are used.
+If \code{sp} is a numeric vector (such as for the estimation of the 3D diameter distribution from a 2D section of spheres) the function calls
+the EM algorithm as described in [3].
 The return value of the function is an object of class "\code{unfold}" with elements as follows
 \itemize{
 	\item{N_A}{ (trivariate) histogram of section profile parameters}
@@ -41,6 +43,25 @@ The return value of the function is an object of class "\code{unfold}" with elem
  \item{P}{ array of coefficients}
  \item{breaks}{ list of class limits for binning the parameter values}
 }
+}
+\examples{
+ lam <- 100
+ # parameter rlnorm distribution (radii)
+ theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5))
+
+ # simulation bounding box
+ box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
+ # simulate only 3D system
+ S <- simPoissonSystem(theta,lam,size="rlnorm",box=box,type="spheres",
+   perfect=TRUE, pl=1)
+
+ # intersect
+ sp <- planarSection(S,d=2.5,intern=TRUE,pl=1)
+
+ # unfolding
+ ret <- unfold(sp,nclass=25)
+ cat("Intensities: ", sum(ret$N_V)/25, "vs.",lam,"\\n")
+
 }
 \seealso{
 \code{\link{setbreaks}}, \code{\link{binning3d}}
