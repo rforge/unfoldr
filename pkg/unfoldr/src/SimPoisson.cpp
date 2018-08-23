@@ -1356,12 +1356,11 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
    STGM::CVector2d ctr(REAL(VECTOR_ELT(R_E,2)));
    STGM::CMatrix2d A(REAL(VECTOR_ELT(R_E,3)));
 
-   return STGM::CEllipse2(A,ctr,INTEGER(VECTOR_ELT(R_E,0))[0],REAL(VECTOR_ELT(R_E,9))[0]);
+   return STGM::CEllipse2(A,ctr,INTEGER(VECTOR_ELT(R_E,0))[0]);
 
    /** Alternatively initialize 2D ellipse */
 
    /*
-   double rot = REAL(VECTOR_ELT(R_E,9))[0];
    double *ab = REAL(VECTOR_ELT(R_E,4));
    STGM::CVector2d minorA(REAL(VECTOR_ELT(R_E,5)));
    STGM::CVector2d majorA(REAL(VECTOR_ELT(R_E,6)));
@@ -1372,8 +1371,8 @@ STGM::CEllipse2 convert_C_Ellipse2(SEXP R_E)
 						  minorA,							// semi-minor
 						  ab[0],ab[1],						// a,b (semi-major, semi-minor length)
 						  REAL(VECTOR_ELT(R_E,7))[0],		// phi
-						  INTEGER(VECTOR_ELT(R_E,0))[0],	// id
-						  rot);								// rot
+						  INTEGER(VECTOR_ELT(R_E,0))[0]);	// id
+
 
    */
 }
@@ -1394,7 +1393,7 @@ STGM::Ellipses2 convert_C_Ellipses2(SEXP R_E) {
 SEXP convert_R_Ellipse2(STGM::CEllipse2 &ellipse) {
   SEXP R_tmp = R_NilValue;
   SEXP R_center, R_minor, R_major, R_ab, R_A;
-  const char *nms[] = {"id", "type", "center", "A", "ab", "minor", "major", "phi", "S", "rot", ""};
+  const char *nms[] = {"id", "type", "center", "A", "ab", "minor", "major", "phi", "S", ""};
 
   PROTECT(R_tmp = mkNamed(VECSXP,nms));
   PROTECT(R_center = allocVector(REALSXP, 2));
@@ -1429,7 +1428,6 @@ SEXP convert_R_Ellipse2(STGM::CEllipse2 &ellipse) {
   /* return angle between [0,2pi] */
   SET_VECTOR_ELT(R_tmp,7,ScalarReal(ellipse.phi()));
   SET_VECTOR_ELT(R_tmp,8,ScalarReal(ellipse.b()/ellipse.a()));
-  SET_VECTOR_ELT(R_tmp,9,ScalarReal(ellipse.rot()));
 
   UNPROTECT(6);
   return(R_tmp);
@@ -1468,7 +1466,7 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
   } else {											/* full version of ellipse list */
 
 	  SEXP R_tmp, R_center, R_minor, R_major, R_ab, R_A;
-	  const char *nms[] = {"id", "type", "center", "A", "ab", "minor", "major", "phi", "S", "rot", ""};
+	  const char *nms[] = {"id", "type", "center", "A", "ab", "minor", "major", "phi", "S", ""};
 
 	  for(size_t k=0; k<objects.size(); ++k)
 	  {
@@ -1507,7 +1505,6 @@ SEXP convert_R_Ellipses(STGM::Intersectors<STGM::CSpheroid>::Type &objects, STGM
 		  /* return angle between [0,2pi] */
 		  SET_VECTOR_ELT(R_tmp,7,ScalarReal(ellipse.phi()));
 		  SET_VECTOR_ELT(R_tmp,8,ScalarReal(ellipse.b()/ellipse.a()));
-		  SET_VECTOR_ELT(R_tmp,9,ScalarReal(ellipse.rot()));
 
 		  SET_VECTOR_ELT(R_ret,k,R_tmp);
 		  UNPROTECT(6);
@@ -1640,12 +1637,6 @@ SEXP convert_R_Ellipsoids(STGM::CPoissonSystem<STGM::CSpheroid> &sp) {
     const STGM::CMatrix3d &M = spheroid.rotationMatrix();
     COPY_C2R_MATRIX(M,R_rotM,dim);
 
-    /*
-    for (int i = 0; i < dim; i++)
-      for (int j = 0; j < dim; j++)
-        REAL(R_rotM)[i + dim *j] = M[i][j];
-    */
-
     SET_VECTOR_ELT(R_tmp,0,ScalarInteger(spheroid.Id()));
     SET_VECTOR_ELT(R_tmp,1,R_center);
     SET_VECTOR_ELT(R_tmp,2,R_u);
@@ -1707,7 +1698,7 @@ SEXP convert_R_Cylinder( STGM::CCylinder &cyl, STGM::LateralPlanes &planes, STGM
   /*  check intersection with bounding box*/
   STGM::Intersector<STGM::CCylinder> intersector(cyl, box.m_size );
   Rboolean interior = (Rboolean) TRUE;
-  for(size_t j=0; j<planes.size() ; ++j) {
+  for(size_t j=0; j<planes.size(); ++j) {
        if( intersector(planes[j])) {
          interior = (Rboolean) FALSE;
          break;
