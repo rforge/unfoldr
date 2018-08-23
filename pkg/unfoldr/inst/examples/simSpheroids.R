@@ -124,7 +124,7 @@ str(SP[[100]])
 dz <- 2.5		# distance to origin of box [0,5]^3
 n <- c(0,1,0)	# normal in y direction (xz plane)
 
-theta$orientation$kappa <- 0	# random planar in xy plane
+theta$orientation$kappa <- 1e-7	# random planar in xy plane
 
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,
 		type="prolate", intersect="full",n=n, mu=c(1,0,0),
@@ -152,6 +152,51 @@ spv <- verticalSection(Sp,d=dz,n=n,intern=TRUE) # section profiles
 # used for unfolding and not! w.r.t the reference direction 'mu' which is used for
 # simulating the orientation of the spheroids or spherocylinders 
 summary(spv$alpha) 
+
+#################################################################
+## Unfolding
+#################################################################
+
+ret <- unfold(spv,c(10,6,8),kap=1.25)
+
+param3d <- parameters3d(S$S)
+paramEst <- parameterEstimates(ret$N_V,ret$breaks)
+
+## Marginal histograms of
+## size (minor semi-axis), shape and orientation
+
+op <- par(mfrow = c(3, 2))
+hist(param3d$a[param3d$a<max(ret$breaks$size)],
+		main=expression(paste("3D Histogram ", c)),
+		breaks=ret$breaks$size,col="gray",right=FALSE,freq=FALSE,xlab="c",ylim=c(0,25))
+
+hist(paramEst$a,
+		main=expression(paste("Estimated histogram ",hat(c))),
+		breaks=ret$breaks$size,
+		right=FALSE,freq=FALSE,col="gray",
+		xlab=expression(hat(c)),ylim=c(0,25))
+
+tet <- 0.5*pi-param3d$Theta
+hist(tet[tet<max(ret$breaks$angle)],
+		main=expression(paste("3D Histogram ", theta)),
+		breaks=ret$breaks$angle,col="gray",right=FALSE,freq=FALSE,
+		xlab=expression(theta),ylim=c(0,5))
+
+
+hist(paramEst$Theta, main=expression(paste("Estimated Histogram ", hat(theta))),
+		breaks=ret$breaks$angle,
+		right=FALSE,freq=FALSE,col="gray",
+		xlab=expression(hat(theta)),ylim=c(0,5))
+
+hist(param3d$s,main=expression(paste("3D Histogram ", s)),
+		col="gray",breaks=ret$breaks$shape,
+		right=FALSE,freq=FALSE,xlab="s",ylim=c(0,10))
+
+hist(paramEst$s,main=expression(paste("Estimated Histogram ", hat(s))),
+		breaks=ret$breaks$shape,
+		right=FALSE,freq=FALSE,col="gray",xlab=expression(hat(s)),ylim=c(0,10))
+par(op)
+
 
 #################################################################
 ## Update intersection: find objects which intersect bounding box
