@@ -461,7 +461,7 @@ namespace STGM {
   public:
 
     CEllipse2() :
-      m_center(STGM::CVector2d()), m_a(0), m_b(0),  m_phi(0),  m_rot(0), m_id(0), m_type(10)
+      m_center(STGM::CVector2d()), m_a(0), m_b(0),  m_phi(0), m_id(0), m_type(10)
     {
     };
 
@@ -474,8 +474,8 @@ namespace STGM {
      * @param center
      * @param id
      */
-    CEllipse2(STGM::CMatrix2d &A, STGM::CVector2d &center, int id, double rot = 0) :
-       m_center(center), m_A(A), m_a(0), m_b(0), m_phi(0), m_rot(rot), m_id(id),  m_type(10)
+    CEllipse2(STGM::CMatrix2d &A, STGM::CVector2d &center, int id) :
+       m_center(center), m_A(A), m_a(0), m_b(0), m_phi(0), m_id(id),  m_type(10)
     {
           int n = 2, info = 0;
 
@@ -527,13 +527,12 @@ namespace STGM {
 
     /* no re-computation of matrix A */
     CEllipse2(STGM::CVector2d &center, STGM::CMatrix2d &A, STGM::CVector2d &major,
-    		   STGM::CVector2d &minor, double a,  double b, double phi, int id, double rot = 0) :
+    		   STGM::CVector2d &minor, double a,  double b, double phi, int id) :
 		 m_center(center),
 		 m_A(A),
 		 m_a(a),
 		 m_b(b),
 		 m_phi(phi),
-		 m_rot(rot),
 		 m_id(id),
 		 m_type(ELLIPSE_2D),
 		 m_majorAxis(major),
@@ -543,12 +542,11 @@ namespace STGM {
 
 
     CEllipse2(STGM::CVector2d &center, STGM::CVector2d &major, STGM::CVector2d &minor,
-               double a,  double b, int id, double rot = 0) :
+               double a,  double b, int id) :
          m_center(center),
 		 m_a(a),
 		 m_b(b),
 		 m_phi(0),
-		 m_rot(rot),
 		 m_id(id),
 		 m_type(ELLIPSE_2D),
          m_majorAxis(major),
@@ -682,7 +680,6 @@ namespace STGM {
      * @return angle major axis to x axis
      */
     double phi() const { return m_phi; }
-    double rot() const { return m_rot; }
     double area() const { return M_PI * m_a *m_b; }
 
     STGM::CVector2d &center() { return m_center;}
@@ -752,7 +749,7 @@ namespace STGM {
   private:
     STGM::CVector2d m_center;
     CMatrix2d m_A;
-    double m_a, m_b, m_phi, m_rot;
+    double m_a, m_b, m_phi;
     int m_id, m_type;
     CBoundingRectangle m_br;
     STGM::CVector2d m_majorAxis, m_minorAxis;

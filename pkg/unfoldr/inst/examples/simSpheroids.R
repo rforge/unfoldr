@@ -72,6 +72,9 @@ theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
 S <- simPoissonSystem(theta,lam,size="rbinorm",box=box,type="prolate",
 		intersect="full",n=c(0,0,1),mu=c(0,0,1),dz=2.5,perfect=TRUE,pl=1)
 
+tet <- sapply(S$S,function(x) x$angles[1])
+summary(tet) # approx. pi/2
+
 ## 3D intersected objects
 sp <- S$sp
 id <- sapply(sp,"[[","id") 
@@ -95,7 +98,7 @@ E$A
 
 dev.new()
 Es <- drawEllipses(sp, x=box$xrange, y=box$yrange, border="black",xlab="[mm]", ylab="[mm]",
-		bg="gray",col=col,	cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
+		bg="gray",col=col,cex.lab=1.8,cex=1.8,cex.axis=1.8,nv=1000)
 
 ## digitized image
 W <- S$W
