@@ -31,7 +31,7 @@ profiles \code{sp} which stores the intersection window as an attribute.
  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
-		"orientation"=list("kappa"=1))
+               "orientation"=list("kappa"=1))
 
  # return only 3D system
  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",

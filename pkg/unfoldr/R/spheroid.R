@@ -101,10 +101,11 @@ sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 #' The argument \code{size} sets the name of the distribution function for the size/length of the objects, i.e. the major semi-axis
 #' lengths in case of spheroids, radii for spheres or the lengths of the main axis of rotation for spherocylinders including the end caps. 
 #' 
-#' The following directional (orientation) distributions of the spheroid's major-axis, respectively, cylinder's main axis are available:
-#' a uniform distribution ("\code{runifdir}"), isotropic random planar distribution ("\code{rbetaiso}"), see the reference below)
-#' and the "\emph{von Mises-Fisher}" ("\code{rvMisesFisher}") distribution. The simulations are always performed within a bounding 3D box which
-#' consists of a list specifying the ranges of each dimension corresponding to the lower and upper limits of the box in each direction. If the
+#' The following direction (orientation) distributions of the spheroids' major-axis, respectively, cylinders' main axis are available:
+#' a uniform distribution ("\code{runifdir}"), distribution ("\code{rbetaiso}") and the "\emph{von Mises-Fisher}" ("\code{rvMisesFisher}")
+#' distribution. The two last ones depend on the concentration parameter \code{kappa} which is set as part of the parameter list \code{theta}, see examples below.
+#' The direction distributions generate random spherical coordinates \eqn{(\vartheta, \phi)} w.r.t. a fixed main orientation axis \code{mu}
+#' with polar angle \eqn{\vartheta\in[0,\pi/2)} and azimuthal angle \eqn{\phi\in[0,2\pi)}. The simulations are always performed within a bounding 3D box which consists of a list specifying the ranges of each dimension corresponding to the lower and upper limits of the box in each direction. If the
 #' argument \code{box} contains only a single range, i.e. \code{box=list(c(0,1))}, this limit isassumed for the remaining dimensions which is then simply replicated.
 #' The optional argument \code{rjoint} defines a (joint) distribution function which can be any function provided by the user in order to generate
 #' the required distributional parameters for the spheroids or spherocylinders. For an in-depth example of usage please see the workflow in 'simSpheroids.R'
@@ -137,13 +138,12 @@ sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 #' @param type     type of grain, either "\code{prolate}" or "\code{oblate}", "\code{spheres}", "\code{cylinders}"
 #' @param rjoint   user-defined function, which specifies the (joint) distribution of the size, shape and orientation 
 #' @param box	   simulation box
-#' @param mu	   main orientation axis, \code{mu=c(0,0,1)} (default), as the alignment of the coordinate system
+#' @param mu	   main orientation axis, \code{mu=c(0,0,1)} (default)
 #' @param dz	   distance of the intersecting plane to the origin
-#' @param n		   normal vector of the intersting plane
-#' @param intersect set "\code{full}" to return the simulated system together with section profiles as two lists named \code{S} and \code{sp} respectively,
-#'                  choose "\code{only}" for section profiles only,
-#'                  "\code{original}" for the 3D system only and "\code{digi}" for an integer matrix \code{W} as an discretized (binary) image
-#'  				of section profiles
+#' @param n		   normal vector defining the intersecting plane
+#' @param intersect options for type of return values: "\code{full}" for the simulated system together with section profiles as two lists named \code{S} and \code{sp} respectively,
+#'                  choose "\code{only}" for section profiles only, "\code{original}" for the 3D system only and "\code{digi}" for a (binary) integer matrix \code{W} as a discretized
+#' 				    version of section profiles whose resolution depends on the chosen lattice constant \code{delta}
 #' @param delta	   lattice constant for discretization, set to \code{0.01} (default)
 #' @param intern   logical, \code{FALSE} (default), whether to return only section profiles with centers inside the simulation window
 #' @param perfect  logical, \code{FALSE} (default), whether to simulate exactly (also called perfect)
@@ -154,13 +154,13 @@ sectionProfiles <- function(size,alpha,type=c("prolate","oblate")) {
 #'
 #' @examples
 #'  # intensity parameter
-#' 	lam <- 100
+#'  lam <- 100
 #' 
 #'  # simulation bounding box
 #'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
 #' 
 #'  # log normal size distribution with a constant shape factor and
-#'  # isotropic (\code{kappa=1}) random orientation, see reference [1] 
+#'  # concentration parameter (\code{kappa=1}) for the orientation, see reference [1] 
 #'  theta <- list("size"=list("meanlog"=-2.5,"sdlog"=0.5),
 #'                "shape"=list("s"=0.5),
 #'                "orientation"=list("kappa"=1))
@@ -786,13 +786,12 @@ planarSection <- function(S, d, intern=FALSE, pl=0) {
 #' The function provides basic binning (grouping) of numeric values into
 #' classes defined by the breaks vector \code{bin}. The values are binned
 #' according to \eqn{bin[i[j]]<x[j]\leq bin[i[j]+1]} for intervals \eqn{i=1,...,N-1}
-#' and \code{length(bin)=N} of values x[j].' If \eqn{x[j] > bin[N]} or \eqn{x[j] < bin[1]} then \eqn{x[j]}
+#' and \code{length(bin)=N} of values \eqn{x[j]}, \eqn{j=1,...,|x|}. If \eqn{x[j] > bin[N]} or \eqn{x[j] < bin[1]} then \eqn{x[j]}
 #' is not counted at all.
 #'
 #' @param x   	 numeric values to be binned
 #' @param bin    non-decreasingly sorted breaks vector
-#' @param na.rm  logical, default \code{FALSE}, whether to remove missing values
-#'               (including NaN) in \code{x}
+#' @param na.rm  logical, default \code{FALSE}, whether to remove missing values, including \code{NaN} in \code{x}
 #'
 #' @return Vector of count data
 #'
@@ -907,7 +906,7 @@ em.saltykov <- function(y,bin,maxIt=32) {
 #'  box <- list("xrange"=c(0,5),"yrange"=c(0,5),"zrange"=c(0,5))
 #'  # (exact) bivariate size-shape (isotropic) orientation distribution (spheroids)
 #'  theta <- list("size"=list("mx"=-2.5,"my"=0.5, "sdx"=0.35,"sdy"=0.25,"rho"=0.15),
-#' 		"orientation"=list("kappa"=1))
+#'                "orientation"=list("kappa"=1))
 #' 
 #'  # return only 3D system
 #'  S <- simPoissonSystem(theta,lam=100,size="rbinorm",box=box,type="prolate",
