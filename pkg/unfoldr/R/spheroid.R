@@ -32,7 +32,7 @@
 #' @rdname updateIntersections
 #' @export
 updateIntersections <- function(S) {
-	.Call(C_UpdateIntersections,as.character(substitute(S)), .GlobalEnv)
+	.Call(C_UpdateIntersections, as.character(substitute(S)), .GlobalEnv)
 }
 
 #' Construct section profiles
