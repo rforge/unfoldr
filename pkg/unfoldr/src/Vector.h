@@ -130,6 +130,11 @@ inline void CPoint<N>::Normalize() {
      p[i] *= invLen;
 }
 
+template <size_t N>
+bool CPoint<N>::operator <(const CPoint &q) const {
+     return p[0] < q[0] || (p[0] == q[0] && p[1] < q[1]);
+}
+
 typedef CPoint<2> CPoint2d;
 typedef CPoint<3> CPoint3d;
 
