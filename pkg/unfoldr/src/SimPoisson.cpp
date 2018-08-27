@@ -1094,8 +1094,14 @@ void CPoissonSystem<CSphere>::simSystem(SEXP R_param, SEXP R_cond) {
 
    } else {
 
-	   double p1 = REAL_ARG_LIST( VECTOR_ELT(R_param, 0), 0);
-       double p2 = REAL_ARG_LIST( VECTOR_ELT(R_param, 0), 1);
+	   SEXP R_tmp = R_NilValue;
+	   PROTECT(R_tmp = getListElement( R_param, "size" ));
+	   if(isNull(R_tmp) || LENGTH(R_tmp) == 0)
+		   error(_("Parameters for `size` cannot have length zero."));
+
+	   double p1 = REAL_ARG_LIST(R_tmp, 0);
+	   double p2 = (LENGTH(R_tmp) > 1 ? REAL_ARG_LIST(R_tmp, 1) : 0.0);
+	   UNPROTECT(1);
 
        /* radii distribution */
        const char *ftype = CHAR(STRING_ELT(VECTOR_ELT(R_fname,0), 0));
