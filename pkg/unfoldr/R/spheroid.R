@@ -262,6 +262,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 				
 		if(shape == "const")
 		{
+			# set defaults
 			if(!is.list(theta$shape) || length(theta$shape) == 0L)
 			 theta$shape <- list(1,1)
 		
@@ -280,8 +281,9 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 		}
 		
 		if(!is.list(theta$size) || length(theta$size)==0L)
-			stop("Arguments for size distribution must be given in `theta`.")
-		if(size == "rbinorm") {
+		  stop("Arguments for size distribution must be given in `theta`.")
+		
+	    if(size == "rbinorm") {
 			 fargs <- c("mx","my","sdx","sdy","rho","kappa")
 		     it <- match(names(theta$size),fargs)
 			 if(length(it)==0 || anyNA(it))
@@ -298,8 +300,9 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 				 stop(paste0("Arguments of 'size' must match formal arguments of function ",size,sep=""))
 			 		
 		 } else if(size == "const"){
+			 # set defaults
 			 if(!is.list(theta$size) || length(theta$size) == 0L)
-				 theta$size <- list(1,1)
+			   theta$size <- list(1,1)
 		 } else {
 			stop(paste0("Undefined `", size, "` distribution function."))
 		 }
@@ -308,6 +311,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 		 if(is.na(it) && !exists(orientation, mode="function"))
 			 stop("Undefined distribution function for the orientation/direction.")	 
 		 
+		 # set defaults
 		 if(!is.list(theta$orientation) || length(theta$orientation) == 0L)
 			 theta$orientation <- list("kappa"=1)
 		 
@@ -623,7 +627,7 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 	}
 	
 	args <- list(...)
-	ok <- sapply(S, function(x) x$h > 0) 		# only true cylinders not 'spheres'
+	ok <- sapply(S, function(x) (!is.null(x$h) && x$h > 0.0) ) 		# only true cylinders not 'spheres'
 	
 	cyls <- lapply(S[ok], function(x) { cylinder(x$center, x$r, x$h, x$rotM, x$u) })
 	rgl::shapelist3d(cyls,...)
@@ -634,8 +638,10 @@ cylinders3d <- function(S, box, draw.axes=FALSE, draw.box=TRUE, clipping=FALSE,.
 	} else cols <- "black"
 	
 	# spheres
+	is.sphere <- sapply(S,function(x) !(is.null(x$h) || x$h == 0.0) )
 	Xc <- do.call(rbind,lapply(S[ok],function(x) rbind( c(x$origin0,x$r),c(x$origin1,x$r))))
 	rgl::spheres3d(Xc,radius=Xc[,4],col=cols,unlist(args))
+	
 	if(!all(ok)) {
 		Xc <- do.call(rbind,lapply(S[!ok],function(x) rbind(c(x$center,x$r))))
 		rgl::spheres3d(Xc,radius=Xc[,4],col="darkgray",unlist(args))
