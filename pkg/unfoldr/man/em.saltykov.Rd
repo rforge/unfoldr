@@ -72,7 +72,7 @@ box <- list("xrange"=c(-1,4),"yrange"=c(-1.5,3.5),"zrange"=c(0,2))
 
 ## section plane xy
 S <- simPoissonSystem(theta,lam,size="rbeta",box=box,type="spheres",
-		intersect="full",n=c(0,0,1),dz=0,pl=101)
+		intersect="full",n=c(0,0,1),dz=0,pl=1)
 
 # check resulting distribution
 length(S$S)
