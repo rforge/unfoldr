@@ -39,9 +39,6 @@ do {										\
 } while(0)
 
 
-#define GET_OBJECT_CLASS(RS) translateChar(asChar(getAttrib( (RS), R_ClassSymbol)))
-
-
 /* auxiliary functions */
 STGM::CBox3 setBox(SEXP R_box);
 void setWindow(SEXP R_win, STGM::CBox3 &box, STGM::CPlane &plane);
@@ -345,17 +342,21 @@ SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
   SEXP R_perfect = R_NilValue;
   PROTECT(R_perfect = getAttrib(R_S,install("perfect"))); ++nprotect;
   if(isNull(R_perfect))
-     error(_("`perfect` must be provided as an attribute."));
+   error(_("`perfect` must be provided as an attribute."));
   int perfect = INTEGER(AS_INTEGER(R_perfect))[0];
+
+  /* get class */
+  SEXP Rclass = R_NilValue;
+  PROTECT(Rclass = getAttrib( R_S, R_ClassSymbol));
+  const char* type_str = CHAR( STRING_ELT(Rclass,0));
+  UNPROTECT(1);
+
+  /* global print level */
+  PL = INTEGER(AS_INTEGER(getListElement( R_cond,"pl")))[0];
 
   /* return value */
   SEXP R_ret = R_NilValue;
-  const char* type_str = GET_OBJECT_CLASS(R_S);
-
-  // global print level
-  PL = INTEGER(AS_INTEGER(getListElement( R_cond,"pl")))[0];
-
-  	if( !std::strcmp(type_str, "prolate" ) ||
+  if( !std::strcmp(type_str, "prolate" ) ||
   		!std::strcmp(type_str, "oblate" ))
   	{
   		STGM::CPoissonSystem<STGM::CSpheroid> sp(box,lam,maxis,type_str,perfect);
@@ -428,7 +429,12 @@ SEXP UpdateIntersections(SEXP R_var, SEXP R_env)
     PROTECT(R_ret = allocVector(INTSXP,length(R_S)));
     int *ret = INTEGER(R_ret);
 
-    const char *name = GET_OBJECT_CLASS(R_S);
+    /* get class */
+    SEXP Rclass = R_NilValue;
+    PROTECT(Rclass = getAttrib( R_S, R_ClassSymbol));
+    const char* name = CHAR( STRING_ELT(Rclass,0));
+    UNPROTECT(1);
+
     if( !std::strcmp(name, "prolate")
      || !std::strcmp(name, "oblate" )) {
 
