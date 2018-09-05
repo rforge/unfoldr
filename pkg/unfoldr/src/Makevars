@@ -1,12 +1,14 @@
 PKG_LIBS =  $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_OPENMP_CFLAGS)
 PKG_CFLAGS = $(SHLIB_OPENMP_CFLAGS)
 
+# comment out!
 #PKG_CFLAGS = -Wall -pedantic $(SHLIB_OPENMP_CFLAGS)
 #PKG_CPPFLAGS = -Wall -Wextra -pedantic -O0 -ggdb
 
-OBJECTS = directions.o GeometricPrimitives.o Intersector.o ellipt.o SimPoisson.o Utils.o unfold.o
+# remove!
+#OBJECTS = directions.o GeometricPrimitives.o Intersector.o ellipt.o SimPoisson.o Utils.o unfold.o
 
-all: $(SHLIB) cleanlibs
-cleanlibs:
-	-rm -f $(OBJECTS)
+#all: $(SHLIB) cleanlibs
+#cleanlibs:
+#	-rm -f $(OBJECTS)
 	

@@ -61,9 +61,7 @@ class CPoissonSystem
 
  typedef T poisson_t;
 
- //typedef typename ConverterFunction<T>::Type converter_t;
-
- public:
+  public:
 
   typedef std::vector<poisson_t> objects_array_t;
 
@@ -78,14 +76,10 @@ class CPoissonSystem
 	   { m_type = PROLATE;}
 	  else if(!std::strcmp(type, "oblate" ))
 	   { m_type = OBLATE; }
-	  else if(!std::strcmp(type, "cylinder" ))
+	  else if(!std::strcmp(type, "cylinders" ))
 	   { m_type = CYLINDER; }
 	  // defaults
 	  m_dirtype = UNIFORM_D;
-
-	  // init converter
-	  //m_converter = ConverterFunction<T>();
-
   };
 
   ~CPoissonSystem() {};
@@ -111,7 +105,6 @@ class CPoissonSystem
 
   Rboolean isPerfect() { return (m_perfect > 0 ? TRUE : FALSE); }
 
-  //ConverterFunction<T> &getConverter() { return m_converter; }
 
  private:
 
@@ -125,9 +118,6 @@ class CPoissonSystem
   int m_perfect;
   grain_type m_type;
   direction_type m_dirtype;
-
-  //ConverterFunction<T> m_converter;
-
 };
 
 
@@ -143,10 +133,7 @@ public:
 
   CPoissonSystem(CBox3 &box, double lam, CVector3d &mu, const char * type,  int perfect) :
 	  m_type_str(type), m_box(box), m_lam(lam), m_mu(mu), m_num(0), m_perfect(perfect), m_type(SPHERE)
-  {
-	  // init converter
-	  //m_converter = ConverterFunction<CSphere>();
-  }
+  {};
 
   ~CPoissonSystem() {};
 
@@ -169,7 +156,6 @@ public:
 
   Rboolean isPerfect() { return (m_perfect > 0 ? TRUE : FALSE); }
 
-  //ConverterFunction<CSphere> &getConverter() { return m_converter; }
 
 private:
   CBox3 m_box;
@@ -181,7 +167,6 @@ private:
   Spheres m_objects;
   grain_type m_type;
 
-  //ConverterFunction<CSphere> m_converter;
 };
 
 
@@ -272,27 +257,6 @@ struct rndGen_t {
 
 };
 
-//template<class Tsize>
-//struct rndUnivar_t {
-//  typedef Tsize rndSize_t;
-//
-//  rndSize_t rsize;
-//  rndGen_t rshape;
-//  double mu;
-//
-//  rndUnivar_t(double p1, double p2, double s1, double s2,
-//		  	  	   STGM::CBox3 &box, const char *size, const char *shape)
-//
-//    :  rsize(rndSize_t(p1,p2,box,size)), rshape(rndGen_t(s1,s2,box,shape)), mu(0)
-//  {};
-//
-//  void operator()(double &s, double &b, double &c) {
-//	 b = rsize();
-//	 s = rshape();
-//	 c = b*s;
-//  }
-//
-//};
 
 
 template<class Tsize>
