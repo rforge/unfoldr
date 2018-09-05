@@ -90,15 +90,6 @@ struct R_eval_t<double> {
 SEXP showArgs(SEXP args);
 
 /**
- *
- * @param R_fname
- * @param R_arg
- * @param R_rho
- * @return
- */
-SEXP getSingleCall(SEXP R_fname, SEXP R_arg, SEXP R_rho);
-
-/**
  * \brief Define R call to user function from C level
  *
  * @param  R_fname (string) name of function to call

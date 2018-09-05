@@ -52,7 +52,10 @@ SEXP getCall(SEXP R_fname, SEXP R_args, SEXP R_rho) {
   SETCAR( RCallBack, findFun(install(CHAR(STRING_ELT(R_fname, 0))),R_rho ));
 
   SEXP p = CDR(RCallBack);
-  SEXP names = getAttrib(R_args, R_NamesSymbol);
+  SEXP names = R_NilValue;
+  PROTECT(names = getAttrib(R_args, R_NamesSymbol));
+  if(isNull(names))
+   error(_("'R_NamesSymbol' is undefined in argument list."));
 
   /* debugging */
   //Rf_PrintValue(R_args);
@@ -61,7 +64,8 @@ SEXP getCall(SEXP R_fname, SEXP R_args, SEXP R_rho) {
     SETCAR(p,VECTOR_ELT(R_args,i));
     SET_TAG(p,install(CHAR(STRING_ELT(names,i))));
   }
-  UNPROTECT(1);
+
+  UNPROTECT(2);
   return RCallBack;
 }
 /**
@@ -140,7 +144,7 @@ void cum_prob_k(double mx, double sdx2, double lx, double ly, double lz, double 
 
 
 /* get the elements of a list */
-SEXP getListElement (SEXP list, const char *str)
+SEXP getListElement(SEXP list, const char *str)
 {
      SEXP elmt = R_NilValue;
      SEXP names = getAttrib(list, R_NamesSymbol);
