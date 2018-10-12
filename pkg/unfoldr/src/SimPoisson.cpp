@@ -311,11 +311,9 @@ SEXP PoissonSystem(SEXP R_param, SEXP R_cond) {
     return R_ret;
 }
 
-SEXP IntersectPoissonSystem(SEXP R_var, SEXP R_cond, SEXP R_env)
+SEXP IntersectPoissonSystem(SEXP R_S, SEXP R_cond, SEXP R_env)
 {
   int nprotect = 0;
-  SEXP R_S = R_NilValue;
-  PROTECT(R_S = getVar(R_var,R_env)); ++nprotect;
 
   /* read all from attributes */
   SEXP R_box = R_NilValue;
@@ -408,11 +406,8 @@ STGM::CBox3 setBox(SEXP R_box) {
 /**
  * Test whether simulation box is intersected
  */
-SEXP UpdateIntersections(SEXP R_var, SEXP R_env)
+SEXP UpdateIntersections(SEXP R_S, SEXP R_env)
 {
-    SEXP R_S = R_NilValue;
-    PROTECT(R_S = getVar(R_var,R_env));
-
     SEXP R_box = R_NilValue;
     PROTECT(R_box = getAttrib(R_S, install("box")));
     STGM::CBox3 box = setBox(R_box);
@@ -465,12 +460,9 @@ SEXP UpdateIntersections(SEXP R_var, SEXP R_env)
  * Digitize intersections
  *  @param
  */
-SEXP DigitizeProfiles(SEXP R_var, SEXP R_delta, SEXP R_win, SEXP R_env)
+SEXP DigitizeProfiles(SEXP R_S, SEXP R_delta, SEXP R_win, SEXP R_env)
 {
 	int nprotect = 0;
-	SEXP R_S = R_NilValue;
-	PROTECT(R_S = getVar(R_var,R_env)); ++nprotect;			// section profiles
-
 	/*  get the window if not provided:
 	 *  this has the correct dimension of the original box
 	 *  and corresponds to the intersecting plane  (normal vector) */

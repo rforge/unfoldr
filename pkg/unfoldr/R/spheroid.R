@@ -32,7 +32,7 @@
 #' @rdname updateIntersections
 #' @export
 updateIntersections <- function(S) {
-	.Call(C_UpdateIntersections, as.character(substitute(S)), .GlobalEnv)
+	.Call(C_UpdateIntersections, S, environment())
 }
 
 #' Construct section profiles
@@ -246,7 +246,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 	    }
 
 		list("type"=type,"rdist"=funname,"box"=box,
-			 "lam"=lam,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv,"label"=label,
+			 "lam"=lam,"pl"=pl,"mu"=mu,"rho"= environment(),"label"=label,
 			 "dz"=dz, "nsect"=n, "delta"=delta,"intern"=as.integer(intern),
 			 "perfect"=as.integer(perfect), "intersect"=intersect)
 			
@@ -317,7 +317,7 @@ simPoissonSystem <- function(theta, lam, size="const", shape="const", orientatio
 		 
 		 list("type"=type, "lam"=lam,
 			  "rdist"=list("size"=size, "shape"=shape, "orientation"=orientation),
-			  "box"=box,"pl"=pl,"mu"=mu,"rho"=.GlobalEnv, "dz"=dz, "nsect"=n, "delta"=delta,
+			  "box"=box,"pl"=pl,"mu"=mu,"rho"= environment(), "dz"=dz, "nsect"=n, "delta"=delta,
 			  "intern"=as.integer(intern),"label"=label, "perfect"=as.integer(perfect),
 			  "intersect"=intersect)
 	}
@@ -416,10 +416,7 @@ verticalSection <- function(S,d,n=c(0,1,0),intern=FALSE) {
 	if(sum(n) != 1 || which(n == 1) > 2L)
 	  stop("Normal vector is one of c(0,1,0) or c(1,0,0).")
 	
-    ss <- .Call(C_IntersectPoissonSystem,
-		 		 as.character(substitute(S)),
-		  		 list("nsect"=n,"dz"=d,"intern"=intern,"pl"=10),
-		  		 .GlobalEnv)
+    ss <- .Call(C_IntersectPoissonSystem, S, list("nsect"=n,"dz"=d,"intern"=intern,"pl"=10), environment())
   	
 	A <- if(class(S)=="prolate")
 			sapply(ss,"[[",2)
@@ -494,10 +491,7 @@ intersectSystem <- function(S, d, n=c(0,1,0), intern=FALSE, pl=0) {
     if(d < min( box[[which(n == 1)]]) || d > max(box[[which(n == 1)]]))
 	  stop("The plane has to intersect the box.")
 	
-	.Call(C_IntersectPoissonSystem,
-			as.character(substitute(S)),
-			list("nsect"=n,"dz"=d,"intern"=as.integer(intern),"pl"=as.integer(pl)),
-		    .GlobalEnv)	
+	.Call(C_IntersectPoissonSystem,S, list("nsect"=n,"dz"=d,"intern"=as.integer(intern),"pl"=as.integer(pl)), environment())	
 }
 
 #' Spheroid system 3D
@@ -775,10 +769,7 @@ planarSection <- function(S, d, intern=FALSE, pl=0) {
 	 stop("'d' must be numeric/positive.")
 	stopifnot(is.logical(intern))
 	
-	sp <- .Call(C_IntersectPoissonSystem,
-			as.character(substitute(S)),
-			list("nsect"=c(0,0,1),"dz"=d,"intern"=intern,"pl"=pl),
-			.GlobalEnv)
+	sp <- .Call(C_IntersectPoissonSystem,S,list("nsect"=c(0,0,1),"dz"=d,"intern"=intern,"pl"=pl),environment())
 	
 	if(is.list(sp))								# full list of section profiles
 	 return (sapply(sp,function(x) 2.0*x$r))		
@@ -946,5 +937,5 @@ digitizeProfiles <- function(sp, delta = 0.01, win = NULL ) {
 	if(delta < 0 || delta > 1.0)
 	  stop("'delta' should be positive and equal or less than 1.")
   
-	.Call(C_DigitizeProfiles,as.character(substitute(sp)), delta, win, .GlobalEnv)
+	.Call(C_DigitizeProfiles, sp, delta, win, environment())
 }
